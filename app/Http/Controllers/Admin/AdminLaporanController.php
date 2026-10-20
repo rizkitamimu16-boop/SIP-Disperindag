@@ -194,8 +194,7 @@ class AdminLaporanController extends Controller
         if ($format === 'pdf') {
             if ($activeTab === 'absensi') {
                 $export = new \App\Exports\AbsensiExport($request);
-                $reports = $export->collection();
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.absensi-pdf', compact('reports'));
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($export->viewName, $export->viewData)->setPaper('a4', 'landscape');
                 return $pdf->download('Laporan_Absensi_Pegawai.pdf');
             } elseif ($activeTab === 'kinerja') {
                 $export = new \App\Exports\KinerjaExport($request);

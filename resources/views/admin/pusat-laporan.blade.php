@@ -63,16 +63,31 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Periode Filter</label>
-                        <select id="filter-periode-absensi" onchange="toggleFilterType('absensi')" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
-                            <option value="harian">Harian</option>
-                            <option value="bulanan" selected>Bulanan</option>
-                            <option value="tahunan">Tahunan</option>
-                            <option value="rentang">Rentang Waktu</option>
+                        <select name="periode_absensi" id="filter-periode-absensi" onchange="toggleFilterType('absensi')" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
+                            <option value="bulanan" {{ request('periode_absensi', 'bulanan') == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
+                            <option value="tahunan" {{ request('periode_absensi') == 'tahunan' ? 'selected' : '' }}>Tahunan</option>
+                            <option value="rentang" {{ request('periode_absensi') == 'rentang' ? 'selected' : '' }}>Rentang Waktu</option>
                         </select>
                     </div>
                     <div id="input-waktu-absensi">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Bulan</label>
-                        <input type="month" name="month_absensi" value="{{ request('month_absensi', \Carbon\Carbon::now()->format('Y-m')) }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent">
+                        @if(request('periode_absensi') == 'tahunan')
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Tahun</label>
+                            <select name="year_absensi" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
+                                @for($y=date('Y')+1; $y>=2020; $y--)
+                                <option value="{{$y}}" {{ request('year_absensi', date('Y')) == $y ? 'selected' : '' }}>{{$y}}</option>
+                                @endfor
+                            </select>
+                        @elseif(request('periode_absensi') == 'rentang')
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Rentang Tanggal</label>
+                            <div class="flex items-center gap-2">
+                                <input type="date" name="start_date_absensi" value="{{ request('start_date_absensi') }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Mulai">
+                                <span class="text-gray-500 text-xs font-medium">s/d</span>
+                                <input type="date" name="end_date_absensi" value="{{ request('end_date_absensi') }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Selesai">
+                            </div>
+                        @else
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Bulan</label>
+                            <input type="month" name="month_absensi" value="{{ request('month_absensi', \Carbon\Carbon::now()->format('Y-m')) }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent">
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Unit Kerja / Bidang</label>
@@ -190,16 +205,31 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Periode Filter</label>
-                        <select id="filter-periode-kinerja" onchange="toggleFilterType('kinerja')" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
-                            <option value="harian">Harian</option>
-                            <option value="bulanan" selected>Bulanan</option>
-                            <option value="tahunan">Tahunan</option>
-                            <option value="rentang">Rentang Waktu</option>
+                        <select id="filter-periode-kinerja" name="periode_kinerja" onchange="toggleFilterType('kinerja')" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
+                            <option value="bulanan" {{ request('periode_kinerja', 'bulanan') == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
+                            <option value="tahunan" {{ request('periode_kinerja') == 'tahunan' ? 'selected' : '' }}>Tahunan</option>
+                            <option value="rentang" {{ request('periode_kinerja') == 'rentang' ? 'selected' : '' }}>Rentang Waktu</option>
                         </select>
                     </div>
                     <div id="input-waktu-kinerja">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Bulan</label>
-                        <input type="month" name="month_kinerja" value="{{ request('month_kinerja', \Carbon\Carbon::now()->format('Y-m')) }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent">
+                        @if(request('periode_kinerja') == 'tahunan')
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Tahun</label>
+                            <select name="year_kinerja" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
+                                @for($y=date('Y')+1; $y>=2020; $y--)
+                                <option value="{{$y}}" {{ request('year_kinerja', date('Y')) == $y ? 'selected' : '' }}>{{$y}}</option>
+                                @endfor
+                            </select>
+                        @elseif(request('periode_kinerja') == 'rentang')
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Rentang Tanggal</label>
+                            <div class="flex items-center gap-2">
+                                <input type="date" name="start_date_kinerja" value="{{ request('start_date_kinerja') }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Mulai">
+                                <span class="text-gray-500 text-xs font-medium">s/d</span>
+                                <input type="date" name="end_date_kinerja" value="{{ request('end_date_kinerja') }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Selesai">
+                            </div>
+                        @else
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Bulan</label>
+                            <input type="month" name="month_kinerja" value="{{ request('month_kinerja', \Carbon\Carbon::now()->format('Y-m')) }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent">
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Unit Kerja / Bidang</label>
@@ -315,16 +345,31 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Periode Filter</label>
-                        <select id="filter-periode-kegiatan" onchange="toggleFilterType('kegiatan')" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
-                            <option value="harian" selected>Harian</option>
-                            <option value="bulanan">Bulanan</option>
-                            <option value="tahunan">Tahunan</option>
-                            <option value="rentang">Rentang Waktu</option>
+                        <select id="filter-periode-kegiatan" name="periode_kegiatan" onchange="toggleFilterType('kegiatan')" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
+                            <option value="bulanan" {{ request('periode_kegiatan') == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
+                            <option value="tahunan" {{ request('periode_kegiatan') == 'tahunan' ? 'selected' : '' }}>Tahunan</option>
+                            <option value="rentang" {{ request('periode_kegiatan', 'rentang') == 'rentang' ? 'selected' : '' }}>Rentang Waktu</option>
                         </select>
                     </div>
                     <div id="input-waktu-kegiatan">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Tanggal</label>
-                        <input type="date" name="date_kegiatan" value="{{ request('date_kegiatan', \Carbon\Carbon::today()->toDateString()) }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent">
+                        @if(request('periode_kegiatan') == 'tahunan')
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Tahun</label>
+                            <select name="year_kegiatan" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
+                                @for($y=date('Y')+1; $y>=2020; $y--)
+                                <option value="{{$y}}" {{ request('year_kegiatan', date('Y')) == $y ? 'selected' : '' }}>{{$y}}</option>
+                                @endfor
+                            </select>
+                        @elseif(request('periode_kegiatan', 'rentang') == 'rentang')
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Rentang Tanggal</label>
+                            <div class="flex items-center gap-2">
+                                <input type="date" name="start_date_kegiatan" value="{{ request('start_date_kegiatan', \Carbon\Carbon::today()->toDateString()) }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Mulai">
+                                <span class="text-gray-500 text-xs font-medium">s/d</span>
+                                <input type="date" name="end_date_kegiatan" value="{{ request('end_date_kegiatan', \Carbon\Carbon::today()->toDateString()) }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Selesai">
+                            </div>
+                        @else
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Bulan</label>
+                            <input type="month" name="month_kegiatan" value="{{ request('month_kegiatan', \Carbon\Carbon::now()->format('Y-m')) }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent">
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Unit Kerja / Bidang</label>
@@ -434,19 +479,31 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Periode Filter</label>
-                        <select id="filter-periode-sp" onchange="toggleFilterType('sp')" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
-                            <option value="harian">Harian</option>
-                            <option value="bulanan">Bulanan</option>
-                            <option value="tahunan" selected>Tahunan</option>
-                            <option value="rentang">Rentang Waktu</option>
+                        <select id="filter-periode-sp" name="periode_sp" onchange="toggleFilterType('sp')" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
+                            <option value="bulanan" {{ request('periode_sp') == 'bulanan' ? 'selected' : '' }}>Bulanan</option>
+                            <option value="tahunan" {{ request('periode_sp', 'tahunan') == 'tahunan' ? 'selected' : '' }}>Tahunan</option>
+                            <option value="rentang" {{ request('periode_sp') == 'rentang' ? 'selected' : '' }}>Rentang Waktu</option>
                         </select>
                     </div>
                     <div id="input-waktu-sp">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Tahun</label>
-                        <select name="year_sp" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
-                            <option value="2026" {{ request('year_sp') == '2026' ? 'selected' : '' }}>2026</option>
-                            <option value="2025" {{ request('year_sp') == '2025' ? 'selected' : '' }}>2025</option>
-                        </select>
+                        @if(request('periode_sp', 'tahunan') == 'tahunan')
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Tahun</label>
+                            <select name="year_sp" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
+                                @for($y=date('Y')+1; $y>=2020; $y--)
+                                <option value="{{$y}}" {{ request('year_sp', date('Y')) == $y ? 'selected' : '' }}>{{$y}}</option>
+                                @endfor
+                            </select>
+                        @elseif(request('periode_sp') == 'rentang')
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Rentang Tanggal</label>
+                            <div class="flex items-center gap-2">
+                                <input type="date" name="start_date_sp" value="{{ request('start_date_sp') }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Mulai">
+                                <span class="text-gray-500 text-xs font-medium">s/d</span>
+                                <input type="date" name="end_date_sp" value="{{ request('end_date_sp') }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Selesai">
+                            </div>
+                        @else
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Bulan</label>
+                            <input type="month" name="month_sp" value="{{ request('month_sp', \Carbon\Carbon::now()->format('Y-m')) }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent">
+                        @endif
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Unit Kerja / Bidang</label>
@@ -591,41 +648,36 @@
                 const val = selectElement.value;
                 
                 let html = '';
-                if (val === 'harian') {
-                    html = `
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Rentang Tanggal</label>
-                        <div class="flex items-center gap-2">
-                            <input type="date" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Mulai">
-                            <span class="text-gray-500 text-xs font-medium">s/d</span>
-                            <input type="date" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Selesai">
-                        </div>
-                    `;
-                } else if (val === 'bulanan') {
+                if (val === 'bulanan') {
                     html = `
                         <label class="block text-xs font-bold text-gray-700 mb-1">Bulan</label>
-                        <input type="month" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent">
+                        <input type="month" name="month_${tabName}" value="{{ \Carbon\Carbon::now()->format('Y-m') }}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent">
                     `;
                 } else if (val === 'tahunan') {
+                    let yearOptions = '';
+                    let currentYear = new Date().getFullYear();
+                    for(let y = currentYear + 1; y >= 2020; y--) {
+                        yearOptions += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`;
+                    }
                     html = `
                         <label class="block text-xs font-bold text-gray-700 mb-1">Tahun</label>
-                        <select class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
-                            <option value="2026">2026</option>
-                            <option value="2025">2025</option>
-                            <option value="2024">2024</option>
+                        <select name="year_${tabName}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent cursor-pointer">
+                            ${yearOptions}
                         </select>
                     `;
                 } else if (val === 'rentang') {
                     html = `
                         <label class="block text-xs font-bold text-gray-700 mb-1">Rentang Tanggal</label>
                         <div class="flex items-center gap-2">
-                            <input type="date" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Mulai">
+                            <input type="date" name="start_date_${tabName}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Mulai">
                             <span class="text-gray-500 text-xs font-medium">s/d</span>
-                            <input type="date" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Selesai">
+                            <input type="date" name="end_date_${tabName}" onchange="document.getElementById('reportForm').submit()" class="w-full text-sm border border-gray-300 rounded-lg px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent" title="Selesai">
                         </div>
                     `;
                 }
                 
                 container.innerHTML = html;
+                document.getElementById('reportForm').submit();
             }
         </script>
     </div>
