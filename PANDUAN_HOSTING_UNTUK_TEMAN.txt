@@ -77,5 +77,9 @@ Berikut panduan singkat & checklist agar aplikasi dapat langsung berjalan lancar
 - Akun Administrator:
   Username : admin
   Password : admin123
+
+- Akun Pegawai (23 Pegawai):
+  Username : [nama_depan].123  (Contoh: wahyunie.123, rita.123, yusuf.123)
+  Password : [nama_depan].123  (Sama dengan username masing-masing pegawai)
 ================================================================================
 
