@@ -18,6 +18,7 @@
 
         <!-- Bagian Kanan Header -->
         <div class="flex items-center space-x-3 sm:space-x-5">
+            @include('components.notification-bell')
             @yield('header_right')
         </div>
 

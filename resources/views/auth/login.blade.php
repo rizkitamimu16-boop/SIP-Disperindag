@@ -86,7 +86,7 @@
             <!-- Judul & Deskripsi Login -->
             <div class="mb-6">
                 <h2 class="text-2xl font-bold text-gray-900">Masuk ke akun Anda</h2>
-                <p class="text-sm text-gray-500 mt-1">Gunakan kredensial resmi terdaftar di database untuk masuk ke sistem.</p>
+                <p class="text-sm text-gray-500 mt-1">Gunakan akun resmi yang terdaftar untuk masuk ke sistem.</p>
             </div>
 
             <!-- Notifikasi Error / Sukses -->

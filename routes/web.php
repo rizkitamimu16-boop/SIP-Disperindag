@@ -110,6 +110,7 @@ Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')
     
     // 6. Pelanggaran / SP
     Route::get('/pelanggaran-sp', [PegawaiSpController::class, 'index'])->name('pelanggaran-sp');
+    Route::get('/pelanggaran-sp/{id}/pdf', [PegawaiSpController::class, 'exportPdf'])->name('pelanggaran-sp.pdf');
     Route::get('/sp', [PegawaiSpController::class, 'index'])->name('sp');
     
     // 7. Profil

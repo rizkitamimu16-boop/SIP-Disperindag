@@ -19,7 +19,7 @@
             <div
                 class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold text-sky-200 mb-3 border border-white/10">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Waktu Server Presensi (WITA)</span>
+                <span>Waktu Presensi (WITA)</span>
             </div>
             <div class="flex items-baseline space-x-2">
                 <div id="liveClock" class="text-3xl sm:text-5xl font-extrabold tracking-tight">07:42:15
@@ -190,15 +190,15 @@
                 <div class="py-3.5 flex items-center justify-between">
                     <div class="flex items-center space-x-3.5">
                         <div
-                            class="w-10 h-10 rounded-xl {{ ($att->status ?? '') == 'Terlambat' ? 'bg-amber-50 text-amber-600' : (($att->status ?? '') == 'Dinas Luar' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600') }} flex flex-col items-center justify-center shrink-0">
+                            class="w-10 h-10 rounded-xl {{ in_array(($att->status ?? ''), ['Hadir', 'Tepat Waktu']) ? 'bg-emerald-50 text-emerald-600' : (($att->status ?? '') == 'Terlambat' ? 'bg-amber-50 text-amber-600' : (($att->status ?? '') == 'Dinas Luar' ? 'bg-blue-50 text-blue-600' : (($att->status ?? '') == 'Sakit' ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'))) }} flex flex-col items-center justify-center shrink-0">
                             <span class="text-[10px] font-bold uppercase leading-tight">{{ \Carbon\Carbon::parse($att->tanggal ?? now())->locale('id')->isoFormat('ddd') }}</span>
                             <span class="text-sm font-extrabold leading-tight">{{ \Carbon\Carbon::parse($att->tanggal ?? now())->format('d') }}</span>
                         </div>
                         <div>
                             <p class="text-xs sm:text-sm font-bold text-gray-900">{{ \Carbon\Carbon::parse($att->tanggal ?? now())->locale('id')->isoFormat('dddd, DD MMMM Y') }}</p>
                             <p class="text-[11px] text-gray-500">
-                                @if(($att->status ?? '') == 'Dinas Luar')
-                                    Penugasan Dinas Luar (SPT)
+                                @if(in_array(($att->status ?? ''), ['Dinas Luar', 'Izin', 'Cuti', 'Sakit']))
+                                    Keterangan: {{ $att->status }}
                                 @else
                                     Masuk: {{ !empty($att->jam_masuk) ? \Carbon\Carbon::parse($att->jam_masuk)->format('H:i') . ' WITA' : '-' }}
                                     @if(!empty($att->jam_pulang))
@@ -221,12 +221,20 @@
                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                                 Dinas Luar (SPT)
                             </span>
+                        @elseif(($att->status ?? '') == 'Sakit')
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                Sakit
+                            </span>
+                        @elseif(in_array(($att->status ?? ''), ['Izin', 'Cuti']))
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                {{ $att->status }}
+                            </span>
                         @else
                             <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200">
                                 {{ ucfirst($att->status ?? 'Alpha') }}
                             </span>
                         @endif
-                        <p class="text-[11px] text-gray-400 mt-0.5">{{ ($att->status ?? '') == 'Dinas Luar' ? 'Disetujui' : (!empty($att->jam_pulang) ? 'Datang & Pulang' : 'Datang') }}</p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">{{ in_array(($att->status ?? ''), ['Dinas Luar', 'Izin', 'Cuti', 'Sakit']) ? 'Disetujui' : (!empty($att->jam_pulang) ? 'Datang & Pulang' : 'Datang') }}</p>
                     </div>
                 </div>
             @empty

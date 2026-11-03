@@ -5,18 +5,7 @@
 @section('header_title', 'Pengaturan Konfigurasi Sistem')
 @section('header_subtitle', 'Konfigurasi identitas instansi, geofencing GPS, jam kerja, bobot IKP, threshold SP, dan manajemen akun admin')
 
-@section('header_right')
 
-    <div class="flex items-center space-x-3 bg-[#EEF2FF] px-3.5 py-1.5 rounded-2xl border border-emerald-100/80 shadow-2xs">
-        <div class="flex flex-col text-right">
-            <span class="text-xs font-bold text-[#1E1B4B] leading-tight">{{ auth()->user()->nama ?? 'Administrator' }}</span>
-            <span class="text-[11px] text-emerald-600 font-medium">Sekretariat</span>
-        </div>
-        <div class="w-8 h-8 rounded-full bg-[#4F46E5] text-white font-bold text-xs flex items-center justify-center shadow-xs">
-            {{ strtoupper(substr(auth()->user()->nama ?? 'AD', 0, 2)) }}
-        </div>
-    </div>
-@endsection
 
 @section('content')
 <div class="space-y-6">
@@ -172,7 +161,7 @@
                             class="w-full h-10 px-3 bg-slate-50 border border-gray-200 rounded-xl font-bold text-[#0D2240]">
                     </div>
                 </div>
-                <p class="text-[11px] text-gray-400 mt-2 italic">Presensi di luar radius toleransi maksimal otomatis ditolak oleh validasi server GPS.</p>
+                <p class="text-[11px] text-gray-400 mt-2 italic">Presensi di luar radius toleransi maksimal otomatis ditolak oleh sistem GPS.</p>
                 <div class="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start space-x-3">
                     <div class="flex items-center h-5">
                         <input id="is_wfh_jumat" name="is_wfh_jumat" type="checkbox" value="1" {{ ($pengaturan->is_wfh_jumat ?? false) ? 'checked' : '' }} class="w-4 h-4 text-[#0D2240] bg-white border-gray-300 rounded focus:ring-[#0D2240] focus:ring-2">
@@ -301,7 +290,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Simpan Perubahan ke Database MySQL</span>
+                    <span>Simpan Perubahan</span>
                 </button>
             </div>
         </form>

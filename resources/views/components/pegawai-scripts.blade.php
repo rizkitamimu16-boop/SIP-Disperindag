@@ -261,7 +261,7 @@
             if (data.success) {
                 Swal.fire({
                     title: 'Berhasil!',
-                    text: data.message || 'Presensi berhasil dicatat ke database!',
+                    text: data.message || 'Presensi berhasil dicatat!',
                     icon: 'success',
                     confirmButtonText: 'Tutup'
                 }).then(() => {
@@ -274,7 +274,7 @@
         })
         .catch(err => {
             console.error(err);
-            Swal.fire('Error!', 'Terjadi kesalahan saat menghubungi server presensi.', 'error');
+            Swal.fire('Error!', 'Terjadi kendala saat memproses presensi. Silakan coba beberapa saat lagi.', 'error');
         });
     }
 

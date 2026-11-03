@@ -5,18 +5,7 @@
 @section('header_title', 'Pengelolaan Surat Peringatan (SP)')
 @section('header_subtitle', 'Sistem penerbitan SP otomatis berdasarkan akumulasi Alpha')
 
-@section('header_right')
 
-    <div class="flex items-center space-x-3 bg-[#EEF2FF] px-3.5 py-1.5 rounded-2xl border border-emerald-100/80 shadow-2xs">
-        <div class="flex flex-col text-right">
-            <span class="text-xs font-bold text-[#1E1B4B] leading-tight">Administrator</span>
-            <span class="text-[11px] text-emerald-600 font-medium">Sekretariat</span>
-        </div>
-        <div class="w-8 h-8 rounded-full bg-[#4F46E5] text-white font-bold text-xs flex items-center justify-center shadow-xs">
-            AD
-        </div>
-    </div>
-@endsection
 
 @section('content')
 <div class="space-y-6">
@@ -89,28 +78,31 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-gray-700">
                     @forelse($spLetters ?? [] as $sp)
+                    @php
+                        $isTerbit = !empty($sp->nomor_surat);
+                    @endphp
                     <tr class="hover:bg-slate-50/70 transition">
                         <td class="py-3.5 px-3.5">
                             <div class="font-bold text-gray-900">{{ $sp->pegawai->nama ?? '-' }}</div>
                             <div class="text-[11px] text-gray-400">NIP: {{ $sp->pegawai->nip ?? '-' }} &bull; {{ $sp->pegawai->bidang ?? '-' }}</div>
                         </td>
-                        <td class="py-3.5 px-3 text-center font-bold text-red-600">{{ $sp->alpha_count ?? 3 }} Alpha</td>
+                        <td class="py-3.5 px-3 text-center font-bold text-red-600">{{ $sp->jumlah_alpha ?? $sp->alpha_count ?? 3 }} Alpha</td>
                         <td class="py-3.5 px-3 text-center">
-                            <span class="px-2.5 py-1 rounded-md {{ $sp->tingkat_sp === 'SP1' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800' }} font-bold text-xs">
+                            <span class="px-2.5 py-1 rounded-md {{ in_array($sp->tingkat_sp, ['SP1', 'SP-1']) ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800' }} font-bold text-xs">
                                 {{ strtoupper($sp->tingkat_sp) }}
                             </span>
                         </td>
-                        <td class="py-3.5 px-3.5 font-mono text-xs {{ $sp->nomor_surat ? 'text-gray-800 font-semibold' : 'text-gray-400 italic' }}">
-                            {{ $sp->nomor_surat ?? '(Belum diterbitkan)' }}
+                        <td class="py-3.5 px-3.5 font-mono text-xs {{ $isTerbit ? 'text-gray-800 font-semibold' : 'text-gray-400 italic' }}">
+                            {{ $isTerbit ? $sp->nomor_surat : '(Belum diterbitkan)' }}
                         </td>
-                        <td class="py-3.5 px-3 text-gray-500">{{ $sp->tanggal_terbit ? date('d M Y', strtotime($sp->tanggal_terbit)) : '-' }}</td>
+                        <td class="py-3.5 px-3 text-gray-500">{{ ($isTerbit && $sp->tanggal_terbit) ? date('d M Y', strtotime($sp->tanggal_terbit)) : '-' }}</td>
                         <td class="py-3.5 px-3 text-center">
-                            <span class="px-2.5 py-1 rounded-full {{ (($sp->status ?? '') === 'Selesai' || ($sp->status ?? '') === 'Terbit') ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }} text-xs font-bold">
-                                {{ (($sp->status ?? '') === 'Selesai' || ($sp->status ?? '') === 'Terbit') ? 'Terbit' : 'Pending Review' }}
+                            <span class="px-2.5 py-1 rounded-full {{ $isTerbit ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }} text-xs font-bold">
+                                {{ $isTerbit ? 'Terbit' : 'Pending Review' }}
                             </span>
                         </td>
                         <td class="py-3.5 px-3.5 text-center space-x-1.5">
-                            @if(($sp->status ?? '') === 'Selesai' || ($sp->status ?? '') === 'Terbit')
+                            @if($isTerbit)
                             <a href="{{ route('admin.surat-peringatan.pdf', $sp->id) }}" target="_blank"
                                 class="px-3 py-1.5 bg-[#0D2240] hover:bg-[#163660] text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-2xs inline-flex items-center space-x-1.5">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -120,7 +112,7 @@
                             </a>
                             @else
                             <button type="button"
-                                onclick="openTerbitkanSPModal({{ $sp->id }}, '{{ addslashes($sp->pegawai->nama ?? '-') }}', '{{ addslashes($sp->pegawai->nip ?? '-') }}', '{{ addslashes($sp->pegawai->jabatan ?? '-') }}', '{{ $sp->tingkat_sp ?? 'SP 1' }}', 'Akumulasi {{ $sp->alpha_count ?? 3 }} Hari Alpha Tanpa Keterangan')"
+                                onclick="openTerbitkanSPModal({{ $sp->id }}, '{{ addslashes($sp->pegawai->nama ?? '-') }}', '{{ addslashes($sp->pegawai->nip ?? '-') }}', '{{ addslashes($sp->pegawai->jabatan ?? '-') }}', '{{ $sp->tingkat_sp ?? 'SP-1' }}', 'Akumulasi {{ $sp->jumlah_alpha ?? 3 }} Hari Alpha Tanpa Keterangan')"
                                 class="px-3 py-1.5 bg-[#0D2240] hover:bg-[#163660] text-white rounded-lg text-xs font-bold shadow-2xs transition cursor-pointer">
                                 Terbitkan SP
                             </button>
@@ -369,7 +361,7 @@
 
         // Update form action
         const form = document.getElementById('formTerbitkanSP');
-        form.action = `/surat-peringatan/${id}/terbitkan`;
+        form.action = `/admin/surat-peringatan/${id}/terbitkan`;
 
         openModal('modalTerbitkanSP');
     }

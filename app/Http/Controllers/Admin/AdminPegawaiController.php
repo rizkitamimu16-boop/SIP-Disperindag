@@ -82,10 +82,13 @@ class AdminPegawaiController extends Controller
             'status'  => 'Aktif',
         ]);
 
-        // Tentukan username & password otomatis jika tidak diisi
+        // Tentukan username & password otomatis jika tidak diisi ([nama_depan].123)
+        $firstName = strtolower(preg_replace('/[^a-zA-Z]/', '', explode(' ', trim($validated['nama']))[0] ?? 'pegawai'));
+        $defaultUserPass = $firstName . '.123';
+
         $username = !empty($validated['username']) 
             ? Str::slug($validated['username'], '_') 
-            : Str::slug(explode(' ', $validated['nama'])[0], '') . '.' . substr(preg_replace('/\D/', '', $validated['nip']), -4);
+            : $defaultUserPass;
 
         // Pastikan username unik
         $baseUsername = $username;
@@ -95,7 +98,7 @@ class AdminPegawaiController extends Controller
             $counter++;
         }
 
-        $rawPassword = !empty($validated['password']) ? $validated['password'] : 'pegawai123';
+        $rawPassword = !empty($validated['password']) ? $validated['password'] : $defaultUserPass;
 
         // Buat akun login Pengguna
         $user = User::create([
@@ -178,7 +181,8 @@ class AdminPegawaiController extends Controller
             return redirect()->back()->with('error', 'Akun login untuk pegawai ini tidak ditemukan.');
         }
 
-        $newPassword = 'pegawai123';
+        $firstName = strtolower(preg_replace('/[^a-zA-Z]/', '', explode(' ', trim($pegawai->nama))[0] ?? 'pegawai'));
+        $newPassword = $firstName . '.123';
         $pegawai->user->update([
             'password' => Hash::make($newPassword),
         ]);

@@ -5,17 +5,7 @@
 @section('header_title', 'Data Pegawai PPPK')
 @section('header_subtitle', 'Kelola biodata, NIP, bidang kerja resmi, dan akun akses sistem')
 
-@section('header_right')
-    <div class="flex items-center space-x-3 bg-[#EEF2FF] px-3.5 py-1.5 rounded-2xl border border-emerald-100/80 shadow-2xs">
-        <div class="flex flex-col text-right">
-            <span class="text-xs font-bold text-[#1E1B4B] leading-tight">{{ auth()->user()->nama ?? 'Administrator' }}</span>
-            <span class="text-[11px] text-emerald-600 font-medium">Sekretariat</span>
-        </div>
-        <div class="w-8 h-8 rounded-full bg-[#4F46E5] text-white font-bold text-xs flex items-center justify-center shadow-xs">
-            {{ strtoupper(substr(auth()->user()->nama ?? 'AD', 0, 2)) }}
-        </div>
-    </div>
-@endsection
+
 
 @section('content')
 <div class="space-y-6">
@@ -136,7 +126,7 @@
                                 </div>
                                 <div>
                                     <p class="font-bold text-gray-900">{{ $emp->nama }}</p>
-                                    <span class="text-[11px] text-gray-400 font-mono">{{ $emp->user->email ?? $emp->no_hp ?? '-' }}</span>
+                                    <span class="text-[11px] text-gray-400 font-mono">{{ $emp->user->email ?? '-' }}</span>
                                 </div>
                             </div>
                         </td>
@@ -176,7 +166,7 @@
 
                                 <!-- Icon 1.5: Edit Pegawai (Pensil) -->
                                 <button type="button" 
-                                    onclick="bukaModalEditPegawai({{ $emp->id }}, '{{ addslashes($emp->nama) }}', '{{ $emp->nip }}', '{{ addslashes($emp->jabatan) }}', '{{ $emp->bidang }}', '{{ $emp->user->email ?? '' }}', '{{ $emp->status ?? 'Aktif' }}', '{{ $emp->no_hp ?? '' }}', '{{ addslashes(preg_replace('/\r|\n/', ' ', $emp->alamat ?? '')) }}')"
+                                    onclick="bukaModalEditPegawai({{ $emp->id }}, '{{ addslashes($emp->nama) }}', '{{ $emp->nip }}', '{{ addslashes($emp->jabatan) }}', '{{ $emp->bidang }}', '{{ $emp->user->email ?? '' }}', '{{ $emp->status ?? 'Aktif' }}')"
                                     title="Edit Pegawai"
                                     class="w-8 h-8 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-800 transition flex items-center justify-center cursor-pointer shadow-2xs border border-blue-200/60 group">
                                     <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -216,7 +206,7 @@
                                     </svg>
                                 </div>
                                 <p class="text-sm font-bold text-gray-700">Belum Ada Data Pegawai</p>
-                                <p class="text-xs text-gray-400">Silakan gunakan tombol "Tambah Pegawai Baru" untuk mendaftarkan data pegawai PPPK ke database.</p>
+                                <p class="text-xs text-gray-400">Silakan gunakan tombol "Tambah Pegawai Baru" untuk mendaftarkan data pegawai PPPK ke dalam sistem.</p>
                             </div>
                         </td>
                     </tr>
@@ -259,7 +249,7 @@ function bukaDetailPegawaiDariTombol(btn) {
     }
 }
 
-function bukaModalEditPegawai(id, nama, nip, jabatan, bidang, email, status, noHp, alamat) {
+function bukaModalEditPegawai(id, nama, nip, jabatan, bidang, email, status) {
     document.getElementById('formEditPegawai').action = `{{ url('admin/pegawai') }}/${id}`;
     
     document.getElementById('edit_nama').value = nama;
@@ -268,8 +258,6 @@ function bukaModalEditPegawai(id, nama, nip, jabatan, bidang, email, status, noH
     document.getElementById('edit_bidang').value = bidang;
     document.getElementById('edit_email').value = email;
     document.getElementById('edit_status').value = status;
-    document.getElementById('edit_no_hp').value = noHp;
-    document.getElementById('edit_alamat').value = alamat;
     
     openModal('modalEditPegawai');
 }

@@ -3,20 +3,9 @@
 @section('title', 'Monitoring Absensi - Panel Administrator')
 
 @section('header_title', 'Monitoring Absensi')
-@section('header_subtitle', 'Validasi waktu server WITA, koordinat GPS, dan verifikasi foto')
+@section('header_subtitle', 'Validasi waktu presensi WITA, koordinat GPS, dan verifikasi foto')
 
-@section('header_right')
 
-    <div class="flex items-center space-x-3 bg-[#EEF2FF] px-3.5 py-1.5 rounded-2xl border border-emerald-100/80 shadow-2xs">
-        <div class="flex flex-col text-right">
-            <span class="text-xs font-bold text-[#1E1B4B] leading-tight">Administrator</span>
-            <span class="text-[11px] text-emerald-600 font-medium">Sekretariat</span>
-        </div>
-        <div class="w-8 h-8 rounded-full bg-[#4F46E5] text-white font-bold text-xs flex items-center justify-center shadow-xs">
-            AD
-        </div>
-    </div>
-@endsection
 
 @section('content')
 <div class="space-y-6">
@@ -112,7 +101,9 @@
                     <option value="Tepat Waktu">Tepat Waktu</option>
                     <option value="Terlambat">Terlambat</option>
                     <option value="Alpha">Alpha</option>
-                    <option value="Izin / Cuti">Izin / Cuti</option>
+                    <option value="Izin">Izin</option>
+                    <option value="Sakit">Sakit</option>
+                    <option value="Cuti">Cuti</option>
                     <option value="Dinas Luar">Dinas Luar</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">

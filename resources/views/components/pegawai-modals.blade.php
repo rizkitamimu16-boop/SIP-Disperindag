@@ -35,7 +35,7 @@
                     <span class="text-gray-900 font-bold">{{ auth()->user()->pegawai->nama ?? auth()->user()->name }} ({{ auth()->user()->pegawai->jabatan ?? 'Pegawai' }})</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-500 font-medium">Waktu Server:</span>
+                    <span class="text-gray-500 font-medium">Waktu Presensi:</span>
                     <span id="modalLiveClock" class="text-gray-900 font-bold">03:00:11 WITA</span>
                 </div>
             </div>
@@ -264,7 +264,7 @@
                 </button>
                 <button type="submit"
                     class="px-6 py-2.5 rounded-xl bg-[#0D2240] hover:bg-[#163660] text-white text-xs sm:text-sm font-bold shadow-md transition cursor-pointer">
-                    Kirim Laporan ke Database
+                    Kirim Laporan Kegiatan
                 </button>
             </div>
         </form>

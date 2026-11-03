@@ -50,6 +50,11 @@ class SkorKinerja extends Model
         return $this->pegawai();
     }
 
+    public function getPredikatAttribute(): ?string
+    {
+        return $this->kategori;
+    }
+
     public static function calculateLiveScore($pegawaiId, $periode)
     {
         $year = \Carbon\Carbon::parse($periode)->year;
@@ -68,48 +73,95 @@ class SkorKinerja extends Model
             $nilaiKehadiran = max(0, 100 - ($alphaCount * 5) - ($terlambatCount * 2));
         }
 
-        $kegiatan = LaporanKegiatan::where('pegawai_id', $pegawaiId)
+        $allKegiatan = LaporanKegiatan::where('pegawai_id', $pegawaiId)
             ->whereYear('tanggal', $year)
             ->whereMonth('tanggal', $month)
-            ->where('status_verifikasi', 'Disetujui')
             ->get();
+
+        $kegiatanDisetujui = $allKegiatan->where('status_verifikasi', 'Disetujui');
 
         $nilaiProduktivitas = 0;
         $nilaiKualitas = 0;
-        if ($kegiatan->count() > 0) {
-            $nilaiProduktivitas = $kegiatan->avg('nilai_produktivitas');
-            $nilaiKualitas = $kegiatan->avg('nilai_kualitas');
+        $statusKinerja = 'Final';
+
+        if ($allKegiatan->count() > 0) {
+            $nilaiProduktivitas = $allKegiatan->avg('nilai_produktivitas') ?? 0;
+            
+            // Cek laporan yang disetujui
+            $ratedKegiatan = $kegiatanDisetujui->where('nilai_kualitas', '>', 0);
+            if ($ratedKegiatan->count() > 0) {
+                $nilaiKualitas = $ratedKegiatan->avg('nilai_kualitas');
+            }
+
+            // Jika ada kegiatan yang belum dinilai kualitasnya atau menunggu review (PRD §28)
+            $adaBelumDinilai = $allKegiatan->where('status_verifikasi', 'Menunggu Review')->count() > 0
+                || ($kegiatanDisetujui->count() > 0 && $kegiatanDisetujui->where('nilai_kualitas', '<=', 0)->count() > 0);
+
+            if ($adaBelumDinilai) {
+                $statusKinerja = 'Belum Lengkap';
+            }
         }
 
         $pengaturan = \App\Models\PengaturanKantor::getPengaturan();
-        $wKehadiran = $pengaturan->bobot_kehadiran / 100;
-        $wProduktivitas = $pengaturan->bobot_produktivitas / 100;
-        $wKualitas = $pengaturan->bobot_kualitas / 100;
+        $wKehadiran = ($pengaturan->bobot_kehadiran ?? 60.00) / 100;
+        $wProduktivitas = ($pengaturan->bobot_produktivitas ?? 25.00) / 100;
+        $wKualitas = ($pengaturan->bobot_kualitas ?? 15.00) / 100;
 
-        if ($presensi->count() == 0 && $kegiatan->count() == 0) {
+        if ($presensi->count() == 0 && $allKegiatan->count() == 0) {
             $nilaiAkhir = 0;
         } else {
-            $nilaiAkhir = ($nilaiKehadiran * $wKehadiran) + ($nilaiProduktivitas * $wProduktivitas) + ($nilaiKualitas * $wKualitas);
+            $nilaiAkhir = round(($nilaiKehadiran * $wKehadiran) + ($nilaiProduktivitas * $wProduktivitas) + ($nilaiKualitas * $wKualitas), 2);
         }
 
         if ($nilaiAkhir >= 90) {
             $kategori = 'Sangat Baik';
+            $rekomendasi = 'Diperpanjang';
         } elseif ($nilaiAkhir >= 80) {
             $kategori = 'Baik';
+            $rekomendasi = 'Diperpanjang';
         } elseif ($nilaiAkhir >= 70) {
             $kategori = 'Cukup';
+            $rekomendasi = 'Dipertimbangkan';
         } else {
             $kategori = 'Kurang';
+            $rekomendasi = 'Tidak Diperpanjang';
         }
 
         $scoreData = new self();
         $scoreData->pegawai_id = $pegawaiId;
         $scoreData->periode = $periode;
-        $scoreData->nilai_kehadiran = $nilaiKehadiran;
-        $scoreData->nilai_produktivitas = $nilaiProduktivitas;
-        $scoreData->nilai_kualitas = $nilaiKualitas;
-        $scoreData->nilai_akhir = $nilaiAkhir;
+        $scoreData->nilai_kehadiran = (float) $nilaiKehadiran;
+        $scoreData->nilai_produktivitas = (float) $nilaiProduktivitas;
+        $scoreData->nilai_kualitas = (float) $nilaiKualitas;
+        $scoreData->nilai_akhir = (float) $nilaiAkhir;
         $scoreData->kategori = $kategori;
+        $scoreData->status = $statusKinerja;
+        $scoreData->rekomendasi_kontrak = $rekomendasi;
         return $scoreData;
+    }
+
+    public static function simpanAtauPerbarui($pegawaiId, $periode): self
+    {
+        $live = self::calculateLiveScore($pegawaiId, $periode);
+        $pengaturan = \App\Models\PengaturanKantor::getPengaturan();
+
+        return self::updateOrCreate(
+            [
+                'pegawai_id' => $pegawaiId,
+                'periode'    => $periode,
+            ],
+            [
+                'nilai_kehadiran'     => $live->nilai_kehadiran,
+                'nilai_produktivitas' => $live->nilai_produktivitas,
+                'nilai_kualitas'      => $live->nilai_kualitas,
+                'bobot_kehadiran'     => $pengaturan->bobot_kehadiran ?? 60.00,
+                'bobot_produktivitas' => $pengaturan->bobot_produktivitas ?? 25.00,
+                'bobot_kualitas'      => $pengaturan->bobot_kualitas ?? 15.00,
+                'nilai_akhir'         => $live->nilai_akhir,
+                'kategori'            => $live->kategori,
+                'status'              => $live->status === 'Belum Lengkap' ? 'Draft' : 'Final',
+                'rekomendasi_kontrak' => $live->rekomendasi_kontrak,
+            ]
+        );
     }
 }

@@ -38,9 +38,9 @@ class KegiatanExport implements FromCollection, WithHeadings, WithMapping
         $reports = $query->get()->map(function($act) {
             return (object)[
                 'employee_name' => $act->pegawai->nama ?? '-',
-                'date' => $act->tanggal,
-                'activity_name' => $act->kegiatan,
-                'status' => strtolower($act->status_verifikasi),
+                'date'          => $act->tanggal,
+                'activity_name' => $act->nama_kegiatan ?? $act->kegiatan ?? '-',
+                'status'        => strtolower($act->status_verifikasi),
             ];
         });
 

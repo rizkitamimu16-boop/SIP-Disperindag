@@ -55,6 +55,14 @@ class AdminPengajuanController extends Controller
         $endDate = Carbon::parse($pengajuan->tanggal_selesai);
 
         if ($validated['status'] === 'Disetujui') {
+            // Pemetaan jenis pengajuan ke status presensi sesuai skema database enum('Hadir','Terlambat','Alpha','Izin','Cuti','Dinas Luar','Sakit')
+            $statusPresensi = match ($pengajuan->jenis) {
+                'Sakit'      => 'Sakit',
+                'Cuti'       => 'Cuti',
+                'Dinas Luar' => 'Dinas Luar',
+                default      => 'Izin',
+            };
+
             for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
                 Presensi::updateOrCreate(
                     [
@@ -62,7 +70,7 @@ class AdminPengajuanController extends Controller
                         'tanggal'    => $date->toDateString(),
                     ],
                     [
-                        'status' => $pengajuan->jenis,
+                        'status' => $statusPresensi,
                     ]
                 );
             }

@@ -2,7 +2,7 @@
 
 ## SISTEM INFORMASI ABSENSI DAN PENGUKURAN KINERJA PEGAWAI
 
-**Instansi:** Dinas Perindustrian dan Perdagangan Kota Gorontalo
+**Instansi:** Dinas Perdagangan dan Perindustrian Kota Gorontalo
 **Platform:** Web
 **Pengguna:** Admin dan Pegawai P3K
 **Versi:** Final Draft
@@ -215,6 +215,8 @@ Pengaturan Sistem
 
 ## 7.3 Akun Pegawai
 
+> **Penyesuaian implementasi:** username dibuat otomatis dari nama dan 4 digit akhir NIP; password awal dan hasil reset password adalah password default yang sama (bukan acak), dikirim lewat pesan sukses admin dan email.
+
 Pegawai tidak melakukan registrasi sendiri.
 
 Admin membuat akun melalui:
@@ -239,6 +241,8 @@ Pegawai → Hubungi Admin
 ---
 
 # 8. Login
+
+> **Penyesuaian implementasi:** login dapat memakai username atau email, dan form memiliki pilihan tab peran (Admin/Pegawai) yang bersifat opsional. Pembatasan 3 kali salah login belum diimplementasikan.
 
 Form login:
 
@@ -406,6 +410,8 @@ Pegawai tidak perlu melihat kembali foto absensi.
 
 # 15. Penyimpanan File
 
+> **Penyesuaian implementasi:** file disimpan langsung ke Laravel Storage (disk public) dari controller; FileStorageService belum dibuat.
+
 Penyimpanan utama:
 
 ```text
@@ -423,6 +429,8 @@ Tujuannya agar penyimpanan dapat dikembangkan ke Google Drive di kemudian hari t
 ---
 
 # 16. Aturan Absensi Datang
+
+> **Penyesuaian implementasi:** seluruh jam dan batas absensi dapat diatur melalui Pengaturan Sistem; angka pada PRD ini adalah ketentuan acuan, sedangkan nilai default aplikasi dan nilai aktif ditentukan Admin. Alpha dicatat otomatis oleh scheduler `absensi:alpha` (Senin-Jumat pukul 12:00 WITA) yang melewati hari libur nasional (API) dan pegawai yang pengajuannya masih Menunggu Review.
 
 Senin–Kamis:
 
@@ -486,6 +494,8 @@ Jadwal Jumat dapat diatur melalui Pengaturan Sistem.
 
 # 19. Status Absensi
 
+> **Penyesuaian implementasi:** status pulang pada aplikasi adalah Tepat Waktu dan Pulang Cepat (setara Pulang dan Pulang Lebih Awal). Status Incomplete belum diimplementasikan.
+
 Status sistem:
 
 ```text
@@ -520,6 +530,8 @@ Namun absensi tetap hanya dapat dilakukan dalam radius 50 meter.
 ---
 
 # 21. Modul Kegiatan Pegawai
+
+> **Penyesuaian implementasi:** foto bukti kegiatan bersifat opsional dengan ukuran maksimal 3 MB.
 
 Pegawai dapat membuat laporan kegiatan.
 
@@ -567,30 +579,37 @@ Dapat membuat laporan kegiatan tanpa absensi datang.
 
 Admin tidak mengisi nilai produktivitas secara manual.
 
-Produktivitas dihitung sistem berdasarkan data laporan kegiatan.
+Produktivitas dihitung sistem secara otomatis berdasarkan data laporan kegiatan yang dibuat oleh pegawai.
 
-Sistem menggunakan beberapa subindikator:
+Sistem menggunakan empat subindikator berbobot:
 
 ### 23.1 Kelengkapan Laporan — 25%
 
-Meliputi:
+Menilai kelengkapan isian laporan yang mencakup 4 elemen:
+* Nama kegiatan;
+* Deskripsi rincian kegiatan;
+* Tanggal pelaksanaan kegiatan;
+* Foto bukti kegiatan.
 
-* nama kegiatan;
-* deskripsi;
-* tanggal;
-* foto bukti.
+Masing-masing elemen bernilai 25 poin (total skor kelengkapan 0–100).
 
 ### 23.2 Bukti Kegiatan — 25%
 
-Menilai keberadaan dan validitas bukti kegiatan yang diunggah.
+Menilai keberadaan dan validitas berkas foto bukti kegiatan yang diunggah:
+* Memiliki foto bukti: 100 poin;
+* Tanpa foto bukti: 0 poin.
 
 ### 23.3 Ketepatan Waktu Pelaporan — 20%
 
-Menilai apakah laporan dibuat sesuai waktu/periode yang ditentukan.
+Menilai kesesuaian waktu pelaporan terhadap tanggal kegiatan:
+* Dilaporkan pada hari pelaksanaan (hari H): 100 poin;
+* Dilaporkan selambat-lambatnya 1 hari setelah kegiatan (H+1): 50 poin;
+* Terlambat lebih dari 1 hari (> H+1): 0 poin.
 
 ### 23.4 Jumlah Kegiatan — 30%
 
-Dihitung berdasarkan jumlah kegiatan yang dilaporkan dibandingkan target periode.
+Dihitung berdasarkan rasio kumulatif kegiatan yang dilaporkan terhadap target standar periode bulanan (target acuan: 20 kegiatan per bulan):
+* Skor = min(100, (Jumlah Kegiatan / Target Kegiatan) × 100).
 
 Contoh:
 
@@ -598,24 +617,17 @@ Contoh:
 Target = 20 kegiatan
 Realisasi = 18 kegiatan
 
-18 / 20 × 30
-= 27
+Skor Rasio = (18 / 20) × 100 = 90
+Kontribusi ke Total = 90 × 30% = 27
 ```
 
-Total produktivitas:
+### Formula Total Produktivitas:
 
 ```text
-Kelengkapan
-+ Bukti
-+ Ketepatan waktu
-+ Jumlah kegiatan
+Produktivitas = (Kelengkapan × 0,25) + (Bukti × 0,25) + (Ketepatan Waktu × 0,20) + (Jumlah Kegiatan × 0,30)
 ```
 
-Maksimum:
-
-```text
-100
-```
+Skor total berada pada rentang 0–100 dan dihitung otomatis saat laporan dibuat atau diperbarui.
 
 ---
 
@@ -655,6 +667,8 @@ Produktivitas ditampilkan otomatis.
 ---
 
 # 26. Penilaian Kualitas Kerja
+
+> **Penyesuaian implementasi:** laporan kegiatan memiliki status verifikasi (Menunggu Review, Disetujui, Ditolak) yang diisi Admin bersama nilai kualitas; hanya laporan berstatus Disetujui diperhitungkan dalam IKP.
 
 Admin tidak memiliki menu "Penilaian Khusus".
 
@@ -715,6 +729,8 @@ Kualitas kerja merupakan satu-satunya komponen IKP yang membutuhkan penilaian Ad
 
 # 28. Perhitungan IKP
 
+> **Implementasi sistem:** Nilai kehadiran dihitung dengan formula `max(0, 100 - (5 × jumlah Alpha) - (2 × jumlah Terlambat))` per bulan. Produktivitas dihitung dari rata-rata skor produktivitas laporan yang disetujui (bobot 25%). Kualitas dihitung dari rata-rata nilai kualitas yang diberikan Admin pada laporan yang disetujui (bobot 15%). Jika terdapat laporan kegiatan yang belum dinilai kualitasnya atau belum diverifikasi oleh Admin, status IKP secara konsisten ditandai sebagai **'Belum Lengkap'**. Snapshot IKP disimpan secara idempoten menggunakan metode update-or-create per periode bulanan pada tabel `skor_kinerja` (`performance_scores`).
+
 Setelah data tersedia:
 
 ```text
@@ -738,13 +754,13 @@ IKP =
 (Kualitas × 0,15)
 ```
 
-Jika kualitas belum dinilai:
+Jika terdapat laporan yang belum diverifikasi atau belum dinilai Admin:
 
 ```text
 Status IKP = Belum Lengkap
 ```
 
-Sistem tidak membuat nilai kualitas secara otomatis.
+Sistem tidak membuat nilai kualitas secara otomatis; penilaian kualitas tetap merupakan wewenang Admin.
 
 ---
 
@@ -821,74 +837,65 @@ Kualitas        80
 
 # 31. Modul Pelanggaran / SP
 
-Pegawai dapat melihat:
+Pegawai dapat melihat informasi kedisiplinan dan pelanggaran secara transparan:
 
-* jumlah Alpha;
-* status pelanggaran;
-* SP1;
-* SP2;
-* SP3;
-* riwayat SP.
+* jumlah akumulasi Alpha pada siklus berjalan;
+* status peringatan aktif;
+* riwayat Surat Peringatan (SP-1, SP-2, SP-3) yang telah **resmi diterbitkan** oleh Admin;
+* tautan unduh dokumen PDF Surat Peringatan resmi.
+
+Pegawai **tidak dapat melihat draf SP** yang belum diterbitkan.
 
 ---
 
-# 32. Aturan Alpha
+# 32. Aturan Alpha dan Siklus SP
 
-Alpha merupakan pelanggaran formal yang digunakan sebagai dasar SP.
+Alpha merupakan pelanggaran formal ketidakhadiran tanpa keterangan sah yang menjadi dasar penerbitan SP.
 
-Threshold:
-
-```text
-3 Alpha → SP1
-6 Alpha → SP2
-9 Alpha → SP3
-```
-
-Sistem menggunakan konsep **siklus SP**.
-
-Jika pegawai mendapatkan SP1 kemudian satu periode berikutnya bersih:
+Ambang batas (threshold):
 
 ```text
-Siklus SP di-reset.
+3 Alpha → SP-1 (Peringatan Pertama)
+6 Alpha → SP-2 (Peringatan Kedua)
+9 Alpha → SP-3 (Peringatan Ketiga / Terakhir)
 ```
 
-Jika pelanggaran berlanjut:
-
-```text
-SP1 → SP2 → SP3
-```
-
-Sistem memberikan notifikasi kepada Admin ketika threshold tercapai.
+Sistem menerapkan siklus SP semi-otomatis:
+* Penghitungan Alpha diakumulasikan dalam siklus berjalan.
+* Setiap kali akumulasi Alpha mencapai ambang batas (3, 6, atau 9) dan belum ada record SP pada tingkat tersebut, sistem secara otomatis dan idempoten membuat **draf SP**.
+* Pembuatan draf tidak menganggap SP telah diterbitkan.
 
 ---
 
 # 33. Penerbitan SP
 
-SP tidak langsung diterbitkan otomatis.
+SP bersifat **semiotomatis**: sistem mendeteksi ambang Alpha dan menyiapkan draf, kemudian Admin memverifikasi dan menerbitkan secara resmi.
 
-Alur:
+Alur penerbitan:
 
 ```text
-Alpha mencapai threshold
+Akumulasi Alpha mencapai ambang (3/6/9)
         ↓
-Sistem memberi notifikasi
+Sistem membuat draf SP idempoten (nomor surat kosong)
         ↓
-Admin memeriksa
+Admin memeriksa draf pada menu Surat Peringatan
         ↓
-Admin klik Terbitkan SP
+Admin mengisi nomor surat resmi & tanggal terbit
         ↓
-Sistem membuat dokumen SP
+Admin menekan tombol 'Terbitkan SP'
         ↓
-SP tersimpan
+SP resmi aktif dan tersimpan (nomor surat terisi)
+        ↓
+Pegawai dapat melihat SP dan mengunduh PDF resmi
 ```
 
 Admin dapat:
+* memfilter daftar SP (Semua, Draf, Terbit, serta tingkat SP-1/SP-2/SP-3);
+* memeriksa alasan dan rincian pelanggaran pegawai;
+* mengisi nomor surat agenda dinas dan tanggal penerbitan resmi;
+* mengunduh dan mencetak dokumen PDF SP resmi.
 
-* melihat;
-* mencetak;
-* download PDF.
-
-Pegawai dapat melihat SP yang telah diterbitkan.
+Dokumen PDF SP mencakup kop resmi instansi Dinas Perdagangan dan Perindustrian Kota Gorontalo, konsiderans pelanggaran, klausul kewajiban/sanksi, dan tanda tangan pejabat berwenang.
 
 ---
 
@@ -1074,22 +1081,21 @@ Lihat Detail
 
 # 40. Pusat Laporan
 
-Laporan yang tersedia:
+> **Implementasi sistem:** Pusat Laporan menyediakan 4 tab aktif utama yang beroperasi penuh: Laporan Absensi, Laporan Kinerja, Laporan Kegiatan, dan Laporan Surat Peringatan. Masing-masing tab mendukung ekspor berkas valid dalam format **Excel (.xlsx)** dan **PDF (.pdf)** dengan filter periode, bulan, tahun, bidang, atau pegawai.
 
-1. Laporan Absensi;
-2. Laporan Kinerja;
-3. Laporan Kegiatan;
-4. Laporan Pengajuan;
-5. Laporan Alpha;
-6. Laporan SP;
-7. Data Pegawai.
+Tab laporan yang beroperasi penuh:
 
-Format:
+1. **Laporan Absensi**: rekapitulasi kehadiran harian/bulanan (Hadir, Terlambat, Izin, Cuti, Dinas Luar, Alpha) per pegawai atau bidang (Excel & PDF);
+2. **Laporan Kinerja**: rekapitulasi skor kehadiran, produktivitas, kualitas, nilai akhir IKP, dan kategori kinerja (Excel & PDF);
+3. **Laporan Kegiatan**: rekapitulasi pelaporan kegiatan pegawai, rincian aktivitas, status persetujuan, dan skor produktivitas (Excel & PDF);
+4. **Laporan Surat Peringatan (SP)**: rekapitulasi data pelanggaran disiplin dan daftar SP yang telah diterbitkan (Excel & PDF).
 
-```text
-Excel
-PDF
-```
+Fitur ekspor pada portal Pegawai:
+* Riwayat Absensi (PDF);
+* Laporan Kegiatan (PDF);
+* Surat Peringatan resmi (PDF).
+
+Seluruh berkas ekspor menghasilkan file biner yang valid (.xlsx dapat dibuka oleh parser spreadsheet dan .pdf memiliki struktur stream yang sah).
 
 ---
 
@@ -1142,6 +1148,8 @@ Total wajib:
 ---
 
 # 42. Database
+
+> **Penyesuaian implementasi:** nama tabel pada implementasi memakai bahasa Indonesia: users = pengguna, employees = pegawai, attendances = presensi, activity_reports = laporan_kegiatan, leave_requests = pengajuan_izin, performance_scores = skor_kinerja, alpha_records = catatan_alpha, sp_letters = surat_peringatan, office_settings = pengaturan_kantor.
 
 Database dibuat sederhana, normalisasi secukupnya, dan mudah digunakan dalam Laravel Migration.
 
@@ -1597,6 +1605,8 @@ PDF
 
 # 60. Tailwind CSS
 
+> **Penyesuaian implementasi:** implementasi memakai Tailwind CSS 4 melalui plugin Vite (@tailwindcss/vite) dengan build lokal, bukan Tailwind CLI mandiri, dan tidak memakai CDN Tailwind. Chart.js dan SweetAlert2 dimuat dari CDN. Foto absensi diambil melalui input file dengan atribut capture, bukan Camera API (getUserMedia).
+
 Tailwind wajib menggunakan CLI.
 
 Instalasi:
@@ -1750,13 +1760,8 @@ Sistem dianggap memenuhi kebutuhan apabila:
 
 # 65. Catatan Revisi & Penyesuaian Fitur
 1. **Pembaruan Kolom Identitas Pegawai**: Penamaan NIK diubah menjadi NIP (Nomor Induk Pegawai) untuk relevansi administrasi PPPK.
-2. **Kategori Bidang Resmi**: Sistem secara ketat hanya menggunakan 4 bidang instansi:
-   * Perindustrian
-   * Perdagangan
-   * Sekretariat
-   * Perlindungan Konsumen
-3. **Template & Otomatisasi SP**: Terdapat penambahan fitur "Kelola Template SP" pada Dashboard Admin yang memungkinkan pembuatan/generasi Surat Peringatan (SP) secara otomatis berdasarkan riwayat pelanggaran.
-4. **Pembaruan Filter UI**:
-   * *Admin Laporan Kegiatan*: Ditambahkan pencarian / filter spesifik berdasarkan Nama Pegawai.
-   * *Admin Indeks Kinerja*: Ditambahkan filter berdasarkan Bulan, Tahun, dan Nama/Bidang untuk rekapitulasi grafik chart secara interaktif.
-5. **Aksesibilitas Surat Peringatan Pegawai**: Teks indikator nihil SP diubah menjadi "KOSONG", dan Pegawai kini dapat melihat tabel/list riwayat seluruh SP yang telah diterbitkan Admin di panel pelanggaran.
+2. **Kategori Bidang Resmi**: Sistem secara ketat hanya menggunakan 4 bidang instansi: Perindustrian, Perdagangan, Sekretariat, dan Perlindungan Konsumen.
+3. **Otomatisasi dan Siklus Surat Peringatan (SP)**: SP diimplementasikan secara semiotomatis dengan ambang 3 Alpha (SP-1), 6 Alpha (SP-2), dan 9 Alpha (SP-3). Sistem menghasilkan draf idempoten saat ambang tercapai, dan Admin memverifikasi serta menerbitkan dengan mengisi nomor surat dinas. Pegawai hanya dapat mengakses SP yang telah diterbitkan.
+4. **Formula 4 Subindikator Produktivitas**: Produktivitas dihitung otomatis dari laporan kegiatan berdasarkan kelengkapan (25%), keberadaan bukti kegiatan (25%), ketepatan waktu pelaporan hari H/H+1 (20%), dan rasio target bulanan (30%).
+5. **Status IKP 'Belum Lengkap' dan Snapshot Historis**: IKP menerapkan status 'Belum Lengkap' jika terdapat laporan kegiatan yang belum diverifikasi/dinilai kualitasnya oleh Admin. Snapshot bulanan disimpan secara idempoten pada tabel `skor_kinerja` (`performance_scores`).
+6. **Pusat Laporan & Ekspor Utuh**: Seluruh tombol ekspor pada 4 tab Pusat Laporan (Absensi, Kinerja, Kegiatan, SP) dan panel Pegawai telah terhubung penuh ke controller ekspor dan menghasilkan berkas Excel (.xlsx) dan PDF (.pdf) yang valid dan dapat dibuka.

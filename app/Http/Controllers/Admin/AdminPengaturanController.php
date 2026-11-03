@@ -54,7 +54,7 @@ class AdminPengaturanController extends Controller
         $pengaturan->is_wfh_jumat = $request->has('is_wfh_jumat');
         $pengaturan->save();
 
-        return back()->with('success', 'Konfigurasi parameter sistem Disperindag berhasil diperbarui ke database!');
+        return back()->with('success', 'Konfigurasi parameter sistem Disperindag berhasil diperbarui!');
     }
 
     public function storeAdmin(Request $request): RedirectResponse

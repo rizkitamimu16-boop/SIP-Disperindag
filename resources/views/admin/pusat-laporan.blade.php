@@ -5,18 +5,7 @@
 @section('header_title', 'Pusat Rekapitulasi Laporan')
 @section('header_subtitle', 'Pilih format laporan absensi dan kinerja resmi untuk arsip dinas')
 
-@section('header_right')
 
-    <div class="flex items-center space-x-3 bg-[#EEF2FF] px-3.5 py-1.5 rounded-2xl border border-emerald-100/80 shadow-2xs">
-        <div class="flex flex-col text-right">
-            <span class="text-xs font-bold text-[#1E1B4B] leading-tight">Administrator</span>
-            <span class="text-[11px] text-emerald-600 font-medium">Sekretariat</span>
-        </div>
-        <div class="w-8 h-8 rounded-full bg-[#4F46E5] text-white font-bold text-xs flex items-center justify-center shadow-xs">
-            AD
-        </div>
-    </div>
-@endsection
 
 @section('content')
 <div class="space-y-6">
@@ -581,8 +570,11 @@
                                         <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-xs">{{ $row->status ?? 'Terbit' }}</span>
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-center space-x-1.5">
-                                        <button type="button" onclick="alert('Mengunduh dokumen Surat Peringatan (Format .docx)...')" class="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-semibold transition cursor-pointer">Word</button>
-                                        <button type="button" onclick="alert('Mengunduh berkas Surat Peringatan resmi (.pdf)...')" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-semibold transition cursor-pointer">PDF</button>
+                                        @if(!empty($row->id) && !empty($row->letter_number))
+                                            <a href="{{ route('admin.surat-peringatan.pdf', $row->id) }}" target="_blank" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-semibold transition cursor-pointer">Unduh PDF</a>
+                                        @else
+                                            <span class="text-xs text-gray-400 italic">Draf</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty

@@ -5,18 +5,7 @@
 @section('header_title', 'Indeks Kinerja & Kedisiplinan')
 @section('header_subtitle', 'Pantau evaluasi kinerja dan ranking pegawai')
 
-@section('header_right')
 
-    <div class="flex items-center space-x-3 bg-[#EEF2FF] px-3.5 py-1.5 rounded-2xl border border-emerald-100/80 shadow-2xs">
-        <div class="flex flex-col text-right">
-            <span class="text-xs font-bold text-[#1E1B4B] leading-tight">Administrator</span>
-            <span class="text-[11px] text-emerald-600 font-medium">Sekretariat</span>
-        </div>
-        <div class="w-8 h-8 rounded-full bg-[#4F46E5] text-white font-bold text-xs flex items-center justify-center shadow-xs">
-            AD
-        </div>
-    </div>
-@endsection
 
 @section('content')
 <div class="space-y-6">

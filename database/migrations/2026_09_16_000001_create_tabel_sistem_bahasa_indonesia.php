@@ -57,7 +57,8 @@ return new class extends Migration
                 'Alpha',
                 'Izin',
                 'Cuti',
-                'Dinas Luar'
+                'Dinas Luar',
+                'Sakit'
             ])->default('Hadir');
             $table->timestamps();
         });
@@ -141,7 +142,7 @@ return new class extends Migration
             $table->foreignId('pegawai_id')->constrained('pegawai')->cascadeOnDelete();
             $table->enum('tingkat_sp', ['SP-1', 'SP-2', 'SP-3']);
             $table->integer('jumlah_alpha');
-            $table->string('nomor_surat', 100);
+            $table->string('nomor_surat', 100)->default('');
             $table->date('tanggal_terbit');
             $table->string('dokumen')->nullable();
             $table->enum('status', ['Aktif', 'Selesai'])->default('Aktif');

@@ -75,29 +75,35 @@ class AdminLaporanController extends Controller
             $bidang = $request->get('bidang_kinerja');
             $kategori = $request->get('kategori_kinerja');
             
-            $query = SkorKinerja::with('pegawai')->where('periode', $month);
-            
+            $pegawaiQuery = Pegawai::where('status', 'Aktif');
             if ($bidang) {
-                $query->whereHas('pegawai', function($q) use ($bidang) {
-                    $q->where('bidang', $bidang);
-                });
+                $pegawaiQuery->where('bidang', $bidang);
             }
-            
-            $performanceReports = $query->get()->map(function($skor) {
+            $pegawaiList = $pegawaiQuery->get();
+
+            $performanceReports = $pegawaiList->map(function ($p) use ($month) {
+                $skor = SkorKinerja::where('pegawai_id', $p->id)
+                    ->where('periode', $month)
+                    ->first();
+
+                if (!$skor) {
+                    $skor = SkorKinerja::calculateLiveScore($p->id, $month);
+                }
+
                 return (object)[
-                    'employee_name' => $skor->pegawai->nama ?? '-',
-                    'department' => $skor->pegawai->bidang ?? '-',
-                    'ikp_score' => $skor->nilai_akhir,
-                    'predikat' => $skor->predikat,
+                    'employee_name' => $p->nama ?? '-',
+                    'department'    => $p->bidang ?? '-',
+                    'ikp_score'     => $skor->nilai_akhir ?? 0,
+                    'predikat'      => $skor->kategori ?? 'Kurang',
                 ];
             });
             
             if ($kategori && $kategori !== 'semua') {
                 $kategoriMap = [
                     'sangat_baik' => 'Sangat Baik',
-                    'baik' => 'Baik',
-                    'cukup' => 'Cukup',
-                    'kurang' => 'Kurang',
+                    'baik'        => 'Baik',
+                    'cukup'       => 'Cukup',
+                    'kurang'      => 'Kurang',
                 ];
                 if (isset($kategoriMap[$kategori])) {
                     $performanceReports = $performanceReports->where('predikat', $kategoriMap[$kategori])->values();
@@ -125,9 +131,9 @@ class AdminLaporanController extends Controller
             $activityReports = $query->get()->map(function($act) {
                 return (object)[
                     'employee_name' => $act->pegawai->nama ?? '-',
-                    'date' => $act->tanggal,
-                    'activity_name' => $act->kegiatan,
-                    'status' => strtolower($act->status_verifikasi),
+                    'date'          => $act->tanggal,
+                    'activity_name' => $act->nama_kegiatan ?? $act->kegiatan ?? '-',
+                    'status'        => strtolower($act->status_verifikasi),
                 ];
             });
         }
@@ -151,13 +157,14 @@ class AdminLaporanController extends Controller
             
             $spReports = $query->get()->map(function($sp) {
                 return (object)[
+                    'id'            => $sp->id,
                     'employee_name' => $sp->pegawai->nama ?? '-',
-                    'nip' => $sp->pegawai->nip ?? '-',
-                    'department' => $sp->pegawai->bidang ?? '-',
-                    'sp_level' => $sp->tingkat_sp,
+                    'nip'           => $sp->pegawai->nip ?? '-',
+                    'department'    => $sp->pegawai->bidang ?? '-',
+                    'sp_level'      => $sp->tingkat_sp,
                     'letter_number' => $sp->nomor_surat,
-                    'date_issued' => $sp->tanggal_terbit,
-                    'status' => $sp->status,
+                    'date_issued'   => $sp->tanggal_terbit,
+                    'status'        => $sp->status,
                 ];
             });
         }
@@ -174,9 +181,7 @@ class AdminLaporanController extends Controller
     public function export(Request $request, $format)
     {
         $activeTab = $request->get('tab', 'absensi');
-        
-        // This is a placeholder for actual export logic using maatwebsite/excel or dompdf.
-        // Once installed, we will generate the corresponding file.
+        $settings = \App\Models\PengaturanKantor::getPengaturan();
         
         if ($format === 'excel') {
             if ($activeTab === 'absensi') {
@@ -188,31 +193,31 @@ class AdminLaporanController extends Controller
             } elseif ($activeTab === 'sp') {
                 return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\SpExport($request), 'Laporan_Surat_Peringatan.xlsx');
             }
-            return back()->with('success', 'Fungsi Ekspor Excel siap diintegrasikan. (Data sedang diproses)');
+            return back()->with('error', 'Tab laporan tidak valid untuk ekspor Excel.');
         }
         
         if ($format === 'pdf') {
             if ($activeTab === 'absensi') {
                 $export = new \App\Exports\AbsensiExport($request);
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($export->viewName, $export->viewData)->setPaper('a4', 'landscape');
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($export->viewName, array_merge($export->viewData, ['settings' => $settings]))->setPaper('a4', 'landscape');
                 return $pdf->download('Laporan_Absensi_Pegawai.pdf');
             } elseif ($activeTab === 'kinerja') {
                 $export = new \App\Exports\KinerjaExport($request);
                 $reports = $export->collection();
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.kinerja-pdf', compact('reports'));
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.kinerja-pdf', compact('reports', 'settings'));
                 return $pdf->download('Laporan_Kinerja_Pegawai.pdf');
             } elseif ($activeTab === 'kegiatan') {
                 $export = new \App\Exports\KegiatanExport($request);
                 $reports = $export->collection();
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.kegiatan-pdf', compact('reports'));
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.kegiatan-pdf', compact('reports', 'settings'));
                 return $pdf->download('Laporan_Kegiatan_Pegawai.pdf');
             } elseif ($activeTab === 'sp') {
                 $export = new \App\Exports\SpExport($request);
                 $reports = $export->collection();
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.sp-pdf', compact('reports'));
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.exports.sp-pdf', compact('reports', 'settings'));
                 return $pdf->download('Laporan_Surat_Peringatan.pdf');
             }
-            return back()->with('success', 'Fungsi Ekspor PDF siap diintegrasikan. (Data sedang diproses)');
+            return back()->with('error', 'Tab laporan tidak valid untuk ekspor PDF.');
         }
         
         return back()->with('error', 'Format tidak valid');

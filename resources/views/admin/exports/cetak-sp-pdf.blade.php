@@ -21,19 +21,21 @@
 </head>
 <body>
     <div class="header">
-        <h2>PEMERINTAH {{ strtoupper($settings->nama_instansi ?? 'KABUPATEN') }}</h2>
-        <h3>{{ strtoupper($settings->nama_instansi ?? 'DINAS PERINDUSTRIAN DAN PERDAGANGAN') }}</h3>
-        <p>{{ $settings->alamat ?? 'Jl. Contoh Alamat No. 123' }} Telp. {{ $settings->telepon ?? '(021) 1234567' }}</p>
-        <p>Email: {{ $settings->email ?? 'info@disperindag.go.id' }}</p>
+        <h2>{{ strtoupper($settings->nama_instansi ?? 'PEMERINTAH KOTA GORONTALO') }}</h2>
+        <h3>{{ strtoupper($settings->nama_skpd ?? 'DINAS PERDAGANGAN DAN PERINDUSTRIAN KOTA GORONTALO') }}</h3>
+        <p>{{ $settings->alamat_kantor ?? $settings->alamat ?? 'Jl. Jend. Sudirman No. 24, Kota Gorontalo' }} Telp. {{ $settings->telepon_kantor ?? $settings->telepon ?? '(0435) 821-456' }}</p>
     </div>
 
     <div class="title">
-        <h3>SURAT PERINGATAN {{ substr($sp->tingkat_sp, 2) }} ({{ $sp->tingkat_sp }})</h3>
+        @php
+            $nomorTingkat = str_replace(['SP-', 'SP'], '', $sp->tingkat_sp);
+        @endphp
+        <h3>SURAT PERINGATAN KE-{{ $nomorTingkat }} ({{ $sp->tingkat_sp }})</h3>
         <p>Nomor: {{ $sp->nomor_surat }}</p>
     </div>
 
     <div class="content">
-        <p>Bersama surat ini, Kepala Dinas Perindustrian dan Perdagangan memberikan Surat Peringatan kepada:</p>
+        <p>Bersama surat ini, Kepala {{ $settings->nama_skpd ?? 'Dinas Perdagangan dan Perindustrian Kota Gorontalo' }} memberikan Surat Peringatan kepada:</p>
         
         <table class="indent" style="width: 80%;">
             <tr>
@@ -69,7 +71,7 @@
             Sesuai dengan ketentuan dan peraturan yang berlaku di lingkungan Instansi, tindakan tersebut merupakan pelanggaran disiplin kerja. Melalui surat peringatan ini, kami mengharapkan Saudara/i untuk dapat memperbaiki kinerja dan kedisiplinan.
         </p>
         
-        @if($sp->tingkat_sp == 'SP3')
+        @if(in_array($sp->tingkat_sp, ['SP3', 'SP-3']))
         <p>
             Mengingat ini adalah Surat Peringatan ke-3 (Terakhir), apabila Saudara/i kembali mengulangi kesalahan atau pelanggaran disiplin kerja, maka Instansi akan mengambil tindakan tegas berupa pemutusan hubungan kerja (PHK) / pemberhentian.
         </p>

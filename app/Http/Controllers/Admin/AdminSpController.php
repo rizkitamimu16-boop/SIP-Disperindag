@@ -15,14 +15,26 @@ class AdminSpController extends Controller
 {
     public function index(Request $request): View
     {
+        // Deteksi ambang batas dan sinkronisasi draf SP otomatis
+        SuratPeringatan::syncAllDrafts();
+
         $query = SuratPeringatan::with('pegawai')->latest();
 
         if ($request->filled('sp_level')) {
-            $query->where('tingkat_sp', $request->sp_level);
+            $level = str_replace(['SP', '-'], '', $request->sp_level);
+            $query->where('tingkat_sp', 'SP-' . $level);
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            if ($request->status === 'Pending Review' || $request->status === 'Draft') {
+                $query->where(function ($q) {
+                    $q->whereNull('nomor_surat')->orWhere('nomor_surat', '');
+                });
+            } elseif ($request->status === 'Terbit' || $request->status === 'Aktif') {
+                $query->whereNotNull('nomor_surat')->where('nomor_surat', '!=', '');
+            } else {
+                $query->where('status', $request->status);
+            }
         }
 
         $spLetters = $query->get();
@@ -43,9 +55,9 @@ class AdminSpController extends Controller
         $sp = SuratPeringatan::findOrFail($id);
         
         $sp->update([
-            'nomor_surat' => $request->nomor_surat,
+            'nomor_surat'    => $request->nomor_surat,
             'tanggal_terbit' => Carbon::now()->format('Y-m-d'),
-            'status' => 'Terbit', // assuming 'Terbit' is in the database enum or just use 'Selesai' if that's what was in DB
+            'status'         => 'Aktif',
         ]);
 
         return back()->with('success', "Surat Peringatan {$sp->tingkat_sp} untuk pegawai {$sp->pegawai->nama} berhasil diterbitkan.");
@@ -55,7 +67,7 @@ class AdminSpController extends Controller
     {
         $sp = SuratPeringatan::with('pegawai')->findOrFail($id);
         
-        if ($sp->status !== 'Terbit' && $sp->status !== 'Selesai') {
+        if (empty($sp->nomor_surat)) {
             return back()->with('error', 'Surat Peringatan belum diterbitkan (belum ada nomor surat).');
         }
 

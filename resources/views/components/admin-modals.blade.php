@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between pb-3 border-b border-gray-100">
             <div>
                 <h3 class="text-base font-bold text-gray-900">Tambah Pegawai PPPK Baru</h3>
-                <p class="text-[11px] text-gray-500">Mendaftarkan data pegawai baru ke database Disperindag</p>
+                <p class="text-[11px] text-gray-500">Mendaftarkan data pegawai baru ke dalam sistem</p>
             </div>
             <button onclick="closeModal('modalTambahPegawai')"
                 class="text-gray-400 hover:text-gray-600 p-1 rounded-lg cursor-pointer">
@@ -47,38 +47,25 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                    <label class="block font-semibold text-gray-700 mb-1">Email Kedinasan <span class="text-red-500">*</span></label>
-                    <input type="email" name="email" placeholder="nama@disperindag.gorontalokota.go.id" required
-                        class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none">
-                </div>
-                <div>
-                    <label class="block font-semibold text-gray-700 mb-1">Nomor WhatsApp / HP</label>
-                    <input type="tel" name="no_hp" placeholder="08xxxxxxxxxx"
-                        class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none">
-                </div>
+            <div>
+                <label class="block font-semibold text-gray-700 mb-1">Email Kedinasan <span class="text-red-500">*</span></label>
+                <input type="email" name="email" placeholder="nama@disperindag.gorontalokota.go.id" required
+                    class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none">
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block font-semibold text-gray-700 mb-1">Username Login</label>
-                    <input type="text" name="username" placeholder="Otomatis jika kosong..."
+                    <input type="text" name="username" placeholder="Otomatis: [namadepan].123"
                         class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none font-mono">
-                    <span class="text-[10px] text-gray-400">Default: diambil dari nama & NIP</span>
+                    <span class="text-[10px] text-gray-400">Default: diambil dari nama depan (.123)</span>
                 </div>
                 <div>
                     <label class="block font-semibold text-gray-700 mb-1">Kata Sandi Awal</label>
-                    <input type="password" name="password" placeholder="Default: pegawai123"
+                    <input type="password" name="password" placeholder="Default: [namadepan].123"
                         class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none">
-                    <span class="text-[10px] text-gray-400">Kosongkan untuk kata sandi bawaan</span>
+                    <span class="text-[10px] text-gray-400">Sama dengan username pegawai</span>
                 </div>
-            </div>
-
-            <div>
-                <label class="block font-semibold text-gray-700 mb-1">Alamat Domisili</label>
-                <textarea name="alamat" rows="2" placeholder="Alamat tempat tinggal pegawai..."
-                    class="w-full p-2.5 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none"></textarea>
             </div>
 
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
@@ -89,7 +76,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Simpan Pegawai ke Database</span>
+                    <span>Simpan Data Pegawai</span>
                 </button>
             </div>
         </form>
@@ -163,19 +150,7 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 gap-3">
-                <div>
-                    <label class="block font-semibold text-gray-700 mb-1">Nomor WhatsApp / HP</label>
-                    <input type="tel" name="no_hp" id="edit_no_hp" placeholder="08xxxxxxxxxx"
-                        class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none">
-                </div>
-            </div>
 
-            <div>
-                <label class="block font-semibold text-gray-700 mb-1">Alamat Domisili</label>
-                <textarea name="alamat" id="edit_alamat" rows="2" placeholder="Alamat tempat tinggal pegawai..."
-                    class="w-full p-2.5 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none"></textarea>
-            </div>
 
             <div class="flex justify-end space-x-2 pt-3 border-t border-gray-100">
                 <button type="button" onclick="closeModal('modalEditPegawai')"
@@ -230,17 +205,9 @@
                     <span class="text-gray-400 block text-[10px]">Email Dinas</span>
                     <span id="detailEmail" class="font-bold text-gray-800 truncate block">-</span>
                 </div>
-                <div class="p-2.5 rounded-xl bg-slate-50 border border-gray-100">
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-gray-100 col-span-2">
                     <span class="text-gray-400 block text-[10px]">Status Kepegawaian</span>
                     <span id="detailStatus" class="font-bold text-emerald-700">Aktif</span>
-                </div>
-                <div class="p-2.5 rounded-xl bg-slate-50 border border-gray-100">
-                    <span class="text-gray-400 block text-[10px]">No. Handphone / WA</span>
-                    <span id="detailNoHp" class="font-bold text-gray-800 font-mono">-</span>
-                </div>
-                <div class="p-2.5 rounded-xl bg-slate-50 border border-gray-100 col-span-2">
-                    <span class="text-gray-400 block text-[10px]">Alamat Domisili</span>
-                    <span id="detailAlamat" class="font-bold text-gray-800 block text-xs">-</span>
                 </div>
             </div>
             <div class="flex justify-end pt-3 border-t border-gray-100">
@@ -282,7 +249,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p class="text-amber-800 leading-relaxed">
-                    Kata sandi akan diubah menjadi default: <code class="font-bold text-amber-900 bg-amber-100 px-1.5 py-0.5 rounded">pegawai123</code>
+                    Kata sandi akan diubah menjadi default: <code class="font-bold text-amber-900 bg-amber-100 px-1.5 py-0.5 rounded">[nama_depan].123</code>
                 </p>
             </div>
         </div>

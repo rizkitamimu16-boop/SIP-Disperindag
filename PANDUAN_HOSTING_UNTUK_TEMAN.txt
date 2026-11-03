@@ -1,0 +1,81 @@
+================================================================================
+PANDUAN DEPLOYMENT / HOSTING - APLIKASI SIP-PERFORMA DISPERDAGIN
+================================================================================
+
+Kepada Rekan Sysadmin / Developer yang membantu hosting project ini:
+File zip ini adalah aplikasi berbasis Laravel 11/13 + MySQL. Seluruh dependensi
+(folder vendor) dan CSS hasil build (public/css/app.css) SUDAH TERMASUK di dalam zip,
+sehingga TIDAK PERLU menjalankan 'npm run build'.
+
+Berikut panduan singkat & checklist agar aplikasi dapat langsung berjalan lancar:
+
+--------------------------------------------------------------------------------
+1. PERSYARATAN SERVER
+--------------------------------------------------------------------------------
+- Versi PHP: PHP 8.3 atau 8.4 (Wajib PHP >= 8.3).
+- Ekstensi PHP Wajib: pdo_mysql, gd (atau imagick), zip, mbstring, fileinfo, curl.
+- Web Server: Nginx / Apache / LiteSpeed.
+- Database: MySQL 8.x / MariaDB 10.4+.
+- SSL / HTTPS: WAJIB AKTIF (Fitur GPS & Kamera absen di-block browser jika non-HTTPS).
+
+--------------------------------------------------------------------------------
+2. DOCUMENT ROOT WEB SERVER
+--------------------------------------------------------------------------------
+- Arahkan Document Root domain/subdomain langsung ke folder:
+  /public
+  (Jangan mengarahkan ke root project demi keamanan file .env dan source code).
+
+--------------------------------------------------------------------------------
+3. SETUP DATABASE
+--------------------------------------------------------------------------------
+- Buat database baru di MySQL/cPanel/phpMyAdmin.
+- Import file database yang sudah disediakan di root project:
+  -> database_backup.sql
+  (Atau jika memakai terminal: php artisan migrate --seed)
+
+--------------------------------------------------------------------------------
+4. KONFIGURASI FILE .env
+--------------------------------------------------------------------------------
+- Salin / copy file '.env.example' menjadi '.env'
+- Sesuaikan konfigurasi berikut:
+  APP_NAME="SIP-PERFORMA DISPERDAGIN"
+  APP_ENV=production
+  APP_DEBUG=false
+  APP_URL=https://nama-domain-anda.com
+
+  DB_CONNECTION=mysql
+  DB_HOST=127.0.0.1
+  DB_PORT=3306
+  DB_DATABASE=nama_database_yang_dibuat
+  DB_USERNAME=user_database
+  DB_PASSWORD=password_database
+
+- Jika memiliki akses terminal/SSH, jalankan:
+  php artisan key:generate
+  (Atau jika tidak ada SSH, isi APP_KEY dengan string base64 32 karakter).
+
+--------------------------------------------------------------------------------
+5. STORAGE SYMLINK (WAJIB UNTUK FOTO ABSEN & DOKUMEN IZIN)
+--------------------------------------------------------------------------------
+- Jalankan perintah terminal:
+  php artisan storage:link
+- Jika di cPanel tanpa SSH, pastikan folder:
+  storage/
+  bootstrap/cache/
+  memiliki permission tulis (chmod 775 atau 755).
+
+--------------------------------------------------------------------------------
+6. CRON JOB (OTOMATISASI ALPHA JAM 12:00 WITA)
+--------------------------------------------------------------------------------
+- Pasang cron job pada server / cPanel setiap menit:
+  * * * * * cd /path/ke/folder/project && php artisan schedule:run >> /dev/null 2>&1
+  (Command yang dijadwalkan adalah 'absensi:alpha' pada hari kerja jam 12:00 WITA).
+
+--------------------------------------------------------------------------------
+7. KREDENSIAL LOGIN DEFAULT
+--------------------------------------------------------------------------------
+- Akun Administrator:
+  Username : admin
+  Password : admin123
+================================================================================
+

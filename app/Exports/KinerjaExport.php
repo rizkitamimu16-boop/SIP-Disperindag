@@ -24,29 +24,35 @@ class KinerjaExport implements FromCollection, WithHeadings, WithMapping
         $bidang = $this->request->get('bidang_kinerja');
         $kategori = $this->request->get('kategori_kinerja');
         
-        $query = \App\Models\SkorKinerja::with('pegawai')->where('periode', $month);
-        
+        $pegawaiQuery = Pegawai::where('status', 'Aktif');
         if ($bidang) {
-            $query->whereHas('pegawai', function($q) use ($bidang) {
-                $q->where('bidang', $bidang);
-            });
+            $pegawaiQuery->where('bidang', $bidang);
         }
-        
-        $reports = $query->get()->map(function($skor) {
+        $pegawaiList = $pegawaiQuery->get();
+
+        $reports = $pegawaiList->map(function ($p) use ($month) {
+            $skor = \App\Models\SkorKinerja::where('pegawai_id', $p->id)
+                ->where('periode', $month)
+                ->first();
+
+            if (!$skor) {
+                $skor = \App\Models\SkorKinerja::calculateLiveScore($p->id, $month);
+            }
+
             return (object)[
-                'employee_name' => $skor->pegawai->nama ?? '-',
-                'department' => $skor->pegawai->bidang ?? '-',
-                'ikp_score' => $skor->nilai_akhir,
-                'predikat' => $skor->predikat,
+                'employee_name' => $p->nama ?? '-',
+                'department'    => $p->bidang ?? '-',
+                'ikp_score'     => $skor->nilai_akhir ?? 0,
+                'predikat'      => $skor->kategori ?? 'Kurang',
             ];
         });
 
         if ($kategori && $kategori !== 'semua') {
             $kategoriMap = [
                 'sangat_baik' => 'Sangat Baik',
-                'baik' => 'Baik',
-                'cukup' => 'Cukup',
-                'kurang' => 'Kurang',
+                'baik'        => 'Baik',
+                'cukup'       => 'Cukup',
+                'kurang'      => 'Kurang',
             ];
             if (isset($kategoriMap[$kategori])) {
                 $reports = $reports->where('predikat', $kategoriMap[$kategori])->values();

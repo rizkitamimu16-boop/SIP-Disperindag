@@ -111,33 +111,11 @@ class AdminKinerjaController extends Controller
             ->get();
         $alphaCount = $presensi->where('status', 'Alpha')->count();
 
-        // OTOMATIS: Cek Pelanggaran Surat Peringatan (SP) secara live
-        // Supaya SP tetap ter-generate otomatis saat dihitung secara live
-        if ($alphaCount >= 3) {
-            $tingkatSp = 'SP1';
-            if ($alphaCount >= 9) {
-                $tingkatSp = 'SP3';
-            } elseif ($alphaCount >= 6) {
-                $tingkatSp = 'SP2';
-            }
+        // OTOMATIS: Cek Pelanggaran Surat Peringatan (SP) semiotomatis
+        \App\Models\SuratPeringatan::syncDraftSpForPegawai($pegawai);
 
-            // Cek apakah bulan ini sudah dibuatkan draf SP untuk pegawai tersebut
-            $existingSp = \App\Models\SuratPeringatan::where('pegawai_id', $pegawai->id)
-                ->where('tingkat_sp', $tingkatSp)
-                ->whereMonth('created_at', $month)
-                ->whereYear('created_at', $year)
-                ->first();
-
-            if (!$existingSp) {
-                \App\Models\SuratPeringatan::create([
-                    'pegawai_id' => $pegawai->id,
-                    'tingkat_sp' => $tingkatSp,
-                    'jumlah_alpha' => $alphaCount,
-                    'status' => 'Aktif',
-                    'created_at' => Carbon::createFromDate($year, $month, 1),
-                ]);
-            }
-        }
+        // OTOMATIS: Sinkronkan skor kinerja ke tabel skor_kinerja untuk riwayat dan pusat laporan
+        \App\Models\SkorKinerja::simpanAtauPerbarui($pegawai->id, $periode);
 
         $scoreData->status = 'Real-time';
         return $scoreData;

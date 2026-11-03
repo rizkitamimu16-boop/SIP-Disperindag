@@ -106,6 +106,14 @@ class PegawaiKegiatanController extends Controller
             $photoPath = $request->file('foto')->store('kegiatan', 'public');
         }
 
+        // Hitung skor produktivitas berdasarkan 4 subindikator PRD §23
+        $hasilProduktivitas = LaporanKegiatan::hitungProduktivitas([
+            'nama_kegiatan' => $validated['nama_kegiatan'],
+            'tanggal'       => $validated['tanggal'],
+            'deskripsi'     => $validated['deskripsi'],
+            'foto'          => $photoPath,
+        ], $employee->id);
+
         LaporanKegiatan::create([
             'pegawai_id'            => $employee->id,
             'tanggal'               => $validated['tanggal'],
@@ -113,8 +121,8 @@ class PegawaiKegiatanController extends Controller
             'deskripsi'             => $validated['deskripsi'],
             'foto'                  => $photoPath,
             'waktu_kirim'           => Carbon::now()->format('H:i:s'),
-            'nilai_produktivitas'   => 85.00,
-            'kategori_produktivitas' => 'Target Tercapai',
+            'nilai_produktivitas'   => $hasilProduktivitas['nilai'],
+            'kategori_produktivitas' => $hasilProduktivitas['kategori'],
             'status_verifikasi'     => 'Menunggu Review',
         ]);
 
