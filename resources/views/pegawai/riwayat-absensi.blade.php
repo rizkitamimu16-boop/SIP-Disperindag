@@ -39,35 +39,24 @@
 
 <!-- Tabel Riwayat Presensi -->
 <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
-    <!-- Indikator Geser untuk Layar Handphone -->
-    <div class="sm:hidden flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 px-3 py-2 border-b border-slate-100">
-        <span class="flex items-center gap-1.5 font-medium">
-            <svg class="w-4 h-4 text-sky-600 shrink-0 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-            </svg>
-            Geser tabel ke samping untuk melihat detail jam, jarak & foto
-        </span>
-        <span class="text-[10px] text-slate-400 font-semibold">&larr; &rarr;</span>
-    </div>
-
     <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs text-gray-700 whitespace-nowrap" style="min-width: 780px;">
+        <table class="w-full text-left text-xs text-gray-700">
             <thead class="bg-slate-50 text-gray-600 font-bold border-b border-gray-200">
                 <tr>
-                    <th class="p-3.5 sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Tanggal</th>
-                    <th class="p-3.5 whitespace-nowrap">Jam Masuk</th>
-                    <th class="p-3.5 whitespace-nowrap">Jarak Masuk</th>
-                    <th class="p-3.5 whitespace-nowrap">Jam Pulang</th>
-                    <th class="p-3.5 whitespace-nowrap">Jarak Pulang</th>
-                    <th class="p-3.5 whitespace-nowrap">Durasi Kerja</th>
-                    <th class="p-3.5 whitespace-nowrap">Status</th>
-                    <th class="p-3.5 text-center whitespace-nowrap">Foto</th>
+                    <th class="p-3.5">Tanggal</th>
+                    <th class="p-3.5">Jam Masuk</th>
+                    <th class="p-3.5">Jarak Masuk</th>
+                    <th class="p-3.5">Jam Pulang</th>
+                    <th class="p-3.5">Jarak Pulang</th>
+                    <th class="p-3.5">Durasi Kerja</th>
+                    <th class="p-3.5">Status</th>
+                    <th class="p-3.5 text-center">Foto</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
                 @forelse($attendances ?? [] as $att)
-                    <tr class="hover:bg-slate-50 transition group {{ strtolower($att->status ?? '') == 'dinas luar' ? 'bg-blue-50/20' : '' }}">
-                        <td class="p-3.5 font-bold text-gray-900 sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-[1px_0_0_0_#f1f5f9] whitespace-nowrap transition-colors">
+                    <tr class="hover:bg-slate-50 transition {{ strtolower($att->status ?? '') == 'dinas luar' ? 'bg-blue-50/20' : '' }}">
+                        <td class="p-3.5 font-bold text-gray-900">
                             {{ \Carbon\Carbon::parse($att->tanggal ?? now())->locale('id')->isoFormat('DD MMM Y (ddd)') }}
                         </td>
                         <td class="p-3.5 {{ strtolower($att->status ?? '') == 'terlambat' ? 'text-amber-600' : (strtolower($att->status ?? '') == 'dinas luar' ? 'text-blue-700' : 'text-emerald-700') }} font-semibold">
@@ -101,17 +90,17 @@
                                 -
                             @endif
                         </td>
-                        <td class="p-3.5">
+                        <td class="p-3.5 whitespace-nowrap">
                             @if(strtolower($att->status ?? '') == 'hadir')
-                                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Hadir Tepat Waktu</span>
+                                <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Hadir Tepat Waktu</span>
                             @elseif(strtolower($att->status ?? '') == 'terlambat')
-                                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Terlambat</span>
+                                <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Terlambat</span>
                             @elseif(strtolower($att->status ?? '') == 'dinas luar')
-                                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">Dinas Luar</span>
+                                <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">Dinas Luar</span>
                             @elseif(strtolower($att->status ?? '') == 'izin' || strtolower($att->status ?? '') == 'cuti' || strtolower($att->status ?? '') == 'sakit')
-                                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">{{ ucfirst($att->status) }}</span>
+                                <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">{{ ucfirst($att->status) }}</span>
                             @else
-                                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200">{{ ucfirst($att->status ?? 'Alpha') }}</span>
+                                <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200">{{ ucfirst($att->status ?? 'Alpha') }}</span>
                             @endif
                         </td>
                         <td class="p-3.5 text-center">

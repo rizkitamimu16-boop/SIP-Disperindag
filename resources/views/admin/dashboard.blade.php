@@ -183,26 +183,26 @@
                 </a>
             </div>
 
-            <div class="overflow-x-auto mt-4 rounded-xl border border-gray-50">
-                <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap" style="min-width: 580px;">
+            <div class="overflow-x-auto mt-4">
+                <table class="w-full text-left text-xs sm:text-sm">
                     <thead>
-                        <tr class="text-gray-500 font-medium text-xs border-b border-gray-100 bg-slate-50">
-                            <th class="py-3 px-3.5 font-medium sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Nama</th>
-                            <th class="py-3 px-3 font-medium whitespace-nowrap">Bidang</th>
-                            <th class="py-3 px-3 font-medium whitespace-nowrap">Datang</th>
-                            <th class="py-3 px-3 font-medium whitespace-nowrap">Pulang</th>
-                            <th class="py-3 px-3 font-medium text-center whitespace-nowrap">Status</th>
+                        <tr class="text-gray-500 font-medium text-xs border-b border-gray-100">
+                            <th class="py-3 px-3 font-medium">Nama</th>
+                            <th class="py-3 px-3 font-medium">Bidang</th>
+                            <th class="py-3 px-3 font-medium">Datang</th>
+                            <th class="py-3 px-3 font-medium">Pulang</th>
+                            <th class="py-3 px-3 font-medium text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50 text-gray-700">
                         @forelse($kehadiranHariIni ?? [] as $k)
-                        <tr class="hover:bg-slate-50/60 transition group">
-                            <td class="py-3.5 px-3.5 font-bold text-gray-900 sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-[1px_0_0_0_#f1f5f9] whitespace-nowrap transition-colors">{{ $k->pegawai->nama ?? $k->employee->name ?? '-' }}</td>
-                            <td class="py-3.5 px-3 text-gray-600 whitespace-nowrap">{{ $k->pegawai->bidang ?? $k->employee->department ?? '-' }}</td>
-                            <td class="py-3.5 px-3 text-gray-700 font-mono text-xs whitespace-nowrap">{{ $k->jam_masuk ? date('H:i', strtotime($k->jam_masuk)) : ($k->arrival_time ? date('H:i', strtotime($k->arrival_time)) : '-') }}</td>
-                            <td class="py-3.5 px-3 text-gray-700 font-mono text-xs whitespace-nowrap">{{ $k->jam_pulang ? date('H:i', strtotime($k->jam_pulang)) : ($k->checkout_time ? date('H:i', strtotime($k->checkout_time)) : '-') }}</td>
+                        <tr class="hover:bg-slate-50/60 transition">
+                            <td class="py-3.5 px-3 font-bold text-gray-900">{{ $k->pegawai->nama ?? $k->employee->name ?? '-' }}</td>
+                            <td class="py-3.5 px-3 text-gray-600">{{ $k->pegawai->bidang ?? $k->employee->department ?? '-' }}</td>
+                            <td class="py-3.5 px-3 text-gray-700 font-mono text-xs">{{ $k->jam_masuk ? date('H:i', strtotime($k->jam_masuk)) : ($k->arrival_time ? date('H:i', strtotime($k->arrival_time)) : '-') }}</td>
+                            <td class="py-3.5 px-3 text-gray-700 font-mono text-xs">{{ $k->jam_pulang ? date('H:i', strtotime($k->jam_pulang)) : ($k->checkout_time ? date('H:i', strtotime($k->checkout_time)) : '-') }}</td>
                             <td class="py-3.5 px-3 text-center whitespace-nowrap">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap {{ ($k->status_masuk ?? $k->arrival_status ?? '') === 'Tepat Waktu' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-amber-300 bg-amber-50 text-amber-700' }}">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap border {{ ($k->status_masuk ?? $k->arrival_status ?? '') === 'Tepat Waktu' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-amber-300 bg-amber-50 text-amber-700' }}">
                                     {{ $k->status_masuk ?? $k->arrival_status ?? $k->status ?? 'Hadir' }}
                                 </span>
                             </td>

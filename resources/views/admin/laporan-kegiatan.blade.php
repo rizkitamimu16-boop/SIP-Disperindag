@@ -260,24 +260,24 @@
                 id="totalKegiatanFiltered">Menampilkan {{ isset($activityReports) ? count($activityReports) : 0 }} laporan</span>
         </div>
 
-        <div class="overflow-x-auto mt-4 rounded-xl border border-gray-100">
-            <table class="w-full text-left text-xs sm:text-sm" style="min-width: 920px;">
+        <div class="overflow-x-auto mt-4">
+            <table class="w-full text-left text-xs sm:text-sm">
                 <thead class="bg-slate-50 text-gray-600 font-semibold border-b border-gray-200">
                     <tr>
-                        <th class="py-3 px-3.5 sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Pegawai</th>
-                        <th class="py-3 px-3 whitespace-nowrap">Tanggal</th>
-                        <th class="py-3 px-3 whitespace-nowrap">Nama Kegiatan</th>
-                        <th class="py-3 px-3 min-w-[200px]">Deskripsi</th>
-                        <th class="py-3 px-3 text-center whitespace-nowrap">Foto</th>
-                        <th class="py-3 px-3 text-center whitespace-nowrap">Produktivitas</th>
-                        <th class="py-3 px-3 text-center whitespace-nowrap">Kualitas</th>
-                        <th class="py-3 px-3 text-center whitespace-nowrap">Status</th>
-                        <th class="py-3 px-3 text-center whitespace-nowrap">Aksi</th>
+                        <th class="py-3 px-3">Pegawai</th>
+                        <th class="py-3 px-3">Tanggal</th>
+                        <th class="py-3 px-3">Nama Kegiatan</th>
+                        <th class="py-3 px-3">Deskripsi</th>
+                        <th class="py-3 px-3 text-center">Foto</th>
+                        <th class="py-3 px-3 text-center">Produktivitas</th>
+                        <th class="py-3 px-3 text-center">Kualitas</th>
+                        <th class="py-3 px-3 text-center">Status</th>
+                        <th class="py-3 px-3 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-gray-700" id="tabelKegiatanBody">
                     @forelse($activityReports ?? [] as $rep)
-                    <tr class="kegiatan-data-row hover:bg-slate-50/70 transition group"
+                    <tr class="kegiatan-data-row hover:bg-slate-50/70 transition"
                         data-nama="{{ $rep->pegawai->nama ?? '-' }}"
                         data-bidang="{{ $rep->pegawai->bidang ?? '-' }}"
                         data-kegiatan="{{ $rep->nama_kegiatan }}"
@@ -285,12 +285,12 @@
                         data-bulan="{{ $rep->tanggal ? date('m', strtotime($rep->tanggal)) : '' }}"
                         data-tahun="{{ $rep->tanggal ? date('Y', strtotime($rep->tanggal)) : '' }}"
                         data-status="{{ $rep->status_verifikasi }}">
-                        <td class="py-3.5 px-3.5 sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-[1px_0_0_0_#f1f5f9] whitespace-nowrap transition-colors">
+                        <td class="py-3.5 px-3">
                             <p class="font-bold text-gray-900">{{ $rep->pegawai->nama ?? '-' }}</p>
-                            <span class="text-[11px] text-gray-400">{{ $rep->pegawai->bidang ?? '-' }} • NIP {{ $rep->pegawai->nip ?? '-' }}</span>
+                            <span class="text-[11px] text-gray-400">NIP {{ $rep->pegawai->nip ?? '-' }}</span>
                         </td>
-                        <td class="py-3.5 px-3 text-gray-600 font-mono text-xs whitespace-nowrap">{{ $rep->tanggal ? \Carbon\Carbon::parse($rep->tanggal)->locale('id')->translatedFormat('l, d F Y') : '-' }}</td>
-                        <td class="py-3.5 px-3 font-bold text-gray-900 whitespace-nowrap">{{ $rep->nama_kegiatan }}</td>
+                        <td class="py-3.5 px-3 text-gray-600 font-mono text-xs">{{ $rep->tanggal ? \Carbon\Carbon::parse($rep->tanggal)->locale('id')->translatedFormat('l, d F Y') : '-' }}</td>
+                        <td class="py-3.5 px-3 font-bold text-gray-900">{{ $rep->nama_kegiatan }}</td>
                         <td class="py-3.5 px-3 text-gray-600">
                             <div class="max-h-24 overflow-y-auto whitespace-pre-wrap pr-2">{{ $rep->deskripsi }}</div>
                         </td>
@@ -314,18 +314,18 @@
                             <div class="font-bold {{ $rep->nilai_kualitas ? 'text-gray-900' : 'text-gray-400' }} text-sm">{{ $rep->nilai_kualitas ?? '-' }}</div>
                             <div class="text-[10px] text-blue-600 font-semibold">{{ $rep->kategori_kualitas ?? '' }}</div>
                         </td>
-                        <td class="py-3.5 px-3 text-center">
+                        <td class="py-3.5 px-3 text-center whitespace-nowrap">
                             @if(strtolower($rep->status_verifikasi) == 'menunggu review')
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold whitespace-nowrap">
                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-pulse"></span>
                                     Menunggu Review
                                 </span>
                             @elseif(strtolower($rep->status_verifikasi) == 'ditolak')
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-red-100 text-red-800 text-xs font-semibold">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-red-100 text-red-800 text-xs font-semibold whitespace-nowrap">
                                     Ditolak
                                 </span>
                             @else
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold whitespace-nowrap">
                                     Disetujui
                                 </span>
                             @endif

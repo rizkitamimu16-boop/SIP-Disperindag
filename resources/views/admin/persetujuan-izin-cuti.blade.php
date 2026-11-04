@@ -33,23 +33,23 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto mt-4 rounded-xl border border-gray-100">
-            <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap" style="min-width: 820px;">
+        <div class="overflow-x-auto mt-4">
+            <table class="w-full text-left text-xs sm:text-sm">
                 <thead class="bg-slate-50 text-gray-600 font-semibold border-b border-gray-200">
                     <tr>
-                        <th class="py-3 px-3.5 sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Pegawai</th>
-                        <th class="py-3 px-3 whitespace-nowrap">Jenis</th>
-                        <th class="py-3 px-3 whitespace-nowrap">Waktu Pelaksanaan</th>
-                        <th class="py-3 px-3 min-w-[200px]">Keterangan / Alasan</th>
-                        <th class="py-3 px-3 text-center whitespace-nowrap">Lampiran</th>
-                        <th class="py-3 px-3 whitespace-nowrap">Status</th>
-                        <th class="py-3 px-3 text-center whitespace-nowrap">Aksi</th>
+                        <th class="py-3 px-3">Pegawai</th>
+                        <th class="py-3 px-3">Jenis</th>
+                        <th class="py-3 px-3">Waktu Pelaksanaan</th>
+                        <th class="py-3 px-3">Keterangan / Alasan</th>
+                        <th class="py-3 px-3 text-center">Lampiran</th>
+                        <th class="py-3 px-3">Status</th>
+                        <th class="py-3 px-3 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-gray-700">
                     @forelse($leaveRequests ?? [] as $req)
-                    <tr class="hover:bg-slate-50/70 transition group">
-                        <td class="py-3.5 px-3.5 sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-[1px_0_0_0_#f1f5f9] whitespace-nowrap transition-colors">
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <td class="py-3.5 px-3">
                             <div class="flex items-center space-x-3">
                                 <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
                                     {{ strtoupper(substr($req->pegawai->nama ?? $req->employee->name ?? 'P', 0, 2)) }}
@@ -60,8 +60,8 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="py-3.5 px-3">
-                            <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-semibold">
+                        <td class="py-3.5 px-3 whitespace-nowrap">
+                            <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-semibold">
                                 {{ $req->jenis ?? $req->type }}
                             </span>
                         </td>
