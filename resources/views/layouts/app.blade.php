@@ -21,6 +21,28 @@
     <!-- SweetAlert2 untuk Notifikasi -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Global Responsive Table & Mobile Enhancements -->
+    <style>
+        /* Smooth momentum scrolling on iOS and Android */
+        .overflow-x-auto {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+        }
+        @media (max-width: 768px) {
+            .overflow-x-auto::-webkit-scrollbar {
+                height: 5px;
+            }
+            .overflow-x-auto::-webkit-scrollbar-track {
+                background: #f1f5f9;
+                border-radius: 4px;
+            }
+            .overflow-x-auto::-webkit-scrollbar-thumb {
+                background: #94a3b8;
+                border-radius: 4px;
+            }
+        }
+    </style>
+
     @stack('styles')
 </head>
 

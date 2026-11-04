@@ -103,11 +103,11 @@
         </form>
 
         <!-- Tabel Data Pegawai dari Database Real -->
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs sm:text-sm">
+        <div class="overflow-x-auto rounded-xl border border-gray-100">
+            <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap" style="min-width: 820px;">
                 <thead class="bg-slate-50 text-gray-600 font-semibold border-b border-gray-200">
                     <tr>
-                        <th class="py-3 px-3 whitespace-nowrap">Pegawai</th>
+                        <th class="py-3 px-3.5 sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Pegawai</th>
                         <th class="py-3 px-3 whitespace-nowrap">NIP</th>
                         <th class="py-3 px-3 whitespace-nowrap">Jabatan</th>
                         <th class="py-3 px-3 whitespace-nowrap">Bidang</th>
@@ -118,8 +118,8 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-gray-700" id="tabelPegawaiBody">
                     @forelse($employees ?? [] as $emp)
-                    <tr class="hover:bg-slate-50/70 transition">
-                        <td class="py-3.5 px-3">
+                    <tr class="hover:bg-slate-50/70 transition group">
+                        <td class="py-3.5 px-3.5 sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-[1px_0_0_0_#f1f5f9] whitespace-nowrap transition-colors">
                             <div class="flex items-center space-x-3">
                                 <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
                                     {{ strtoupper(substr($emp->nama ?? 'P', 0, 2)) }}

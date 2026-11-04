@@ -117,22 +117,33 @@
 </div>
 <!-- Tabel List Kegiatan Lengkap -->
 <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden mb-6">
+    <!-- Indikator Geser untuk Layar Handphone -->
+    <div class="sm:hidden flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 px-3 py-2 border-b border-slate-100">
+        <span class="flex items-center gap-1.5 font-medium">
+            <svg class="w-4 h-4 text-sky-600 shrink-0 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+            Geser tabel ke samping untuk melihat deskripsi, foto & aksi
+        </span>
+        <span class="text-[10px] text-slate-400 font-semibold">&larr; &rarr;</span>
+    </div>
+
     <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs text-gray-700">
+        <table class="w-full text-left text-xs text-gray-700" style="min-width: 800px;">
             <thead class="bg-slate-50 text-gray-600 font-bold border-b border-gray-200">
                 <tr>
-                    <th class="p-3.5">Tanggal &amp; Waktu</th>
-                    <th class="p-3.5">Nama Pekerjaan / Kegiatan</th>
-                    <th class="p-3.5">Deskripsi Hasil Pekerjaan</th>
-                    <th class="p-3.5 text-center">Dokumentasi</th>
-                    <th class="p-3.5">Status Penilaian</th>
-                    <th class="p-3.5 text-center">Aksi</th>
+                    <th class="p-3.5 sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Tanggal &amp; Waktu</th>
+                    <th class="p-3.5 whitespace-nowrap">Nama Pekerjaan / Kegiatan</th>
+                    <th class="p-3.5 min-w-[200px]">Deskripsi Hasil Pekerjaan</th>
+                    <th class="p-3.5 text-center whitespace-nowrap">Dokumentasi</th>
+                    <th class="p-3.5 whitespace-nowrap">Status Penilaian</th>
+                    <th class="p-3.5 text-center whitespace-nowrap">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200" id="tabelKegiatanBody">
                 @forelse($activities ?? [] as $rep)
-                    <tr class="hover:bg-slate-50 transition {{ strtolower($rep->status_verifikasi) == 'menunggu review' ? 'bg-amber-50/10' : '' }}">
-                        <td class="p-3.5 font-medium whitespace-nowrap">
+                    <tr class="hover:bg-slate-50 transition group {{ strtolower($rep->status_verifikasi) == 'menunggu review' ? 'bg-amber-50/10' : '' }}">
+                        <td class="p-3.5 font-medium whitespace-nowrap sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-[1px_0_0_0_#f1f5f9] transition-colors">
                             <p class="font-bold text-gray-900">{{ \Carbon\Carbon::parse($rep->tanggal)->locale('id')->isoFormat('DD MMM Y (ddd)') }}</p>
                             <p class="text-[11px] text-gray-500">{{ $rep->waktu_kirim ?? '-' }} WITA</p>
                         </td>

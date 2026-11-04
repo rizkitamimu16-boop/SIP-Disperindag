@@ -126,22 +126,22 @@
                     </div>
                 </div>
                 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left divide-y divide-gray-200 text-sm">
+                <div class="overflow-x-auto rounded-xl border border-gray-100">
+                    <table class="w-full text-left divide-y divide-gray-200 text-sm whitespace-nowrap" style="min-width: 650px;">
                         <thead class="bg-slate-50 text-gray-600 font-semibold border-b border-gray-200">
                             <tr>
-                                <th class="px-4 py-3 text-left">No</th>
-                                <th class="px-4 py-3 text-left">Nama Pegawai</th>
-                                <th class="px-4 py-3 text-left">NIP</th>
-                                <th class="px-4 py-3 text-left">Bidang</th>
-                                <th class="px-4 py-3 text-left">Total Hadir</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">No</th>
+                                <th class="px-4 py-3 text-left sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Nama Pegawai</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">NIP</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Bidang</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Total Hadir</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
                             @forelse($attendanceReports ?? [] as $idx => $row)
-                                <tr class="hover:bg-gray-50 transition">
+                                <tr class="hover:bg-gray-50 transition group">
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-500">{{ $idx + 1 }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap font-bold text-gray-900">{{ $row->employee_name ?? '-' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap font-bold text-gray-900 sticky left-0 bg-white group-hover:bg-gray-50 z-10 shadow-[1px_0_0_0_#f1f5f9] transition-colors">{{ $row->employee_name ?? '-' }}</td>
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-500">{{ $row->nip ?? '-' }}</td>
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-500">{{ $row->department ?? '-' }}</td>
                                     <td class="px-4 py-3 whitespace-nowrap"><span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-md font-bold text-xs">{{ $row->total_hadir ?? 0 }} Hari</span></td>
@@ -265,22 +265,22 @@
                     </div>
                 </div>
                 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left divide-y divide-gray-200 text-sm">
+                <div class="overflow-x-auto rounded-xl border border-gray-100">
+                    <table class="w-full text-left divide-y divide-gray-200 text-sm whitespace-nowrap" style="min-width: 650px;">
                         <thead class="bg-slate-50 text-gray-600 font-semibold border-b border-gray-200">
                             <tr>
-                                <th class="px-4 py-3 text-left">No</th>
-                                <th class="px-4 py-3 text-left">Nama Pegawai</th>
-                                <th class="px-4 py-3 text-left">Bidang</th>
-                                <th class="px-4 py-3 text-left">Indeks SKPD</th>
-                                <th class="px-4 py-3 text-left">Predikat</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">No</th>
+                                <th class="px-4 py-3 text-left sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Nama Pegawai</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Bidang</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Indeks SKPD</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Predikat</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
                             @forelse($performanceReports ?? [] as $idx => $row)
-                                <tr class="hover:bg-gray-50 transition">
+                                <tr class="hover:bg-gray-50 transition group">
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-500">{{ $idx + 1 }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap font-bold text-gray-900">{{ $row->employee_name ?? '-' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap font-bold text-gray-900 sticky left-0 bg-white group-hover:bg-gray-50 z-10 shadow-[1px_0_0_0_#f1f5f9] transition-colors">{{ $row->employee_name ?? '-' }}</td>
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-500">{{ $row->department ?? '-' }}</td>
                                     <td class="px-4 py-3 whitespace-nowrap font-bold text-gray-900">{{ number_format($row->ikp_score ?? 0, 1) }}</td>
                                     <td class="px-4 py-3 whitespace-nowrap">
@@ -402,22 +402,22 @@
                         </svg>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left divide-y divide-gray-200 text-sm">
+                <div class="overflow-x-auto rounded-xl border border-gray-100">
+                    <table class="w-full text-left divide-y divide-gray-200 text-sm whitespace-nowrap" style="min-width: 650px;">
                         <thead class="bg-slate-50 text-gray-600 font-semibold border-b border-gray-200">
                             <tr>
-                                <th class="px-4 py-3 text-left">No</th>
-                                <th class="px-4 py-3 text-left">Nama Pegawai</th>
-                                <th class="px-4 py-3 text-left">Tanggal</th>
-                                <th class="px-4 py-3 text-left w-1/3">Uraian Tugas</th>
-                                <th class="px-4 py-3 text-left">Status</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">No</th>
+                                <th class="px-4 py-3 text-left sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Nama Pegawai</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Tanggal</th>
+                                <th class="px-4 py-3 text-left w-1/3 min-w-[200px]">Uraian Tugas</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Status</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
                             @forelse($activityReports ?? [] as $idx => $row)
-                                <tr class="hover:bg-gray-50 transition">
+                                <tr class="hover:bg-gray-50 transition group">
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-500">{{ $idx + 1 }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap font-bold text-gray-900">{{ $row->employee_name ?? '-' }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap font-bold text-gray-900 sticky left-0 bg-white group-hover:bg-gray-50 z-10 shadow-[1px_0_0_0_#f1f5f9] transition-colors">{{ $row->employee_name ?? '-' }}</td>
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-500">{{ \Carbon\Carbon::parse($row->date ?? now())->locale('id')->isoFormat('DD MMM Y') }}</td>
                                     <td class="px-4 py-3 text-gray-500">{{ $row->activity_name ?? ($row->description ?? '-') }}</td>
                                     <td class="px-4 py-3 whitespace-nowrap">
@@ -536,25 +536,25 @@
                         </svg>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left divide-y divide-gray-200 text-sm">
+                <div class="overflow-x-auto rounded-xl border border-gray-100">
+                    <table class="w-full text-left divide-y divide-gray-200 text-sm whitespace-nowrap" style="min-width: 750px;">
                         <thead class="bg-slate-50 text-gray-600 font-semibold border-b border-gray-200">
                             <tr>
-                                <th class="px-4 py-3 text-left">No</th>
-                                <th class="px-4 py-3 text-left">Nama Pegawai</th>
-                                <th class="px-4 py-3 text-left">Bidang</th>
-                                <th class="px-4 py-3 text-left">Tingkat SP</th>
-                                <th class="px-4 py-3 text-left">Nomor Surat</th>
-                                <th class="px-4 py-3 text-left">Tanggal Terbit</th>
-                                <th class="px-4 py-3 text-left">Status</th>
-                                <th class="px-4 py-3 text-center">Dokumen SP</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">No</th>
+                                <th class="px-4 py-3 text-left sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Nama Pegawai</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Bidang</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Tingkat SP</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Nomor Surat</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Tanggal Terbit</th>
+                                <th class="px-4 py-3 text-left whitespace-nowrap">Status</th>
+                                <th class="px-4 py-3 text-center whitespace-nowrap">Dokumen SP</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
                             @forelse($spReports ?? [] as $idx => $row)
-                                <tr class="hover:bg-gray-50 transition">
+                                <tr class="hover:bg-gray-50 transition group">
                                     <td class="px-4 py-3 whitespace-nowrap text-gray-500">{{ $idx + 1 }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
+                                    <td class="px-4 py-3 whitespace-nowrap sticky left-0 bg-white group-hover:bg-gray-50 z-10 shadow-[1px_0_0_0_#f1f5f9] transition-colors">
                                         <div class="font-bold text-gray-900">{{ $row->employee_name ?? '-' }}</div>
                                         <div class="text-[11px] text-gray-400">NIP: {{ $row->nip ?? '-' }}</div>
                                     </td>

@@ -113,31 +113,31 @@
                 September 2026</span>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs sm:text-sm">
+        <div class="overflow-x-auto rounded-xl border border-gray-100">
+            <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap" style="min-width: 720px;">
                 <thead class="bg-slate-50 text-gray-600 font-semibold border-b border-gray-200">
                     <tr>
-                        <th class="py-3 px-3 text-center">Rank</th>
-                        <th class="py-3 px-3">Pegawai</th>
-                        <th class="py-3 px-3 text-center">Indeks Akhir</th>
-                        <th class="py-3 px-3 text-center">Skor Kehadiran</th>
-                        <th class="py-3 px-3 text-center">Skor Laporan</th>
-                        <th class="py-3 px-3">Kategori</th>
+                        <th class="py-3 px-3 text-center whitespace-nowrap">Rank</th>
+                        <th class="py-3 px-3.5 sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Pegawai</th>
+                        <th class="py-3 px-3 text-center whitespace-nowrap">Indeks Akhir</th>
+                        <th class="py-3 px-3 text-center whitespace-nowrap">Skor Kehadiran</th>
+                        <th class="py-3 px-3 text-center whitespace-nowrap">Skor Laporan</th>
+                        <th class="py-3 px-3 whitespace-nowrap">Kategori</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-gray-700">
                     @forelse($scores ?? [] as $idx => $ps)
-                    <tr class="hover:bg-slate-50/70 transition">
-                        <td class="py-3.5 px-3 text-center font-bold text-gray-700">
+                    <tr class="hover:bg-slate-50/70 transition group">
+                        <td class="py-3.5 px-3 text-center font-bold text-gray-700 whitespace-nowrap">
                             @if($idx === 0) 🥇 1
                             @elseif($idx === 1) 🥈 2
                             @elseif($idx === 2) 🥉 3
                             @else {{ $idx + 1 }}
                             @endif
                         </td>
-                        <td class="py-3.5 px-3">
+                        <td class="py-3.5 px-3.5 sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-[1px_0_0_0_#f1f5f9] whitespace-nowrap transition-colors">
                             <p class="font-bold text-gray-900">{{ $ps->pegawai->nama ?? '-' }}</p>
-                            <span class="text-[11px] text-gray-400">NIP {{ $ps->pegawai->nip ?? '-' }} • {{ $ps->pegawai->bidang ?? '-' }}</span>
+                            <span class="text-[11px] text-gray-400">{{ $ps->pegawai->bidang ?? '-' }} • NIP {{ $ps->pegawai->nip ?? '-' }}</span>
                         </td>
                         <td class="py-3.5 px-3 text-center font-black {{ ($ps->nilai_akhir ?? 0) >= 80 ? 'text-emerald-700' : (($ps->nilai_akhir ?? 0) >= 70 ? 'text-blue-700' : 'text-rose-600') }} text-base">
                             {{ number_format($ps->nilai_akhir ?? 0, 1) }}

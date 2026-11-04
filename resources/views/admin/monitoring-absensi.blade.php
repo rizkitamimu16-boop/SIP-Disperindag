@@ -134,29 +134,41 @@
     </div>
 
     <!-- KARTU TABEL REKAP PRESENSI -->
-    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-2xs">
-        <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-gray-200 shadow-2xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 gap-2">
             <div>
                 <h3 class="text-base font-bold text-gray-900">Rekap Presensi Harian Pegawai</h3>
-                <p class="text-xs text-gray-500 mt-0.5">Daftar presensi terverifikasi radius geofence &le;
-                    50m</p>
+                <p class="text-xs text-gray-500 mt-0.5">Daftar presensi terverifikasi radius geofence &le; 50m</p>
             </div>
-            <span class="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg"
-                id="totalAbsensiFiltered">Menampilkan {{ isset($attendances) ? count($attendances) : 0 }} pegawai</span>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg"
+                    id="totalAbsensiFiltered">Menampilkan {{ isset($attendances) ? count($attendances) : 0 }} pegawai</span>
+            </div>
         </div>
 
-        <div class="overflow-x-auto mt-4">
-            <table class="w-full text-left text-xs sm:text-sm">
+        <!-- Indikator Geser untuk Layar Handphone -->
+        <div class="sm:hidden flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 px-3 py-2 rounded-xl mt-3 border border-slate-100">
+            <span class="flex items-center gap-1.5 font-medium">
+                <svg class="w-4 h-4 text-sky-600 shrink-0 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                Geser tabel ke samping untuk melihat detail lengkap & foto
+            </span>
+            <span class="text-[10px] text-slate-400 font-semibold">&larr; &rarr;</span>
+        </div>
+
+        <div class="overflow-x-auto mt-4 rounded-xl border border-gray-100">
+            <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap" style="min-width: 860px;">
                 <thead class="bg-slate-50 text-gray-600 font-semibold border-b border-gray-200">
                     <tr>
-                        <th class="py-3 px-3">Pegawai</th>
-                        <th class="py-3 px-3">Tanggal</th>
-                        <th class="py-3 px-3">Datang</th>
-                        <th class="py-3 px-3">Status Datang</th>
-                        <th class="py-3 px-3">Jarak Geofence</th>
-                        <th class="py-3 px-3">Pulang</th>
-                        <th class="py-3 px-3">Status Pulang</th>
-                        <th class="py-3 px-3 text-center">Bukti Selfie</th>
+                        <th class="py-3 px-3.5 sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Pegawai</th>
+                        <th class="py-3 px-3 whitespace-nowrap">Tanggal</th>
+                        <th class="py-3 px-3 whitespace-nowrap">Datang</th>
+                        <th class="py-3 px-3 whitespace-nowrap">Status Datang</th>
+                        <th class="py-3 px-3 whitespace-nowrap">Jarak Geofence</th>
+                        <th class="py-3 px-3 whitespace-nowrap">Pulang</th>
+                        <th class="py-3 px-3 whitespace-nowrap">Status Pulang</th>
+                        <th class="py-3 px-3 text-center whitespace-nowrap">Bukti Selfie</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-gray-700" id="tabelAbsensiBody">
@@ -164,20 +176,20 @@
                     @php
                         $isIzin = in_array($att->status, ['Izin', 'Cuti', 'Sakit', 'Dinas Luar']);
                     @endphp
-                    <tr class="data-row hover:bg-slate-50/70 transition" data-nama="{{ $att->pegawai->nama ?? '-' }}"
+                    <tr class="data-row hover:bg-slate-50/70 transition group" data-nama="{{ $att->pegawai->nama ?? '-' }}"
                         data-status="{{ $att->status ?? 'Hadir' }}" data-bidang="{{ $att->pegawai->bidang ?? '-' }}"
                         data-tanggal="{{ date('Y-m-d', strtotime($att->tanggal)) }}" data-bulan="{{ date('m', strtotime($att->tanggal)) }}"
                         data-tahun="{{ date('Y', strtotime($att->tanggal)) }}">
-                        <td class="py-3.5 px-3">
+                        <td class="py-3.5 px-3.5 sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-[1px_0_0_0_#f1f5f9] whitespace-nowrap transition-colors">
                             <p class="font-bold text-gray-900">{{ $att->pegawai->nama ?? '-' }}</p>
                             <span class="text-[11px] text-gray-400">{{ $att->pegawai->bidang ?? '-' }} • NIP {{ $att->pegawai->nip ?? '-' }}</span>
                         </td>
-                        <td class="py-3.5 px-3 text-gray-600 font-mono text-xs">
+                        <td class="py-3.5 px-3 text-gray-600 font-mono text-xs whitespace-nowrap">
                             {{ $att->tanggal ? \Carbon\Carbon::parse($att->tanggal)->locale('id')->translatedFormat('l, d F Y') : '-' }}
                         </td>
                         
                         @if($isIzin)
-                        <td colspan="7" class="py-3.5 px-3">
+                        <td colspan="6" class="py-3.5 px-3 whitespace-nowrap">
                             <div class="w-full flex items-center justify-center p-2 rounded-lg bg-blue-50 border border-blue-100">
                                 <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -186,42 +198,42 @@
                             </div>
                         </td>
                         @else
-                        <td class="py-3.5 px-3 text-emerald-700 font-bold">{{ $att->jam_masuk ? date('H:i', strtotime($att->jam_masuk)).' WITA' : '-' }}</td>
-                        <td class="py-3.5 px-3">
-                            <span class="px-2.5 py-1 rounded-full {{ ($att->status_masuk ?? '') === 'Tepat Waktu' ? 'bg-emerald-100 text-emerald-800' : (($att->status_masuk ?? '') === 'Terlambat' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-800') }} text-xs font-semibold">
+                        <td class="py-3.5 px-3 text-emerald-700 font-bold whitespace-nowrap">{{ $att->jam_masuk ? date('H:i', strtotime($att->jam_masuk)).' WITA' : '-' }}</td>
+                        <td class="py-3.5 px-3 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full {{ ($att->status_masuk ?? '') === 'Tepat Waktu' ? 'bg-emerald-100 text-emerald-800' : (($att->status_masuk ?? '') === 'Terlambat' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-800') }} text-xs font-semibold whitespace-nowrap">
                                 {{ $att->status_masuk ?? '-' }}
                             </span>
                         </td>
-                        <td class="py-3.5 px-3 font-medium text-gray-900">{{ $att->jarak_masuk ? $att->jarak_masuk.' meter' : '-' }}</td>
-                        <td class="py-3.5 px-3 text-emerald-700 font-bold">{{ $att->jam_pulang ? date('H:i', strtotime($att->jam_pulang)).' WITA' : '-' }}</td>
-                        <td class="py-3.5 px-3">
-                            <span class="px-2 py-0.5 rounded {{ ($att->status_pulang ?? '') === 'Tepat Waktu' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700' }} text-xs font-medium">
+                        <td class="py-3.5 px-3 font-medium text-gray-900 whitespace-nowrap">{{ $att->jarak_masuk ? $att->jarak_masuk.' meter' : '-' }}</td>
+                        <td class="py-3.5 px-3 text-emerald-700 font-bold whitespace-nowrap">{{ $att->jam_pulang ? date('H:i', strtotime($att->jam_pulang)).' WITA' : '-' }}</td>
+                        <td class="py-3.5 px-3 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md {{ ($att->status_pulang ?? '') === 'Tepat Waktu' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700' }} text-xs font-medium whitespace-nowrap">
                                 {{ $att->status_pulang ?? ($att->jam_masuk ? 'Sedang Bekerja' : '-') }}
                             </span>
                         </td>
-                        <td class="py-3.5 px-3 text-center">
+                        <td class="py-3.5 px-3 text-center whitespace-nowrap">
                             @if($att->foto_masuk || $att->foto_pulang)
                                 <div class="flex flex-col space-y-1 items-center">
                                     @if($att->foto_masuk)
                                     <button type="button"
                                         onclick="openBuktiFotoModal('{{ $att->pegawai->nama ?? '-' }}', '{{ $att->jam_masuk }} WITA (Masuk)', '{{ $att->jarak_masuk }}m', '{{ $att->status_masuk }}', '{{ asset('storage/' . $att->foto_masuk) }}')"
-                                        class="text-xs font-bold text-sky-600 hover:text-sky-800 cursor-pointer">Foto Masuk</button>
+                                        class="text-xs font-bold text-sky-600 hover:text-sky-800 cursor-pointer whitespace-nowrap">Foto Masuk</button>
                                     @endif
                                     @if($att->foto_pulang)
                                     <button type="button"
                                         onclick="openBuktiFotoModal('{{ $att->pegawai->nama ?? '-' }}', '{{ $att->jam_pulang }} WITA (Pulang)', '{{ $att->jarak_pulang }}m', '{{ $att->status_pulang }}', '{{ asset('storage/' . $att->foto_pulang) }}')"
-                                        class="text-xs font-bold text-emerald-600 hover:text-emerald-800 cursor-pointer">Foto Pulang</button>
+                                        class="text-xs font-bold text-emerald-600 hover:text-emerald-800 cursor-pointer whitespace-nowrap">Foto Pulang</button>
                                     @endif
                                 </div>
                             @else
-                            <span class="text-xs text-gray-400">-</span>
+                            <span class="text-xs text-gray-400 whitespace-nowrap">-</span>
                             @endif
                         </td>
                         @endif
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="py-12 px-4 text-center text-gray-500">
+                        <td colspan="8" class="py-12 px-4 text-center text-gray-500 whitespace-normal">
                             <div class="flex flex-col items-center justify-center space-y-2">
                                 <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
@@ -237,7 +249,7 @@
 
                     <!-- Empty State Row -->
                     <tr id="emptyAbsensiRow" style="display: none;">
-                        <td colspan="7" class="py-12 text-center text-gray-400">
+                        <td colspan="8" class="py-12 text-center text-gray-400 whitespace-normal">
                             <div class="flex flex-col items-center justify-center space-y-2">
                                 <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24" stroke-width="2">

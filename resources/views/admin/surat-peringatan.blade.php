@@ -64,16 +64,16 @@
 
         <!-- Tabel Data SP -->
         <div class="overflow-x-auto rounded-xl border border-gray-200">
-            <table class="w-full text-left text-xs sm:text-sm">
+            <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap" style="min-width: 820px;">
                 <thead class="bg-slate-50 text-gray-600 font-semibold border-b border-gray-200">
                     <tr>
-                        <th class="py-3 px-3.5">Pegawai</th>
-                        <th class="py-3 px-3 text-center">Akumulasi Alpha</th>
-                        <th class="py-3 px-3 text-center">Tingkat SP</th>
-                        <th class="py-3 px-3.5">Nomor Surat</th>
-                        <th class="py-3 px-3">Tanggal Terbit</th>
-                        <th class="py-3 px-3 text-center">Status</th>
-                        <th class="py-3 px-3.5 text-center">Aksi Dokumen</th>
+                        <th class="py-3 px-3.5 sticky left-0 bg-slate-50 z-10 shadow-[1px_0_0_0_#e2e8f0] whitespace-nowrap">Pegawai</th>
+                        <th class="py-3 px-3 text-center whitespace-nowrap">Akumulasi Alpha</th>
+                        <th class="py-3 px-3 text-center whitespace-nowrap">Tingkat SP</th>
+                        <th class="py-3 px-3.5 whitespace-nowrap">Nomor Surat</th>
+                        <th class="py-3 px-3 whitespace-nowrap">Tanggal Terbit</th>
+                        <th class="py-3 px-3 text-center whitespace-nowrap">Status</th>
+                        <th class="py-3 px-3.5 text-center whitespace-nowrap">Aksi Dokumen</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-gray-700">
@@ -81,8 +81,8 @@
                     @php
                         $isTerbit = !empty($sp->nomor_surat);
                     @endphp
-                    <tr class="hover:bg-slate-50/70 transition">
-                        <td class="py-3.5 px-3.5">
+                    <tr class="hover:bg-slate-50/70 transition group">
+                        <td class="py-3.5 px-3.5 sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-[1px_0_0_0_#f1f5f9] whitespace-nowrap transition-colors">
                             <div class="font-bold text-gray-900">{{ $sp->pegawai->nama ?? '-' }}</div>
                             <div class="text-[11px] text-gray-400">NIP: {{ $sp->pegawai->nip ?? '-' }} &bull; {{ $sp->pegawai->bidang ?? '-' }}</div>
                         </td>
