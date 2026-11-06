@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // View Composer untuk Lonceng Notifikasi di Header (Admin & Pegawai)
-        View::composer('components.header', function ($view) {
+        View::composer(['components.header', 'components.notification-bell'], function ($view) {
             if (!Auth::check()) {
                 $view->with(['notifCount' => 0, 'notifItems' => []]);
                 return;

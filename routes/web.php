@@ -117,3 +117,15 @@ Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')
     Route::get('/profil', [PegawaiProfilController::class, 'index'])->name('profil');
     Route::post('/profil', [PegawaiProfilController::class, 'update'])->name('profil.update');
 });
+
+// Route bantuan untuk shared hosting / cPanel jika terminal SSH tidak tersedia
+Route::get('/buat-storage-link', function () {
+    try {
+        Illuminate\Support\Facades\Artisan::call('storage:link');
+        return '<h3 style="font-family: sans-serif; color: #16a34a; text-align: center; margin-top: 50px;">'
+             . '&#10004; Storage link berhasil dibuat!<br><small style="color: #64748b;">Foto presensi dan dokumentasi sekarang sudah dapat diakses oleh browser.</small></h3>';
+    } catch (\Exception $e) {
+        return '<h3 style="font-family: sans-serif; color: #dc2626; text-align: center; margin-top: 50px;">'
+             . 'Gagal membuat storage link: ' . htmlspecialchars($e->getMessage()) . '</h3>';
+    }
+});

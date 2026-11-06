@@ -185,9 +185,12 @@
                         </td>
                         <td class="p-3.5 text-center whitespace-nowrap">
                             <button type="button"
-                                onclick="alert('Detail Laporan Kegiatan:\n\nKegiatan: {{ addslashes($rep->nama_kegiatan ?? '-') }}\nDeskripsi: {{ addslashes($rep->deskripsi ?? '-') }}\nStatus: {{ ucfirst($rep->status_verifikasi ?? 'menunggu') }}')"
-                                class="text-[#0D2240] hover:text-sky-700 font-bold hover:underline cursor-pointer">
-                                Detail
+                                onclick='openDetailKegiatanModal(@json($rep))'
+                                class="inline-flex items-center space-x-1 text-[#0D2240] hover:text-sky-700 font-bold hover:underline cursor-pointer px-2 py-1 rounded-lg hover:bg-slate-100 transition">
+                                <span>Detail</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
                             </button>
                         </td>
                     </tr>

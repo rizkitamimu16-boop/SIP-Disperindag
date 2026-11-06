@@ -12,9 +12,10 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
         </svg>
 
-        <!-- Badge Merah Counter Notifikasi -->
+        <!-- Badge Merah Counter Notifikasi di Pojok Kanan Atas Lonceng -->
         @if(($notifCount ?? 0) > 0)
-            <span class="absolute -top-1 -right-1 flex h-5 min-w-5 px-1.5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-extrabold text-white ring-2 ring-white shadow-xs animate-pulse">
+            <span style="position: absolute; top: -2px; right: -2px; display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 4px; font-size: 10px; font-weight: 800; line-height: 1; color: #ffffff; background-color: #ef4444; border-radius: 9999px; border: 2px solid #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 20; pointer-events: none;"
+                  class="animate-pulse">
                 {{ $notifCount > 9 ? '9+' : $notifCount }}
             </span>
         @endif

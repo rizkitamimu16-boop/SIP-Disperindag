@@ -91,7 +91,9 @@ class AbsensiExport implements FromView, ShouldAutoSize
                 foreach ($dates as $dateObj) {
                     $dateStr = $dateObj->toDateString();
                     $colKey = $dateObj->format('d/m');
-                    $att = $attendances->firstWhere('tanggal', $dateStr);
+                    $att = $attendances->first(function ($a) use ($dateStr) {
+                        return Carbon::parse($a->tanggal)->format('Y-m-d') === $dateStr;
+                    });
                     if ($att) {
                         if ($att->jam_masuk && !$att->jam_pulang) {
                             $daily[$colKey] = 'PTG';
@@ -143,8 +145,10 @@ class AbsensiExport implements FromView, ShouldAutoSize
                 
                 $daily = [];
                 for ($d=1; $d<=$daysInMonth; $d++) {
-                    $dateStr = "$year-$monthNum-".sprintf("%02d", $d);
-                    $att = $attendances->firstWhere('tanggal', $dateStr);
+                    $dateStr = sprintf('%04d-%02d-%02d', (int)$year, (int)$monthNum, $d);
+                    $att = $attendances->first(function ($a) use ($dateStr) {
+                        return Carbon::parse($a->tanggal)->format('Y-m-d') === $dateStr;
+                    });
                     if ($att) {
                         if ($att->jam_masuk && !$att->jam_pulang) {
                             $daily[$d] = 'PTG';
