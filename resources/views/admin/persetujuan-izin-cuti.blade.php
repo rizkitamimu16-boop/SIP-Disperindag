@@ -17,19 +17,25 @@
                 <h2 class="text-lg font-bold text-gray-900">Persetujuan Izin, Cuti, Sakit, &amp; Dinas Luar</h2>
                 <p class="text-xs text-gray-500 mt-0.5">Pengajuan yang disetujui otomatis menjadi pengecualian resmi presensi (tidak dihitung Alpha)</p>
             </div>
-            <div class="flex gap-1.5 p-1 bg-slate-100 rounded-xl">
+            <div class="flex flex-wrap gap-1.5 p-1 bg-slate-100 rounded-xl">
                 <button type="button" onclick="filterPengajuan('all', this)"
                     class="pengajuan-tab-btn px-3 py-1.5 bg-white text-[#0D2240] font-bold rounded-lg text-xs shadow-2xs transition cursor-pointer">
-                    Semua (5)
+                    Semua ({{ $stats['total'] ?? 0 }})
                 </button>
                 <button type="button" onclick="filterPengajuan('pending', this)"
                     class="pengajuan-tab-btn px-3 py-1.5 text-gray-600 font-medium rounded-lg text-xs hover:text-gray-900 transition cursor-pointer">
-                    Pending (2)
+                    Pending ({{ $stats['pending'] ?? 0 }})
                 </button>
                 <button type="button" onclick="filterPengajuan('approved', this)"
                     class="pengajuan-tab-btn px-3 py-1.5 text-gray-600 font-medium rounded-lg text-xs hover:text-gray-900 transition cursor-pointer">
-                    Disetujui (3)
+                    Disetujui ({{ $stats['approved'] ?? 0 }})
                 </button>
+                @if(($stats['rejected'] ?? 0) > 0)
+                <button type="button" onclick="filterPengajuan('rejected', this)"
+                    class="pengajuan-tab-btn px-3 py-1.5 text-gray-600 font-medium rounded-lg text-xs hover:text-gray-900 transition cursor-pointer">
+                    Ditolak ({{ $stats['rejected'] ?? 0 }})
+                </button>
+                @endif
             </div>
         </div>
 
@@ -46,9 +52,13 @@
                         <th class="py-3 px-3 text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 text-gray-700">
+                <tbody id="pengajuanTableBody" class="divide-y divide-gray-100 text-gray-700">
                     @forelse($leaveRequests ?? [] as $req)
-                    <tr class="hover:bg-slate-50/70 transition">
+                    @php
+                        $statusLower = strtolower($req->status ?? '');
+                        $statusKey = ($statusLower === 'disetujui') ? 'approved' : (($statusLower === 'ditolak') ? 'rejected' : 'pending');
+                    @endphp
+                    <tr class="hover:bg-slate-50/70 transition" data-status="{{ $statusKey }}">
                         <td class="py-3.5 px-3">
                             <div class="flex items-center space-x-3">
                                 <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
@@ -120,6 +130,14 @@
                         </td>
                     </tr>
                     @endforelse
+                    <tr id="pengajuanEmptyFilterRow" class="hidden">
+                        <td colspan="7" class="py-12 px-4 text-center text-gray-500">
+                            <div class="flex flex-col items-center justify-center space-y-1">
+                                <p class="text-sm font-bold text-gray-700">Tidak ada pengajuan pada kategori ini</p>
+                                <p class="text-xs text-gray-400">Silakan pilih tab filter lainnya.</p>
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

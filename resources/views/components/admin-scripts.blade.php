@@ -581,15 +581,26 @@
         }
 
         // Filter Rows
-        const rows = document.querySelectorAll('#pengajuanTableBody tr');
+        const rows = document.querySelectorAll('#pengajuanTableBody tr[data-status]');
+        let visibleCount = 0;
         rows.forEach(row => {
             const rowStatus = row.getAttribute('data-status');
             if (status === 'all' || rowStatus === status) {
                 row.classList.remove('hidden');
+                visibleCount++;
             } else {
                 row.classList.add('hidden');
             }
         });
+
+        const emptyFilterRow = document.getElementById('pengajuanEmptyFilterRow');
+        if (emptyFilterRow) {
+            if (visibleCount === 0 && rows.length > 0) {
+                emptyFilterRow.classList.remove('hidden');
+            } else {
+                emptyFilterRow.classList.add('hidden');
+            }
+        }
     }
 
     function openPreviewSPModal(nama, tingkat, alasan, tanggal) {

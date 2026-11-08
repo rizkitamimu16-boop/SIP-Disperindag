@@ -57,6 +57,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     
     // 5. Persetujuan Izin & Cuti
     Route::get('/persetujuan-izin-cuti', [AdminPengajuanController::class, 'index'])->name('persetujuan-izin-cuti');
+    Route::get('/persetujuan', [AdminPengajuanController::class, 'index'])->name('persetujuan');
     Route::get('/pengajuan', [AdminPengajuanController::class, 'index'])->name('pengajuan');
     Route::post('/pengajuan/{id}/status', [AdminPengajuanController::class, 'updateStatus'])->name('pengajuan.status');
     Route::post('/persetujuan-izin-cuti/{id}/status', [AdminPengajuanController::class, 'updateStatus'])->name('persetujuan-izin-cuti.status');
@@ -118,14 +119,44 @@ Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')
     Route::post('/profil', [PegawaiProfilController::class, 'update'])->name('profil.update');
 });
 
-// Route bantuan untuk shared hosting / cPanel jika terminal SSH tidak tersedia
+// Route bantuan untuk shared hosting / cPanel jika terminal SSH bermasalah
 Route::get('/buat-storage-link', function () {
     try {
-        Illuminate\Support\Facades\Artisan::call('storage:link');
+        $link = public_path('storage');
+        $target = storage_path('app/public');
+
+        // Jika public/storage sudah ada tetapi rusak atau hasil extract zip Windows, bersihkan dulu
+        if (file_exists($link) || is_link($link)) {
+            if (is_link($link)) {
+                @unlink($link);
+            } elseif (is_dir($link)) {
+                @rmdir($link);
+            }
+        }
+
+        // Jalankan artisan storage:link atau symlink native PHP
+        if (!file_exists($link)) {
+            if (function_exists('symlink')) {
+                @symlink($target, $link);
+            }
+            if (!file_exists($link)) {
+                Illuminate\Support\Facades\Artisan::call('storage:link');
+            }
+        }
+
         return '<h3 style="font-family: sans-serif; color: #16a34a; text-align: center; margin-top: 50px;">'
-             . '&#10004; Storage link berhasil dibuat!<br><small style="color: #64748b;">Foto presensi dan dokumentasi sekarang sudah dapat diakses oleh browser.</small></h3>';
+             . '&#10004; Storage link berhasil diperbarui!<br><small style="color: #64748b;">Target: ' . htmlspecialchars($target) . '<br>Link: ' . htmlspecialchars($link) . '<br>Foto presensi dan dokumentasi sekarang sudah dapat diakses oleh browser.</small></h3>';
     } catch (\Exception $e) {
         return '<h3 style="font-family: sans-serif; color: #dc2626; text-align: center; margin-top: 50px;">'
              . 'Gagal membuat storage link: ' . htmlspecialchars($e->getMessage()) . '</h3>';
     }
 });
+
+// Fallback Route: melayani file foto dari storage/app/public jika symlink hosting tidak aktif / terblokir oleh Apache
+Route::get('/storage/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+    if (!file_exists($filePath)) {
+        abort(404, 'File tidak ditemukan di storage: ' . $path);
+    }
+    return response()->file($filePath);
+})->where('path', '.*');
