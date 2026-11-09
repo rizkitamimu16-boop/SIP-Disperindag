@@ -37,29 +37,61 @@
 
         <!-- 3 Tombol Aksi Cepat (Absen Datang, Absen Pulang, Laporan Kegiatan) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full lg:w-auto">
+            @php
+                $hasMasuk = !empty($todayAttendance?->jam_masuk);
+                $hasPulang = !empty($todayAttendance?->jam_pulang);
+            @endphp
+
             <!-- Aksi 1: Absen Datang (Buka Modal Presensi Datang) -->
-            <button type="button" onclick="openPresensiModal('masuk')"
-                class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-medium shadow-sm transition active:scale-98 cursor-pointer min-w-[125px]">
-                <svg class="w-5 h-5 mb-1 text-white" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
-                <span class="text-xs sm:text-sm font-bold">Absen Datang</span>
-                <span class="text-[10px] text-emerald-100 mt-0.5">{{ isset($todayAttendance->check_in) ? 'Tercatat ' . \Carbon\Carbon::parse($todayAttendance->check_in)->format('H:i') : 'Belum Absen' }}</span>
-            </button>
+            @if($hasMasuk)
+                <button type="button" disabled
+                    class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-emerald-800/50 text-white font-medium border border-emerald-400/40 shadow-xs cursor-default min-w-[125px]">
+                    <svg class="w-5 h-5 mb-1 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-xs sm:text-sm font-bold">Sudah Masuk</span>
+                    <span class="text-[10px] text-emerald-200 mt-0.5">Pukul {{ \Carbon\Carbon::parse($todayAttendance->jam_masuk)->format('H:i') }} WITA</span>
+                </button>
+            @else
+                <button type="button" onclick="openPresensiModal('masuk')"
+                    class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-medium shadow-sm transition active:scale-98 cursor-pointer min-w-[125px]">
+                    <svg class="w-5 h-5 mb-1 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    <span class="text-xs sm:text-sm font-bold">Absen Datang</span>
+                    <span class="text-[10px] text-emerald-100 mt-0.5">Belum Absen</span>
+                </button>
+            @endif
 
             <!-- Aksi 2: Absen Pulang (Buka Modal Presensi Pulang) -->
-            <button type="button" onclick="openPresensiModal('pulang')"
-                class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium border border-white/15 shadow-sm transition active:scale-98 cursor-pointer min-w-[125px]">
-                <svg class="w-5 h-5 mb-1 text-slate-200" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <span class="text-xs sm:text-sm font-bold">Absen Pulang</span>
-                <span class="text-[10px] text-slate-300 mt-0.5">{{ isset($todayAttendance->jam_pulang) ? 'Tercatat ' . \Carbon\Carbon::parse($todayAttendance->jam_pulang)->format('H:i') : 'Pukul ' . \Carbon\Carbon::parse($officeSettings->jam_pulang)->format('H:i') }}</span>
-            </button>
+            @if($hasPulang)
+                <button type="button" disabled
+                    class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-sky-800/50 text-white font-medium border border-sky-400/40 shadow-xs cursor-default min-w-[125px]">
+                    <svg class="w-5 h-5 mb-1 text-sky-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-xs sm:text-sm font-bold">Sudah Pulang</span>
+                    <span class="text-[10px] text-sky-200 mt-0.5">Pukul {{ \Carbon\Carbon::parse($todayAttendance->jam_pulang)->format('H:i') }} WITA</span>
+                </button>
+            @elseif($hasMasuk)
+                <button type="button" onclick="openPresensiModal('pulang')"
+                    class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-medium shadow-sm transition active:scale-98 cursor-pointer min-w-[125px]">
+                    <svg class="w-5 h-5 mb-1 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span class="text-xs sm:text-sm font-bold">Absen Pulang</span>
+                    <span class="text-[10px] text-sky-100 mt-0.5">Siap Pulang</span>
+                </button>
+            @else
+                <button type="button" onclick="openPresensiModal('pulang')"
+                    class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium border border-white/15 shadow-sm transition active:scale-98 cursor-pointer min-w-[125px]">
+                    <svg class="w-5 h-5 mb-1 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span class="text-xs sm:text-sm font-bold">Absen Pulang</span>
+                    <span class="text-[10px] text-slate-300 mt-0.5">{{ isset($officeSettings->jam_pulang) ? 'Pukul ' . \Carbon\Carbon::parse($officeSettings->jam_pulang)->format('H:i') : 'Pukul 16:30' }}</span>
+                </button>
+            @endif
 
             <!-- Aksi 3: Laporan Kegiatan (Buka Modal Lapor Kegiatan) -->
             <button type="button" onclick="openKegiatanModal()"

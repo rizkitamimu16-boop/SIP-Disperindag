@@ -570,7 +570,7 @@
     }
 
     // Filter Tab Pengajuan (Semua / Pending / Approved)
-    function filterPengajuan(status, btnElement) {
+    window.filterPengajuan = function (status, btnElement) {
         // Toggle tab style
         const buttons = document.querySelectorAll('.pengajuan-tab-btn');
         buttons.forEach(btn => {
@@ -677,6 +677,7 @@
 
         // Filter Data Monitoring Absensi (Sesuai Screenshot Referensi)
         const filterAbsensiNama = document.getElementById('filterAbsensiNama');
+        const filterAbsensiBidang = document.getElementById('filterAbsensiBidang');
         const filterAbsensiTanggal = document.getElementById('filterAbsensiTanggal');
         const filterAbsensiBulan = document.getElementById('filterAbsensiBulan');
         const filterAbsensiTahun = document.getElementById('filterAbsensiTahun');
@@ -686,6 +687,7 @@
 
         function applyAbsensiFilter() {
             const qNama = (filterAbsensiNama ? filterAbsensiNama.value.trim().toLowerCase() : '');
+            const qBidang = (filterAbsensiBidang ? filterAbsensiBidang.value.toLowerCase() : 'semua bidang');
             const qTanggal = (filterAbsensiTanggal ? filterAbsensiTanggal.value : '');
             const qBulan = (filterAbsensiBulan ? filterAbsensiBulan.value : 'Semua Bulan');
             const qTahun = (filterAbsensiTahun ? filterAbsensiTahun.value : 'Semua Tahun');
@@ -696,18 +698,36 @@
 
             rows.forEach(r => {
                 const nama = (r.getAttribute('data-nama') || '').toLowerCase();
+                const bidang = (r.getAttribute('data-bidang') || '').toLowerCase();
                 const status = (r.getAttribute('data-status') || '').toLowerCase();
+                const statusMasuk = (r.getAttribute('data-status-masuk') || '').toLowerCase();
                 const tanggal = r.getAttribute('data-tanggal') || '';
                 const bulan = r.getAttribute('data-bulan') || '';
                 const tahun = r.getAttribute('data-tahun') || '';
 
                 const matchNama = !qNama || nama.includes(qNama);
+                const matchBidang = (qBidang === 'semua bidang') || bidang.includes(qBidang);
                 const matchTanggal = !qTanggal || (tanggal === qTanggal);
                 const matchBulan = qTanggal ? true : ((qBulan === 'Semua Bulan') || (bulan === qBulan));
                 const matchTahun = qTanggal ? true : ((qTahun === 'Semua Tahun') || (tahun === qTahun));
-                const matchStatus = (qStatus === 'semua status') || status.includes(qStatus);
 
-                if (matchNama && matchTanggal && matchBulan && matchTahun && matchStatus) {
+                // Matching status (Tepat Waktu, Terlambat, Alpha, Izin, Cuti, Sakit, Dinas Luar)
+                let matchStatus = false;
+                if (qStatus === 'semua status') {
+                    matchStatus = true;
+                } else if (qStatus === 'tepat waktu') {
+                    matchStatus = statusMasuk.includes('tepat waktu') || (status === 'hadir' && !statusMasuk.includes('terlambat'));
+                } else if (qStatus === 'terlambat') {
+                    matchStatus = status.includes('terlambat') || statusMasuk.includes('terlambat');
+                } else if (qStatus === 'alpha') {
+                    matchStatus = status.includes('alpha') || statusMasuk.includes('alpha') || statusMasuk.includes('belum hadir');
+                } else if (['izin', 'cuti', 'sakit', 'dinas luar'].includes(qStatus)) {
+                    matchStatus = status.includes(qStatus);
+                } else {
+                    matchStatus = status.includes(qStatus) || statusMasuk.includes(qStatus);
+                }
+
+                if (matchNama && matchBidang && matchTanggal && matchBulan && matchTahun && matchStatus) {
                     r.style.display = '';
                     countVisible++;
                 } else {
@@ -721,21 +741,23 @@
             }
 
             if (totalAbsensiFiltered) {
-                totalAbsensiFiltered.textContent = `Menampilkan ${countVisible} pegawai`;
+                totalAbsensiFiltered.textContent = `Menampilkan ${countVisible} catatan presensi`;
             }
 
             if (filterActiveLabel) {
                 const parts = [];
                 if (qNama) parts.push(`nama "${qNama}"`);
+                if (qBidang !== 'semua bidang') parts.push(`bidang ${filterAbsensiBidang.value}`);
                 if (qTanggal) parts.push(`tgl ${qTanggal}`);
                 else if (qBulan !== 'Semua Bulan' || qTahun !== 'Semua Tahun') parts.push(`periode ${qBulan} ${qTahun}`);
-                if (qStatus !== 'semua status') parts.push(`status ${qStatus}`);
+                if (qStatus !== 'semua status') parts.push(`status ${filterAbsensiStatus.value}`);
                 
                 filterActiveLabel.textContent = parts.length ? `Filter aktif: ${parts.join(' • ')}` : 'Filter aktif: semua data';
             }
         }
 
         if (filterAbsensiNama) filterAbsensiNama.addEventListener('input', applyAbsensiFilter);
+        if (filterAbsensiBidang) filterAbsensiBidang.addEventListener('change', applyAbsensiFilter);
         if (filterAbsensiStatus) filterAbsensiStatus.addEventListener('change', applyAbsensiFilter);
         
         if (filterAbsensiTanggal) filterAbsensiTanggal.addEventListener('change', function() {
@@ -759,10 +781,11 @@
 
         window.resetFilterAbsensi = function () {
             if (filterAbsensiNama) filterAbsensiNama.value = '';
+            if (filterAbsensiBidang) filterAbsensiBidang.value = 'Semua Bidang';
             if (filterAbsensiStatus) filterAbsensiStatus.value = 'Semua Status';
             if (filterAbsensiTanggal) filterAbsensiTanggal.value = '';
-            if (filterAbsensiBulan) filterAbsensiBulan.value = '09';
-            if (filterAbsensiTahun) filterAbsensiTahun.value = '2026';
+            if (filterAbsensiBulan) filterAbsensiBulan.value = 'Semua Bulan';
+            if (filterAbsensiTahun) filterAbsensiTahun.value = 'Semua Tahun';
             applyAbsensiFilter();
         };
 
@@ -890,6 +913,7 @@
             const tanggal = btn.getAttribute('data-tanggal');
             const uraian = btn.getAttribute('data-uraian');
             const foto = btn.getAttribute('data-foto');
+            const suratTugas = btn.getAttribute('data-surat-tugas');
             let prod = btn.getAttribute('data-prod');
             const kual = btn.getAttribute('data-kual');
 
@@ -901,10 +925,20 @@
             
             const fotoContainer = document.getElementById('modalReviewFotoContainer');
             if (foto && foto !== '') {
-                document.getElementById('modalReviewFoto').src = '/storage/' + foto;
+                document.getElementById('modalReviewFoto').src = foto.startsWith('http') ? foto : '/storage/' + foto;
                 fotoContainer.classList.remove('hidden');
             } else {
                 fotoContainer.classList.add('hidden');
+            }
+
+            const suratContainer = document.getElementById('modalReviewSuratContainer');
+            if (suratContainer) {
+                if (suratTugas && suratTugas !== '') {
+                    document.getElementById('modalReviewSurat').src = suratTugas.startsWith('http') ? suratTugas : '/storage/' + suratTugas;
+                    suratContainer.classList.remove('hidden');
+                } else {
+                    suratContainer.classList.add('hidden');
+                }
             }
 
             // Note: The modal might not have element 'modalReviewProduktivitas' and 'modalReviewKategoriProduktivitas' in this version,

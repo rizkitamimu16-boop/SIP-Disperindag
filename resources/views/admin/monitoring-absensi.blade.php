@@ -57,7 +57,7 @@
             <div class="relative w-32">
                 <select id="filterAbsensiBulan"
                     class="w-full h-10 px-3.5 pr-8 text-xs bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D2240]/20 text-gray-700 transition cursor-pointer appearance-none">
-                    <option value="Semua Bulan">Semua Bulan</option>
+                    <option value="Semua Bulan" selected>Semua Bulan</option>
                     <option value="01">Januari</option>
                     <option value="02">Februari</option>
                     <option value="03">Maret</option>
@@ -66,7 +66,7 @@
                     <option value="06">Juni</option>
                     <option value="07">Juli</option>
                     <option value="08">Agustus</option>
-                    <option value="09" selected>September</option>
+                    <option value="09">September</option>
                     <option value="10">Oktober</option>
                     <option value="11">November</option>
                     <option value="12">Desember</option>
@@ -163,11 +163,16 @@
                     @forelse($attendances ?? [] as $att)
                     @php
                         $isIzin = in_array($att->status, ['Izin', 'Cuti', 'Sakit', 'Dinas Luar']);
+                        $isAlpha = (($att->status ?? '') === 'Alpha');
                     @endphp
-                    <tr class="data-row hover:bg-slate-50/70 transition" data-nama="{{ $att->pegawai->nama ?? '-' }}"
-                        data-status="{{ $att->status ?? 'Hadir' }}" data-bidang="{{ $att->pegawai->bidang ?? '-' }}"
-                        data-tanggal="{{ date('Y-m-d', strtotime($att->tanggal)) }}" data-bulan="{{ date('m', strtotime($att->tanggal)) }}"
-                        data-tahun="{{ date('Y', strtotime($att->tanggal)) }}">
+                    <tr class="data-row hover:bg-slate-50/70 transition" 
+                        data-nama="{{ $att->pegawai->nama ?? '-' }}"
+                        data-status="{{ $att->status ?? 'Hadir' }}" 
+                        data-status-masuk="{{ $att->status_masuk ?? ($att->status === 'Hadir' ? 'Tepat Waktu' : ($att->status ?? '')) }}"
+                        data-bidang="{{ $att->pegawai->bidang ?? '-' }}"
+                        data-tanggal="{{ $att->tanggal ? date('Y-m-d', strtotime($att->tanggal)) : '' }}" 
+                        data-bulan="{{ $att->tanggal ? date('m', strtotime($att->tanggal)) : '' }}"
+                        data-tahun="{{ $att->tanggal ? date('Y', strtotime($att->tanggal)) : '' }}">
                         <td class="py-3.5 px-3">
                             <p class="font-bold text-gray-900">{{ $att->pegawai->nama ?? '-' }}</p>
                             <span class="text-[11px] text-gray-400">{{ $att->pegawai->bidang ?? '-' }} • NIP {{ $att->pegawai->nip ?? '-' }}</span>
@@ -177,12 +182,25 @@
                         </td>
                         
                         @if($isIzin)
-                        <td colspan="7" class="py-3.5 px-3">
-                            <div class="w-full flex items-center justify-center p-2 rounded-lg bg-blue-50 border border-blue-100">
-                                <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span class="text-sm font-bold text-blue-700">Pegawai berstatus: {{ $att->status }}</span>
+                        <td colspan="6" class="py-3.5 px-3">
+                            <div class="w-full flex items-center justify-between p-2 rounded-lg bg-blue-50 border border-blue-100">
+                                <span class="text-xs font-bold text-blue-700 flex items-center space-x-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                    <span>Pegawai Berstatus: {{ $att->status }}</span>
+                                </span>
+                                @if(!empty($att->catatan))
+                                    <span class="text-[11px] text-blue-600 truncate max-w-xs">{{ $att->catatan }}</span>
+                                @endif
+                            </div>
+                        </td>
+                        @elseif($isAlpha)
+                        <td colspan="6" class="py-3.5 px-3">
+                            <div class="w-full flex items-center justify-between p-2 rounded-lg bg-rose-50 border border-rose-100">
+                                <span class="text-xs font-bold text-rose-700 flex items-center space-x-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                                    <span>Belum Melakukan Presensi (Alpha)</span>
+                                </span>
+                                <span class="text-[11px] font-semibold text-rose-600 bg-white px-2.5 py-0.5 rounded border border-rose-200">Tidak Hadir</span>
                             </div>
                         </td>
                         @else

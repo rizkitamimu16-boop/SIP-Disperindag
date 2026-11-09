@@ -47,6 +47,32 @@
 
     @stack('modals')
     @stack('scripts')
+
+    @if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: {!! json_encode(session('success')) !!},
+                confirmButtonColor: '#0D2240',
+            });
+        });
+    </script>
+    @endif
+
+    @if(session('error') || $errors->any())
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Perhatian',
+                text: {!! json_encode(session('error') ?? $errors->first()) !!},
+                confirmButtonColor: '#0D2240',
+            });
+        });
+    </script>
+    @endif
 </body>
 
 </html>

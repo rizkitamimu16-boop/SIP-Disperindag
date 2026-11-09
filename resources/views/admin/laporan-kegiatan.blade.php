@@ -294,17 +294,28 @@
                         <td class="py-3.5 px-3 text-gray-600">
                             <div class="max-h-24 overflow-y-auto whitespace-pre-wrap pr-2">{{ $rep->deskripsi }}</div>
                         </td>
-                        <td class="py-3.5 px-3 text-center">
-                            @if(!empty($rep->foto))
-                            <button type="button" onclick="openFotoLaporanModal('{{ $rep->pegawai->nama ?? '-' }}', '{{ $rep->nama_kegiatan }}', '{{ asset('storage/' . $rep->foto) }}')" class="inline-flex items-center space-x-1 text-xs font-semibold text-sky-600 hover:text-sky-800 cursor-pointer">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                                </svg>
-                                <span>Foto</span>
-                            </button>
-                            @else
-                            <span class="text-xs text-gray-400">-</span>
-                            @endif
+                        <td class="py-3.5 px-3 text-center whitespace-nowrap">
+                            <div class="flex items-center justify-center gap-1.5">
+                                @if(!empty($rep->foto))
+                                <button type="button" onclick="openFotoLaporanModal('{{ $rep->pegawai->nama ?? '-' }}', '{{ $rep->nama_kegiatan }}', '{{ asset('storage/' . $rep->foto) }}')" class="inline-flex items-center space-x-1 text-xs font-semibold text-sky-600 hover:text-sky-800 cursor-pointer" title="Lihat Foto Kegiatan">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                    </svg>
+                                    <span>Foto</span>
+                                </button>
+                                @endif
+                                @if(!empty($rep->surat_tugas))
+                                <button type="button" onclick="openFotoLaporanModal('{{ $rep->pegawai->nama ?? '-' }}', 'Surat Tugas: {{ $rep->nama_kegiatan }}', '{{ asset('storage/' . $rep->surat_tugas) }}')" class="inline-flex items-center space-x-1 text-xs font-semibold text-emerald-600 hover:text-emerald-800 cursor-pointer" title="Lihat Surat Turun Lapangan">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span>Surat</span>
+                                </button>
+                                @endif
+                                @if(empty($rep->foto) && empty($rep->surat_tugas))
+                                <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </div>
                         </td>
                         <td class="py-3.5 px-3 text-center">
                             <div class="font-bold text-gray-900 text-sm">{{ $rep->nilai_produktivitas ?? '-' }}</div>
@@ -337,6 +348,7 @@
                                 data-kegiatan="{{ $rep->nama_kegiatan }}"
                                 data-tanggal="{{ $rep->tanggal }}"
                                 data-foto="{{ $rep->foto }}"
+                                data-surat-tugas="{{ $rep->surat_tugas }}"
                                 data-uraian="{{ $rep->deskripsi }}"
                                 data-status="{{ $rep->status_verifikasi }}"
                                 data-prod="{{ $rep->nilai_produktivitas ?? 0 }}"

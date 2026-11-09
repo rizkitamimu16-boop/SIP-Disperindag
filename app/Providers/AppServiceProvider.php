@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // View Composer untuk Lonceng Notifikasi di Header (Admin & Pegawai)
-        View::composer(['components.header', 'components.notification-bell'], function ($view) {
+        View::composer(['components.header', 'components.notification-bell', 'layouts.*'], function ($view) {
             if (!Auth::check()) {
                 $view->with(['notifCount' => 0, 'notifItems' => []]);
                 return;
@@ -43,19 +43,20 @@ class AppServiceProvider extends ServiceProvider
             $notifCount = 0;
 
             try {
-                if ($user->peran === 'admin') {
+                $userRole = strtolower($user->peran ?? $user->role ?? '');
+                if ($userRole === 'admin' || $userRole === 'administrator') {
                     // 1. Pengajuan Izin / Cuti / Sakit yang menunggu review
                     try {
                         $izins = PengajuanIzin::with('pegawai')
-                            ->where('status', 'Menunggu Review')
+                            ->whereIn('status', ['Menunggu Review', 'menunggu review', 'Pending', 'pending'])
                             ->latest()
                             ->take(8)
                             ->get();
                         foreach ($izins as $izin) {
                             $notifItems[] = [
                                 'type'  => 'izin',
-                                'title' => 'Pengajuan ' . $izin->jenis,
-                                'desc'  => ($izin->pegawai->nama ?? 'Pegawai') . ' mengajukan dispensasi (' . $izin->jenis . ')',
+                                'title' => 'Pengajuan ' . ($izin->jenis ?? 'Dispensasi'),
+                                'desc'  => ($izin->pegawai->nama ?? 'Pegawai') . ' mengajukan dispensasi (' . ($izin->jenis ?? 'Izin') . ')',
                                 'time'  => $izin->created_at ? $izin->created_at->diffForHumans() : 'Baru saja',
                                 'url'   => route('admin.pengajuan'),
                                 'icon'  => 'calendar',
@@ -67,7 +68,7 @@ class AppServiceProvider extends ServiceProvider
                     // 2. Laporan Kegiatan yang menunggu verifikasi
                     try {
                         $kegiatans = LaporanKegiatan::with('pegawai')
-                            ->where('status_verifikasi', 'Menunggu Review')
+                            ->whereIn('status_verifikasi', ['Menunggu Review', 'menunggu review', 'Pending', 'pending'])
                             ->latest()
                             ->take(8)
                             ->get();
@@ -75,7 +76,7 @@ class AppServiceProvider extends ServiceProvider
                             $notifItems[] = [
                                 'type'  => 'kegiatan',
                                 'title' => 'Verifikasi Laporan',
-                                'desc'  => ($keg->pegawai->nama ?? 'Pegawai') . ' mengirim laporan: ' . Str::limit($keg->nama_kegiatan, 28),
+                                'desc'  => ($keg->pegawai->nama ?? 'Pegawai') . ' mengirim laporan: ' . Str::limit($keg->nama_kegiatan ?? 'Kegiatan', 28),
                                 'time'  => $keg->created_at ? $keg->created_at->diffForHumans() : 'Baru saja',
                                 'url'   => route('admin.kegiatan'),
                                 'icon'  => 'clipboard',
@@ -96,8 +97,8 @@ class AppServiceProvider extends ServiceProvider
                         foreach ($sps as $sp) {
                             $notifItems[] = [
                                 'type'  => 'sp',
-                                'title' => 'Draf ' . $sp->tingkat_sp,
-                                'desc'  => ($sp->pegawai->nama ?? 'Pegawai') . ' terdeteksi ' . $sp->jumlah_alpha . ' kali Alpha',
+                                'title' => 'Draf ' . ($sp->tingkat_sp ?? 'SP'),
+                                'desc'  => ($sp->pegawai->nama ?? 'Pegawai') . ' terdeteksi ' . ($sp->jumlah_alpha ?? 0) . ' kali Alpha',
                                 'time'  => $sp->created_at ? $sp->created_at->diffForHumans() : 'Baru saja',
                                 'url'   => route('admin.sp'),
                                 'icon'  => 'alert',
@@ -107,15 +108,15 @@ class AppServiceProvider extends ServiceProvider
                     } catch (\Exception $e) {}
 
                     // Hitung total seluruh tugas pending yang masih perlu ditindaklanjuti
-                    $pendingIzinCount = PengajuanIzin::where('status', 'Menunggu Review')->count();
-                    $pendingKegiatanCount = LaporanKegiatan::where('status_verifikasi', 'Menunggu Review')->count();
+                    $pendingIzinCount = PengajuanIzin::whereIn('status', ['Menunggu Review', 'menunggu review', 'Pending', 'pending'])->count();
+                    $pendingKegiatanCount = LaporanKegiatan::whereIn('status_verifikasi', ['Menunggu Review', 'menunggu review', 'Pending', 'pending'])->count();
                     $pendingSpCount = SuratPeringatan::where(function($q) {
                         $q->whereNull('nomor_surat')->orWhere('nomor_surat', '');
                     })->count();
 
-                    $notifCount = $pendingIzinCount + $pendingKegiatanCount + $pendingSpCount;
+                    $notifCount = max(count($notifItems), $pendingIzinCount + $pendingKegiatanCount + $pendingSpCount);
 
-                } elseif ($user->peran === 'pegawai' && $user->pegawai) {
+                } elseif (($userRole === 'pegawai' || $userRole === 'staff') && $user->pegawai) {
                     $pegawaiId = $user->pegawai->id;
 
                     // 1. Status pengajuan izin yang sudah diproses admin

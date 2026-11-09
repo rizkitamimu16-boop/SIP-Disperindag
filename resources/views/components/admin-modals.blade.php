@@ -442,8 +442,12 @@
                     <div class="text-gray-800 bg-white p-2.5 rounded-lg border border-gray-200 max-h-32 overflow-y-auto whitespace-pre-wrap" id="modalReviewUraian">-</div>
                 </div>
                 <div id="modalReviewFotoContainer" class="hidden">
-                    <span class="text-gray-500 block mb-1">Foto Dokumentasi:</span>
+                    <span class="text-gray-500 block mb-1">Foto Dokumentasi Kegiatan:</span>
                     <img id="modalReviewFoto" src="" alt="Foto Laporan" class="w-full h-auto max-h-48 object-contain rounded-xl border border-gray-200 bg-slate-50">
+                </div>
+                <div id="modalReviewSuratContainer" class="hidden">
+                    <span class="text-gray-500 block mb-1">Foto Surat Turun Lapangan:</span>
+                    <img id="modalReviewSurat" src="" alt="Surat Tugas" class="w-full h-auto max-h-48 object-contain rounded-xl border border-gray-200 bg-slate-50">
                 </div>
             </div>
 

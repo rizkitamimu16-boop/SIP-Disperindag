@@ -85,13 +85,13 @@
                             <p class="text-xs text-gray-900 font-medium truncate">{{ $req->alasan ?? $req->reason }}</p>
                         </td>
                         <td class="py-3.5 px-3 text-center">
-                            @if(!empty($req->lampiran) || !empty($req->attachment) || true)
-                            <a href="#" onclick="alert('Membuka lampiran dokumen...')" class="inline-flex items-center space-x-1 text-xs font-bold text-sky-600 hover:text-sky-800 transition">
+                            @if(!empty($req->dokumen))
+                            <button type="button" onclick="bukaModalLampiran('{{ addslashes($req->pegawai->nama ?? $req->employee->name ?? '-') }}', '{{ $req->jenis ?? $req->type }}', '{{ asset('storage/' . $req->dokumen) }}')" class="inline-flex items-center space-x-1 text-xs font-bold text-sky-600 hover:text-sky-800 transition cursor-pointer">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                 </svg>
                                 <span>Lihat</span>
-                            </a>
+                            </button>
                             @else
                             <span class="text-xs text-gray-400">-</span>
                             @endif
@@ -144,6 +144,42 @@
     </div>
 </div>
 
+<!-- Modal Preview Lampiran Dokumen Izin / Sakit / Cuti / Dinas Luar -->
+<div id="modalLihatLampiranIzin" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-slate-50 shrink-0">
+            <div>
+                <h3 id="lampiranModalJudul" class="text-sm sm:text-base font-bold text-gray-900 leading-tight">Lampiran Dokumen</h3>
+                <p id="lampiranModalSub" class="text-[11px] text-gray-500 mt-0.5">-</p>
+            </div>
+            <button type="button" onclick="closeModalLampiran()" class="p-1.5 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition cursor-pointer" aria-label="Tutup">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="p-4 sm:p-6 overflow-y-auto flex-1 flex flex-col items-center justify-center bg-slate-50/50 min-h-[300px]">
+            <div id="lampiranImageContainer" class="hidden w-full flex items-center justify-center">
+                <img id="lampiranModalImg" src="" alt="Lampiran" class="max-h-[60vh] max-w-full rounded-xl shadow-xs border border-gray-200 object-contain">
+            </div>
+            <div id="lampiranPdfContainer" class="hidden w-full h-[60vh]">
+                <iframe id="lampiranModalIframe" src="" class="w-full h-full rounded-xl border border-gray-200"></iframe>
+            </div>
+        </div>
+        <div class="px-5 py-3.5 bg-white border-t border-gray-100 flex items-center justify-between shrink-0">
+            <a id="lampiranDirectLink" href="#" target="_blank" class="text-xs font-bold text-sky-600 hover:text-sky-800 underline flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                <span>Buka di Tab Baru / Download</span>
+            </a>
+            <button type="button" onclick="closeModalLampiran()" class="px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-gray-700 text-xs font-bold transition cursor-pointer">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 function bukaModalReviewPengajuan(id, nama, jenis, waktu, alasan) {
     document.getElementById('reviewModalNama').textContent = nama;
@@ -153,5 +189,65 @@ function bukaModalReviewPengajuan(id, nama, jenis, waktu, alasan) {
     document.getElementById('formReviewPengajuan').action = `{{ url('admin/pengajuan') }}/${id}/status`;
     openModal('modalReviewPengajuan');
 }
+
+function bukaModalLampiran(nama, jenis, fileUrl) {
+    document.getElementById('lampiranModalJudul').textContent = `Lampiran ${jenis} - ${nama}`;
+    document.getElementById('lampiranModalSub').textContent = fileUrl.split('/').pop();
+    document.getElementById('lampiranDirectLink').href = fileUrl;
+
+    const imgContainer = document.getElementById('lampiranImageContainer');
+    const pdfContainer = document.getElementById('lampiranPdfContainer');
+    const isPdf = fileUrl.toLowerCase().endsWith('.pdf');
+
+    if (isPdf) {
+        imgContainer.classList.add('hidden');
+        pdfContainer.classList.remove('hidden');
+        document.getElementById('lampiranModalIframe').src = fileUrl;
+    } else {
+        pdfContainer.classList.add('hidden');
+        imgContainer.classList.remove('hidden');
+        document.getElementById('lampiranModalImg').src = fileUrl;
+    }
+
+    document.getElementById('modalLihatLampiranIzin').classList.remove('hidden');
+}
+
+function closeModalLampiran() {
+    document.getElementById('modalLihatLampiranIzin').classList.add('hidden');
+    document.getElementById('lampiranModalIframe').src = '';
+    document.getElementById('lampiranModalImg').src = '';
+}
+
+// Filter Tab Pengajuan Realtime (Semua / Pending / Disetujui / Ditolak)
+window.filterPengajuan = function(status, btnElement) {
+    const buttons = document.querySelectorAll('.pengajuan-tab-btn');
+    buttons.forEach(btn => {
+        btn.className = 'pengajuan-tab-btn px-3 py-1.5 text-gray-600 font-medium rounded-lg text-xs hover:text-gray-900 transition cursor-pointer';
+    });
+    if (btnElement) {
+        btnElement.className = 'pengajuan-tab-btn px-3 py-1.5 bg-white text-[#0D2240] font-bold rounded-lg text-xs shadow-2xs transition cursor-pointer';
+    }
+
+    const rows = document.querySelectorAll('#pengajuanTableBody tr[data-status]');
+    let visibleCount = 0;
+    rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        if (status === 'all' || rowStatus === status) {
+            row.classList.remove('hidden');
+            visibleCount++;
+        } else {
+            row.classList.add('hidden');
+        }
+    });
+
+    const emptyFilterRow = document.getElementById('pengajuanEmptyFilterRow');
+    if (emptyFilterRow) {
+        if (visibleCount === 0 && rows.length > 0) {
+            emptyFilterRow.classList.remove('hidden');
+        } else {
+            emptyFilterRow.classList.add('hidden');
+        }
+    }
+};
 </script>
 @endsection

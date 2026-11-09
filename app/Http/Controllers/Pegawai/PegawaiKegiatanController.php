@@ -67,16 +67,18 @@ class PegawaiKegiatanController extends Controller
             'nama_kegiatan' => 'required|string|max:255',
             'deskripsi'     => 'required|string',
             'tanggal'       => 'required|date',
-            'foto'          => 'nullable|image|max:3072',
+            'foto'          => 'nullable|image|max:10240',
+            'surat_tugas'   => 'nullable|image|max:10240',
         ], [
             'nama_kegiatan.required' => 'Nama kegiatan wajib diisi.',
             'deskripsi.required'     => 'Deskripsi uraian kegiatan wajib diisi.',
             'tanggal.required'       => 'Tanggal pelaksanaan kegiatan wajib ditentukan.',
+            'surat_tugas.image'      => 'Berkas Surat Turun Lapangan harus berupa format gambar (JPG/PNG).',
         ]);
 
         $employee = Auth::user()->pegawai;
         if (!$employee) {
-            return back()->withErrors(['error' => 'Data pegawai tidak ditemukan.']);
+            return back()->with('error', 'Data pegawai tidak ditemukan.');
         }
 
         $tanggalReq = Carbon::parse($validated['tanggal'])->toDateString();
@@ -94,16 +96,21 @@ class PegawaiKegiatanController extends Controller
 
         if (!$isDinasLuar) {
             if (!$presensi || !$presensi->jam_masuk) {
-                return back()->withErrors(['error' => 'Anda belum melakukan Absen Datang. Laporan kegiatan hanya dapat dikirim selama jam kerja.']);
+                return back()->with('error', 'Anda belum melakukan Absen Datang. Laporan kegiatan hanya dapat dikirim selama jam kerja.');
             }
             if ($presensi->jam_pulang) {
-                return back()->withErrors(['error' => 'Anda sudah melakukan Absen Pulang. Jam kerja telah selesai sehingga tidak dapat menambah laporan kegiatan.']);
+                return back()->with('error', 'Anda sudah melakukan Absen Pulang. Jam kerja telah selesai sehingga tidak dapat menambah laporan kegiatan.');
             }
         }
 
         $photoPath = null;
         if ($request->hasFile('foto')) {
             $photoPath = $request->file('foto')->store('kegiatan', 'public');
+        }
+
+        $suratTugasPath = null;
+        if ($request->hasFile('surat_tugas')) {
+            $suratTugasPath = $request->file('surat_tugas')->store('kegiatan', 'public');
         }
 
         // Hitung skor produktivitas berdasarkan 4 subindikator PRD §23
@@ -120,6 +127,7 @@ class PegawaiKegiatanController extends Controller
             'nama_kegiatan'         => $validated['nama_kegiatan'],
             'deskripsi'             => $validated['deskripsi'],
             'foto'                  => $photoPath,
+            'surat_tugas'           => $suratTugasPath,
             'waktu_kirim'           => Carbon::now()->format('H:i:s'),
             'nilai_produktivitas'   => $hasilProduktivitas['nilai'],
             'kategori_produktivitas' => $hasilProduktivitas['kategori'],

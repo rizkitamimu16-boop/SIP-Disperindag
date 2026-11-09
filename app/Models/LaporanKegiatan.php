@@ -18,6 +18,7 @@ class LaporanKegiatan extends Model
         'nama_kegiatan',
         'deskripsi',
         'foto',
+        'surat_tugas',
         'waktu_kirim',
         'nilai_produktivitas',
         'kategori_produktivitas',

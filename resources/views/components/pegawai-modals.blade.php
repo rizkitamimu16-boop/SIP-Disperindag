@@ -256,6 +256,34 @@
                 </div>
             </div>
 
+            <!-- Foto Surat Turun Lapangan / Surat Tugas (Opsional) -->
+            <div>
+                <label class="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5">Foto Surat Turun Lapangan / Surat Tugas (Opsional)</label>
+                <div class="border border-dashed border-gray-300 bg-slate-50/50 rounded-2xl p-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div id="suratTugasThumb"
+                            class="w-12 h-12 rounded-xl bg-slate-100 border border-gray-200 flex items-center justify-center text-slate-400 overflow-hidden">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm font-bold text-gray-900">Surat Turun Lapangan</p>
+                            <p id="suratTugasStatus" class="text-[11px] text-gray-400">Opsional</p>
+                        </div>
+                    </div>
+                    <input type="file" name="surat_tugas" id="uploadSuratTugas" class="hidden" accept="image/*"
+                        onchange="handleSuratTugasUploaded(this)">
+                    <button type="button" onclick="document.getElementById('uploadSuratTugas').click()"
+                        class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-800 text-xs font-semibold px-3.5 py-2 rounded-xl shadow-xs transition flex items-center space-x-1.5 cursor-pointer">
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span>Pilih Surat</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Footer Modal -->
             <div class="pt-4 border-t border-gray-100 flex items-center justify-end space-x-3">
                 <button type="button" onclick="closeKegiatanModal()"
@@ -397,6 +425,14 @@
                 </div>
             </div>
 
+            <!-- Foto Surat Turun Lapangan / Surat Tugas -->
+            <div id="detailModalSuratContainer" class="hidden">
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Foto Surat Turun Lapangan</span>
+                <div class="rounded-xl border border-gray-200 overflow-hidden bg-slate-100 flex items-center justify-center max-h-56">
+                    <img id="detailModalSurat" src="" alt="Surat Turun Lapangan" class="w-full h-full max-h-56 object-contain">
+                </div>
+            </div>
+
         </div>
 
         <!-- Footer Modal -->
@@ -476,7 +512,36 @@
             fotoEl.src = '';
         }
 
+        const suratContainer = document.getElementById('detailModalSuratContainer');
+        const suratEl = document.getElementById('detailModalSurat');
+        if (data.surat_tugas) {
+            suratContainer.classList.remove('hidden');
+            suratEl.src = data.surat_tugas.startsWith('http') ? data.surat_tugas : '/storage/' + data.surat_tugas;
+        } else {
+            suratContainer.classList.add('hidden');
+            suratEl.src = '';
+        }
+
         modal.classList.remove('hidden');
+    }
+
+    function handleSuratTugasUploaded(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const statusEl = document.getElementById('suratTugasStatus');
+            if (statusEl) {
+                statusEl.textContent = file.name;
+                statusEl.className = 'text-[11px] text-emerald-600 font-semibold truncate max-w-[150px]';
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const thumbEl = document.getElementById('suratTugasThumb');
+                if (thumbEl) {
+                    thumbEl.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
     }
 
     function closeDetailKegiatanModal() {
