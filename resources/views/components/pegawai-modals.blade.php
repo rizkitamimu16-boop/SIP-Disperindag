@@ -351,94 +351,79 @@
 </div>
 
 <!-- ===================================================================
-     MODAL DETAIL LAPORAN KEGIATAN (MODERN & RESPONSIVE MOBILE)
+     MODAL DETAIL LAPORAN KEGIATAN (POP-UP IDENTIK DENGAN ADMIN)
      =================================================================== -->
 <div id="modalDetailKegiatan" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
         
         <!-- Header Modal -->
-        <div class="px-5 py-4 sm:px-6 sm:py-5 border-b border-gray-100 flex items-center justify-between bg-slate-50/70 shrink-0">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100 shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+        <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs">
+                    LK
                 </div>
                 <div>
-                    <h3 class="text-sm sm:text-base font-bold text-gray-900 leading-tight">Detail Laporan Kegiatan</h3>
-                    <p id="detailModalTanggal" class="text-[11px] sm:text-xs text-gray-500 mt-0.5">-</p>
+                    <h3 class="text-base font-bold text-gray-900 leading-tight">Detail Laporan Kegiatan</h3>
                 </div>
             </div>
-            <button type="button" onclick="closeDetailKegiatanModal()"
-                class="p-1.5 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 transition cursor-pointer"
-                aria-label="Tutup">
+            <button type="button" onclick="closeDetailKegiatanModal()" class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 cursor-pointer">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
 
-        <!-- Body Modal Scrollable -->
-        <div class="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 text-left">
-            
-            <!-- Status & Badge Nilai -->
-            <div class="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <div class="flex items-center space-x-2">
-                    <span class="text-xs font-semibold text-gray-500">Status:</span>
+        <!-- Detail Konten (Identik dengan Admin) -->
+        <div class="space-y-3 text-xs sm:text-sm">
+            <div class="p-4 rounded-xl bg-slate-50 border border-gray-100 space-y-2.5">
+                <div class="flex justify-between items-center py-1 border-b border-gray-200/60">
+                    <span class="text-gray-500 font-medium">Tanggal Pelaksanaan:</span>
+                    <strong id="detailModalTanggal" class="text-gray-900 font-mono">-</strong>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-gray-200/60">
+                    <span class="text-gray-500 font-medium">Waktu Pengiriman:</span>
+                    <span id="detailModalWaktu" class="text-gray-800 font-mono font-semibold">-</span>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-gray-200/60">
+                    <span class="text-gray-500 font-medium">Nama Kegiatan:</span>
+                    <strong id="detailModalNama" class="text-gray-900 text-right max-w-xs break-words">-</strong>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-gray-200/60">
+                    <span class="text-gray-500 font-medium">Status Verifikasi:</span>
                     <span id="detailModalStatusBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
                         Menunggu Review
                     </span>
                 </div>
-                <div id="detailModalNilaiContainer" class="hidden flex items-center space-x-2 text-xs">
-                    <span class="text-gray-500 font-semibold">Kualitas:</span>
-                    <span id="detailModalNilai" class="font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">0</span>
+                <div id="detailModalNilaiContainer" class="hidden flex justify-between items-center py-1 border-b border-gray-200/60">
+                    <span class="text-gray-500 font-medium">Nilai Kualitas Atasan:</span>
+                    <span class="inline-flex items-center space-x-1.5">
+                        <strong id="detailModalNilai" class="text-emerald-700 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">0</strong>
+                        <span id="detailModalKategoriMutu" class="text-xs text-gray-500 font-semibold"></span>
+                    </span>
+                </div>
+                <div>
+                    <span class="text-gray-500 block mb-1 font-medium">Uraian / Output Tugas:</span>
+                    <div class="text-gray-800 bg-white p-3 rounded-xl border border-gray-200 max-h-40 overflow-y-auto whitespace-pre-wrap leading-relaxed" id="detailModalDeskripsi">-</div>
+                </div>
+                <div id="detailModalCatatanContainer" class="hidden">
+                    <span class="text-amber-800 block mb-1 font-semibold">Catatan Evaluasi / Masukan Atasan:</span>
+                    <div class="text-amber-900 bg-amber-50/80 p-3 rounded-xl border border-amber-200 max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed" id="detailModalCatatan">-</div>
+                </div>
+                <div id="detailModalFotoContainer" class="hidden">
+                    <span class="text-gray-500 block mb-1 font-medium">Foto Dokumentasi Kegiatan:</span>
+                    <img id="detailModalFoto" src="" alt="Foto Laporan" class="w-full h-auto max-h-56 object-contain rounded-xl border border-gray-200 bg-slate-50">
+                </div>
+                <div id="detailModalSuratContainer" class="hidden">
+                    <span class="text-gray-500 block mb-1 font-medium">Foto Surat Turun Lapangan:</span>
+                    <img id="detailModalSurat" src="" alt="Surat Tugas" class="w-full h-auto max-h-56 object-contain rounded-xl border border-gray-200 bg-slate-50">
                 </div>
             </div>
-
-            <!-- Nama Pekerjaan / Kegiatan -->
-            <div>
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Nama Kegiatan</span>
-                <p id="detailModalNama" class="text-sm sm:text-base font-extrabold text-gray-900 leading-snug break-words">-</p>
-            </div>
-
-            <!-- Deskripsi Hasil Pekerjaan -->
-            <div>
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Uraian & Deskripsi Hasil</span>
-                <div class="bg-gray-50 border border-gray-200/70 rounded-xl p-3.5 text-xs sm:text-sm text-gray-700 whitespace-pre-line leading-relaxed break-words" id="detailModalDeskripsi">
-                    -
-                </div>
-            </div>
-
-            <!-- Catatan Feedback Atasan (Jika ada) -->
-            <div id="detailModalCatatanContainer" class="hidden">
-                <span class="text-[11px] font-bold text-amber-700 uppercase tracking-wider block mb-1">Catatan / Masukan Verifikator</span>
-                <div class="bg-amber-50/70 border border-amber-200/80 rounded-xl p-3 text-xs text-amber-900 leading-relaxed" id="detailModalCatatan">
-                    -
-                </div>
-            </div>
-
-            <!-- Foto Dokumentasi Kegiatan -->
-            <div id="detailModalFotoContainer" class="hidden">
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Foto Dokumentasi</span>
-                <div class="rounded-xl border border-gray-200 overflow-hidden bg-slate-100 flex items-center justify-center max-h-56">
-                    <img id="detailModalFoto" src="" alt="Dokumentasi Kegiatan" class="w-full h-full max-h-56 object-contain">
-                </div>
-            </div>
-
-            <!-- Foto Surat Turun Lapangan / Surat Tugas -->
-            <div id="detailModalSuratContainer" class="hidden">
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Foto Surat Turun Lapangan</span>
-                <div class="rounded-xl border border-gray-200 overflow-hidden bg-slate-100 flex items-center justify-center max-h-56">
-                    <img id="detailModalSurat" src="" alt="Surat Turun Lapangan" class="w-full h-full max-h-56 object-contain">
-                </div>
-            </div>
-
         </div>
 
         <!-- Footer Modal -->
-        <div class="px-5 py-3.5 sm:px-6 bg-slate-50 border-t border-gray-100 flex items-center justify-end shrink-0">
+        <div class="pt-3 border-t border-gray-100 flex items-center justify-end">
             <button type="button" onclick="closeDetailKegiatanModal()"
-                class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0D2240] hover:bg-[#163660] text-white text-xs sm:text-sm font-bold shadow-xs transition active:scale-98 cursor-pointer">
+                class="px-5 py-2.5 rounded-xl bg-[#0D2240] hover:bg-[#163660] text-white text-xs sm:text-sm font-bold shadow-xs transition active:scale-98 cursor-pointer">
                 Tutup
             </button>
         </div>
@@ -447,29 +432,33 @@
 </div>
 
 <script>
-    function openDetailKegiatanModal(data) {
+    function openDetailKegiatanModal(arg) {
         const modal = document.getElementById('modalDetailKegiatan');
-        if (!modal || !data) return;
+        if (!modal || !arg) return;
+
+        let data = {};
+        if (arg instanceof HTMLElement) {
+            data = {
+                nama_kegiatan: arg.getAttribute('data-nama') || '',
+                deskripsi: arg.getAttribute('data-deskripsi') || '',
+                tanggal: arg.getAttribute('data-tanggal') || '',
+                waktu_kirim: arg.getAttribute('data-waktu') || '',
+                status_verifikasi: arg.getAttribute('data-status') || 'Menunggu Review',
+                nilai_produktivitas: arg.getAttribute('data-prod') || '',
+                nilai_kualitas: arg.getAttribute('data-kual') || '',
+                catatan_kualitas: arg.getAttribute('data-catatan') || '',
+                foto: arg.getAttribute('data-foto') || '',
+                surat_tugas: arg.getAttribute('data-surat') || '',
+            };
+        } else {
+            data = arg;
+        }
 
         document.getElementById('detailModalNama').textContent = data.nama_kegiatan || '-';
         document.getElementById('detailModalDeskripsi').textContent = data.deskripsi || '-';
-        
-        let tglStr = '-';
-        if (data.tanggal) {
-            try {
-                const parts = data.tanggal.split('-');
-                if (parts.length === 3) {
-                    const d = new Date(parts[0], parts[1] - 1, parts[2]);
-                    tglStr = d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                } else {
-                    tglStr = data.tanggal;
-                }
-            } catch(e) {
-                tglStr = data.tanggal;
-            }
-        }
-        const jamStr = data.waktu_kirim ? data.waktu_kirim + ' WITA' : '';
-        document.getElementById('detailModalTanggal').textContent = tglStr + (jamStr ? ' • ' + jamStr : '');
+        document.getElementById('detailModalTanggal').textContent = data.tanggal || '-';
+        const waktuEl = document.getElementById('detailModalWaktu');
+        if (waktuEl) waktuEl.textContent = data.waktu_kirim || '-';
 
         const statusBadge = document.getElementById('detailModalStatusBadge');
         const status = (data.status_verifikasi || 'Menunggu Review').toLowerCase();
@@ -486,11 +475,20 @@
 
         const nilaiContainer = document.getElementById('detailModalNilaiContainer');
         const nilaiEl = document.getElementById('detailModalNilai');
+        const mutuEl = document.getElementById('detailModalKategoriMutu');
         if (data.nilai_kualitas && parseFloat(data.nilai_kualitas) > 0) {
             nilaiContainer.classList.remove('hidden');
-            nilaiEl.textContent = parseFloat(data.nilai_kualitas);
+            const val = parseFloat(data.nilai_kualitas);
+            nilaiEl.textContent = val;
+            let mutu = '';
+            if (val >= 90) mutu = '(A - Sangat Baik)';
+            else if (val >= 80) mutu = '(B - Baik)';
+            else if (val >= 70) mutu = '(C - Cukup)';
+            else mutu = '(D - Kurang)';
+            if (mutuEl) mutuEl.textContent = mutu;
         } else {
             nilaiContainer.classList.add('hidden');
+            if (mutuEl) mutuEl.textContent = '';
         }
 
         const catatanContainer = document.getElementById('detailModalCatatanContainer');
@@ -504,7 +502,7 @@
 
         const fotoContainer = document.getElementById('detailModalFotoContainer');
         const fotoEl = document.getElementById('detailModalFoto');
-        if (data.foto) {
+        if (data.foto && data.foto !== '') {
             fotoContainer.classList.remove('hidden');
             fotoEl.src = data.foto.startsWith('http') ? data.foto : '/storage/' + data.foto;
         } else {
@@ -514,7 +512,7 @@
 
         const suratContainer = document.getElementById('detailModalSuratContainer');
         const suratEl = document.getElementById('detailModalSurat');
-        if (data.surat_tugas) {
+        if (data.surat_tugas && data.surat_tugas !== '') {
             suratContainer.classList.remove('hidden');
             suratEl.src = data.surat_tugas.startsWith('http') ? data.surat_tugas : '/storage/' + data.surat_tugas;
         } else {

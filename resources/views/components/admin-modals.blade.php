@@ -456,7 +456,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Nilai Kualitas (0-100) <span class="text-red-500">*</span></label>
-                        <input type="number" min="0" max="100" name="nilai_kualitas" id="inputKualitas" required oninput="updateKategoriGrade(this.value)" class="w-full h-10 px-3 text-sm bg-slate-50 border border-gray-300 rounded-xl focus:bg-white outline-none" placeholder="Contoh: 90">
+                        <input type="number" min="0" max="100" name="nilai_kualitas" id="inputKualitas" oninput="updateKategoriGrade(this.value)" class="w-full h-10 px-3 text-sm bg-slate-50 border border-gray-300 rounded-xl focus:bg-white outline-none" placeholder="Contoh: 90">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Kategori Mutu Otomatis</label>
@@ -494,9 +494,23 @@
                     <textarea rows="2" name="catatan_kualitas" id="inputCatatanKualitas" class="w-full p-2 text-sm bg-slate-50 border border-gray-300 rounded-xl focus:bg-white outline-none" placeholder="Catatan evaluasi mutu hasil kerja..."></textarea>
                 </div>
 
-                <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100">
-                    <button type="submit" name="status_verifikasi" value="Ditolak" class="px-4 py-2 bg-red-50 text-red-700 rounded-xl font-bold hover:bg-red-100 cursor-pointer">Tolak</button>
-                    <button type="submit" name="status_verifikasi" value="Disetujui" class="px-5 py-2 bg-[#0D2240] text-white font-bold rounded-xl hover:bg-[#163660] transition shadow-xs cursor-pointer">Setujui & Simpan Nilai</button>
+                <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <button type="submit" name="status_verifikasi" value="Ditolak"
+                        onclick="return confirm('Apakah Anda yakin ingin menolak dan MENGHAPUS laporan kegiatan ini secara permanen dari sistem?')"
+                        class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-bold transition cursor-pointer flex items-center space-x-1.5 text-xs sm:text-sm">
+                        <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Tolak / Hapus</span>
+                    </button>
+                    <button type="submit" name="status_verifikasi" value="Disetujui"
+                        onclick="if(!document.getElementById('inputKualitas').value){ alert('Harap isi Nilai Kualitas (0-100) terlebih dahulu!'); document.getElementById('inputKualitas').focus(); return false; }"
+                        class="px-5 py-2 bg-[#0D2240] text-white font-bold rounded-xl hover:bg-[#163660] transition shadow-xs cursor-pointer text-xs sm:text-sm flex items-center space-x-1.5">
+                        <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Setujui & Simpan Nilai</span>
+                    </button>
                 </div>
             </form>
         </div>

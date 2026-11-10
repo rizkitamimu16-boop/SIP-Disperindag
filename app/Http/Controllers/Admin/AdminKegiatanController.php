@@ -88,6 +88,33 @@ class AdminKegiatanController extends Controller
             'catatan_kualitas'  => 'nullable|string',
         ]);
 
+        // Jika status Ditolak, hapus laporan dan berkas lampirannya secara permanen
+        if ($validated['status_verifikasi'] === 'Ditolak') {
+            if ($laporan->foto && \Illuminate\Support\Facades\Storage::disk('public')->exists($laporan->foto)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->foto);
+            }
+            if ($laporan->surat_tugas && \Illuminate\Support\Facades\Storage::disk('public')->exists($laporan->surat_tugas)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->surat_tugas);
+            }
+
+            $pegawaiId = $laporan->pegawai_id;
+            $periode = Carbon::parse($laporan->tanggal)->format('Y-m');
+            $namaKegiatan = $laporan->nama_kegiatan;
+            $laporan->delete();
+
+            // Sinkronkan ulang skor kinerja pegawai setelah laporan dihapus
+            \App\Models\SkorKinerja::simpanAtauPerbarui($pegawaiId, $periode);
+
+            return back()->with('success', "Laporan kegiatan '{$namaKegiatan}' berhasil ditolak dan dihapus dari sistem.");
+        }
+
+        // Jika Disetujui, nilai_kualitas wajib diisi
+        if ($validated['status_verifikasi'] === 'Disetujui') {
+            if (!isset($validated['nilai_kualitas']) || $validated['nilai_kualitas'] === '') {
+                return back()->with('error', 'Silakan masukkan Nilai Kualitas (0 - 100) sebelum menyetujui laporan.');
+            }
+        }
+
         $nilai = $validated['nilai_kualitas'] ?? $laporan->nilai_kualitas;
         $kategori = $laporan->kategori_kualitas;
         
@@ -105,6 +132,9 @@ class AdminKegiatanController extends Controller
             'catatan_kualitas'  => $validated['catatan_kualitas'] ?? $laporan->catatan_kualitas,
         ]);
 
-        return back()->with('success', "Status laporan kegiatan berhasil diperbarui menjadi '{$validated['status_verifikasi']}'.");
+        // Sinkronkan ulang skor kinerja pegawai
+        \App\Models\SkorKinerja::simpanAtauPerbarui($laporan->pegawai_id, Carbon::parse($laporan->tanggal)->format('Y-m'));
+
+        return back()->with('success', "Laporan kegiatan berhasil diverifikasi dengan predikat Kualitas {$kategori}.");
     }
 }

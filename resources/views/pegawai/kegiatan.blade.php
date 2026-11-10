@@ -185,7 +185,17 @@
                         </td>
                         <td class="p-3.5 text-center whitespace-nowrap">
                             <button type="button"
-                                onclick='openDetailKegiatanModal(@json($rep))'
+                                data-nama="{{ $rep->nama_kegiatan }}"
+                                data-tanggal="{{ \Carbon\Carbon::parse($rep->tanggal)->locale('id')->isoFormat('dddd, D MMMM Y') }}"
+                                data-waktu="{{ $rep->waktu_kirim ? $rep->waktu_kirim . ' WITA' : '-' }}"
+                                data-deskripsi="{{ $rep->deskripsi }}"
+                                data-status="{{ $rep->status_verifikasi ?? 'Menunggu Review' }}"
+                                data-prod="{{ $rep->nilai_produktivitas ?? 100 }}"
+                                data-kual="{{ $rep->nilai_kualitas ?? '' }}"
+                                data-catatan="{{ $rep->catatan_kualitas ?? '' }}"
+                                data-foto="{{ $rep->foto ? asset('storage/' . $rep->foto) : '' }}"
+                                data-surat="{{ $rep->surat_tugas ? asset('storage/' . $rep->surat_tugas) : '' }}"
+                                onclick="openDetailKegiatanModal(this)"
                                 class="inline-flex items-center space-x-1 text-[#0D2240] hover:text-sky-700 font-bold hover:underline cursor-pointer px-2 py-1 rounded-lg hover:bg-slate-100 transition">
                                 <span>Detail</span>
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
