@@ -14,9 +14,18 @@ class AdminKinerjaController extends Controller
 {
     public function index(Request $request): View
     {
+        $mode = $request->get('mode', 'bulanan'); // 'bulanan' or 'harian'
         $currentPeriod = $request->get('period', Carbon::now()->format('Y-m'));
-        $year = Carbon::parse($currentPeriod)->year;
-        $month = Carbon::parse($currentPeriod)->month;
+        $selectedDate = $request->get('date', Carbon::today()->toDateString());
+
+        if ($mode === 'harian') {
+            $periodeKey = $selectedDate;
+            $periodLabel = Carbon::parse($selectedDate)->locale('id')->isoFormat('D MMMM Y');
+        } else {
+            $mode = 'bulanan';
+            $periodeKey = $currentPeriod;
+            $periodLabel = Carbon::parse($currentPeriod)->locale('id')->isoFormat('MMMM Y');
+        }
 
         $query = Pegawai::query();
 
@@ -39,7 +48,7 @@ class AdminKinerjaController extends Controller
         $totalKualitas = 0;
 
         foreach ($pegawais as $pegawai) {
-            $scoreData = $this->calculatePegawaiScore($pegawai, $year, $month);
+            $scoreData = $this->calculatePegawaiScore($pegawai, $periodeKey);
             $scoreData->pegawai = $pegawai; // Attach relation manually
             $scores->push($scoreData);
 
@@ -56,44 +65,68 @@ class AdminKinerjaController extends Controller
         $avgProduktivitas = $totalProduktivitas / $count;
         $avgKualitas = $totalKualitas / $count;
         
-        // Data for Line Chart (Last 6 months based on current filter)
-        $trendMonths = [];
+        // Data for Line Chart (7 days for daily, 6 months for monthly)
+        $trendLabels = [];
         $trendScores = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $tMonth = Carbon::parse($currentPeriod)->subMonths($i);
-            $monthName = $tMonth->isoFormat('MMM Y');
-            
-            $tYear = $tMonth->year;
-            $tMonthNum = $tMonth->month;
 
-            $monthTotal = 0;
-            foreach ($pegawais as $pegawai) {
-                $mScore = $this->calculatePegawaiScore($pegawai, $tYear, $tMonthNum);
-                $monthTotal += $mScore->nilai_akhir;
+        if ($mode === 'harian') {
+            for ($i = 6; $i >= 0; $i--) {
+                $tDate = Carbon::parse($selectedDate)->subDays($i);
+                $dayLabel = $tDate->locale('id')->isoFormat('D MMM');
+                $dKey = $tDate->toDateString();
+
+                $dayTotal = 0;
+                foreach ($pegawais as $pegawai) {
+                    $mScore = $this->calculatePegawaiScore($pegawai, $dKey);
+                    $dayTotal += $mScore->nilai_akhir;
+                }
+
+                $trendLabels[] = $dayLabel;
+                $trendScores[] = round($dayTotal / $count, 1);
             }
+        } else {
+            for ($i = 5; $i >= 0; $i--) {
+                $tMonth = Carbon::parse($currentPeriod)->subMonths($i);
+                $monthName = $tMonth->locale('id')->isoFormat('MMM Y');
+                $mKey = $tMonth->format('Y-m');
 
-            $avgNilaiAkhir = $monthTotal / $count;
+                $monthTotal = 0;
+                foreach ($pegawais as $pegawai) {
+                    $mScore = $this->calculatePegawaiScore($pegawai, $mKey);
+                    $monthTotal += $mScore->nilai_akhir;
+                }
 
-            $trendMonths[] = $monthName;
-            $trendScores[] = round($avgNilaiAkhir, 1);
+                $trendLabels[] = $monthName;
+                $trendScores[] = round($monthTotal / $count, 1);
+            }
         }
+
+        $pengaturan = \App\Models\PengaturanKantor::getPengaturan();
 
         return view('admin.indeks-kinerja', [
             'scores'        => $scores,
             'skorList'      => $scores, // For backwards compatibility with view if needed
+            'mode'          => $mode,
+            'selectedDate'  => $selectedDate,
             'currentPeriod' => $currentPeriod,
+            'periodLabel'   => $periodLabel,
+            'pengaturan'    => $pengaturan,
             'chartData'     => json_encode([
                 'radar' => [round($avgKehadiran, 1), round($avgProduktivitas, 1), round($avgKualitas, 1)],
-                'trend_labels' => $trendMonths,
+                'radar_labels' => [
+                    'Kehadiran (' . floatval($pengaturan->bobot_kehadiran ?? 60) . '%)',
+                    'Produktivitas (' . floatval($pengaturan->bobot_produktivitas ?? 25) . '%)',
+                    'Kualitas (' . floatval($pengaturan->bobot_kualitas ?? 15) . '%)'
+                ],
+                'trend_labels' => $trendLabels,
                 'trend_data' => $trendScores,
             ]),
         ]);
     }
 
-    private function calculatePegawaiScore($pegawai, $year, $month)
+    private function calculatePegawaiScore($pegawai, $periodeKey)
     {
-        $periode = sprintf('%04d-%02d', $year, $month);
-        $scoreData = \App\Models\SkorKinerja::calculateLiveScore($pegawai->id, $periode);
+        $scoreData = \App\Models\SkorKinerja::calculateLiveScore($pegawai->id, $periodeKey);
 
         if ($scoreData->nilai_akhir >= 90) {
             $scoreData->rekomendasi_kontrak = 'Diperpanjang';
@@ -105,17 +138,13 @@ class AdminKinerjaController extends Controller
             $scoreData->rekomendasi_kontrak = 'Tidak Diperpanjang';
         }
 
-        $presensi = Presensi::where('pegawai_id', $pegawai->id)
-            ->whereYear('tanggal', $year)
-            ->whereMonth('tanggal', $month)
-            ->get();
-        $alphaCount = $presensi->where('status', 'Alpha')->count();
-
         // OTOMATIS: Cek Pelanggaran Surat Peringatan (SP) semiotomatis
         \App\Models\SuratPeringatan::syncDraftSpForPegawai($pegawai);
 
-        // OTOMATIS: Sinkronkan skor kinerja ke tabel skor_kinerja untuk riwayat dan pusat laporan
-        \App\Models\SkorKinerja::simpanAtauPerbarui($pegawai->id, $periode);
+        // Jika mode bulanan (format YYYY-MM), sinkronkan skor kinerja ke tabel skor_kinerja untuk riwayat
+        if (strlen($periodeKey) === 7) {
+            \App\Models\SkorKinerja::simpanAtauPerbarui($pegawai->id, $periodeKey);
+        }
 
         $scoreData->status = 'Real-time';
         return $scoreData;

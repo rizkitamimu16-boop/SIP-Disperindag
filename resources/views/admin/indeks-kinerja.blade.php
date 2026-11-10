@@ -56,13 +56,26 @@
                 </div>
             </div>
 
-            <!-- 3. Dropdown Periode (Bulan-Tahun) -->
+            <!-- 3. Tipe Filter: Bulanan / Harian -->
             <div class="relative">
-                <input type="month" name="period" value="{{ request('period', $currentPeriod) }}" class="w-full h-10 px-3.5 pr-8 text-xs sm:text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D2240]/20 focus:border-[#0D2240] text-gray-700 transition cursor-pointer appearance-none" onchange="document.getElementById('filterKinerjaForm').submit()">
+                <select name="mode" id="filterModeSelect" class="w-full h-10 px-3.5 pr-8 text-xs sm:text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D2240]/20 focus:border-[#0D2240] text-gray-700 transition cursor-pointer appearance-none" onchange="document.getElementById('filterKinerjaForm').submit()">
+                    <option value="bulanan" {{ ($mode ?? 'bulanan') === 'bulanan' ? 'selected' : '' }}>Mode: Rekap Bulanan</option>
+                    <option value="harian" {{ ($mode ?? 'bulanan') === 'harian' ? 'selected' : '' }}>Mode: Rekap Harian</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
             </div>
             
-            <div class="relative flex items-center">
-                <!-- Spacing block for grid -->
+            <!-- 4. Pilihan Waktu (Tanggal / Bulan) -->
+            <div class="relative">
+                @if(($mode ?? 'bulanan') === 'harian')
+                    <input type="date" name="date" value="{{ request('date', $selectedDate) }}" class="w-full h-10 px-3.5 pr-8 text-xs sm:text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D2240]/20 focus:border-[#0D2240] text-gray-700 transition cursor-pointer appearance-none" onchange="document.getElementById('filterKinerjaForm').submit()">
+                @else
+                    <input type="month" name="period" value="{{ request('period', $currentPeriod) }}" class="w-full h-10 px-3.5 pr-8 text-xs sm:text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D2240]/20 focus:border-[#0D2240] text-gray-700 transition cursor-pointer appearance-none" onchange="document.getElementById('filterKinerjaForm').submit()">
+                @endif
             </div>
         </form>
     </div>
@@ -75,7 +88,7 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="text-base font-bold text-gray-900">Evaluasi 3 Aspek Kinerja (IKP)</h3>
-                    <p class="text-xs text-gray-500">Bobot Penilaian: Kehadiran 60%, Produktivitas 25%, Kualitas 15%</p>
+                    <p class="text-xs text-gray-500">Bobot Penilaian: Kehadiran {{ floatval($pengaturan->bobot_kehadiran ?? 60) }}%, Produktivitas {{ floatval($pengaturan->bobot_produktivitas ?? 25) }}%, Kualitas {{ floatval($pengaturan->bobot_kualitas ?? 15) }}%</p>
                 </div>
             </div>
             <div class="h-64 sm:h-72 w-full relative">
@@ -88,7 +101,7 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h3 class="text-base font-bold text-gray-900">Tren Kinerja Rata-Rata SKPD</h3>
-                    <p class="text-xs text-gray-500">Pergerakan indeks kinerja 6 bulan berjalan</p>
+                    <p class="text-xs text-gray-500">{{ ($mode ?? 'bulanan') === 'harian' ? 'Pergerakan indeks kinerja 7 hari berjalan' : 'Pergerakan indeks kinerja 6 bulan berjalan' }}</p>
                 </div>
                 <span
                     class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">Tren
@@ -109,8 +122,7 @@
                 <p class="text-xs text-gray-500">Rentang indeks 0–100 berdasarkan akumulasi seluruh
                     parameter kehadiran dan kinerja</p>
             </div>
-            <span class="text-xs font-bold px-3 py-1.5 bg-slate-100 rounded-xl text-gray-700">Periode:
-                September 2026</span>
+            <span class="text-xs font-bold px-3 py-1.5 bg-slate-100 rounded-xl text-gray-700">Periode: {{ $periodLabel }}</span>
         </div>
 
         <div class="overflow-x-auto">
@@ -180,62 +192,76 @@
         const chartData = {!! $chartData ?? 'null' !!};
         
         if (chartData) {
-            // Radar Chart
-            const ctxRadar = document.getElementById('chartAdminRadarKinerja').getContext('2d');
-            new Chart(ctxRadar, {
-                type: 'radar',
-                data: {
-                    labels: ['Kehadiran', 'Produktivitas', 'Kualitas'],
-                    datasets: [{
-                        label: 'Skor Rata-Rata',
-                        data: chartData.radar,
-                        backgroundColor: 'rgba(13, 34, 64, 0.2)',
-                        borderColor: 'rgba(13, 34, 64, 1)',
-                        pointBackgroundColor: 'rgba(13, 34, 64, 1)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(13, 34, 64, 1)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: { display: false },
-                            suggestedMin: 0,
-                            suggestedMax: 100
+            // Radar Chart Dinamis Berdasarkan Bobot Pengaturan
+            const ctxRadar = document.getElementById('chartAdminRadarKinerja');
+            if (ctxRadar) {
+                if (window.adminRadarInstance) window.adminRadarInstance.destroy();
+                window.adminRadarInstance = new Chart(ctxRadar.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: chartData.radar_labels || ['Kehadiran', 'Produktivitas', 'Kualitas'],
+                        datasets: [{
+                            label: 'Skor Rata-Rata',
+                            data: chartData.radar,
+                            backgroundColor: 'rgba(13, 34, 64, 0.2)',
+                            borderColor: 'rgba(13, 34, 64, 1)',
+                            pointBackgroundColor: 'rgba(13, 34, 64, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(13, 34, 64, 1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { display: false },
+                                suggestedMin: 0,
+                                suggestedMax: 100,
+                                ticks: { stepSize: 20, font: { size: 10 } },
+                                pointLabels: { font: { size: 11, weight: 'bold' } }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { font: { size: 11 }, boxWidth: 12 }
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
 
-            // Line Chart
-            const ctxLine = document.getElementById('chartAdminTrenKinerja').getContext('2d');
-            new Chart(ctxLine, {
-                type: 'line',
-                data: {
-                    labels: chartData.trend_labels,
-                    datasets: [{
-                        label: 'Indeks Kinerja Akhir',
-                        data: chartData.trend_data,
-                        fill: true,
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)', // emerald-500
-                        borderColor: 'rgba(16, 185, 129, 1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            suggestedMin: 0,
-                            suggestedMax: 100
+            // Line Chart Tren Dinamis (Harian / Bulanan)
+            const ctxLine = document.getElementById('chartAdminTrenKinerja');
+            if (ctxLine) {
+                if (window.adminTrenInstance) window.adminTrenInstance.destroy();
+                window.adminTrenInstance = new Chart(ctxLine.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: chartData.trend_labels,
+                        datasets: [{
+                            label: 'Indeks Kinerja Akhir',
+                            data: chartData.trend_data,
+                            fill: true,
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)', // emerald-500
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                suggestedMin: 0,
+                                suggestedMax: 100
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
     });
 </script>

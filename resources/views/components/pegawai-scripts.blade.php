@@ -242,6 +242,15 @@
         const type = currentPresensiType === 'pulang' ? 'pulang' : 'masuk';
         const token = '{{ csrf_token() }}';
 
+        Swal.fire({
+            title: 'Merekam Presensi...',
+            text: 'Sedang memvalidasi titik koordinat GPS dan foto presensi Anda...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         fetch('{{ route("pegawai.absensi.record") }}', {
             method: 'POST',
             headers: {
@@ -256,9 +265,9 @@
                 photo: currentPhotoBase64
             })
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
+        .then(async res => {
+            const data = await res.json().catch(() => null);
+            if (res.ok && data && data.success) {
                 Swal.fire({
                     title: 'Berhasil!',
                     text: data.message || 'Presensi berhasil dicatat!',
@@ -269,16 +278,64 @@
                     window.location.reload();
                 });
             } else {
-                Swal.fire('Gagal!', data.message || 'Gagal merekam presensi.', 'error');
+                const errorMsg = (data && data.message) ? data.message : 'Gagal merekam presensi. Pastikan Anda berada dalam radius kantor dan jam kerja.';
+                Swal.fire('Gagal!', errorMsg, 'error');
             }
         })
         .catch(err => {
             console.error(err);
-            Swal.fire('Error!', 'Terjadi kendala saat memproses presensi. Silakan coba beberapa saat lagi.', 'error');
+            Swal.fire('Error!', 'Terjadi kendala jaringan saat memproses presensi. Silakan periksa koneksi internet Anda.', 'error');
         });
     }
 
-    // 2. Fungsi Pop Up Pelaporan Kegiatan (Gambar 2)
+    // Helper kompresi gambar client-side (mencegah memory crash & timeout di HP)
+    function compressImageFile(file, maxWidth, maxHeight, quality, callback) {
+        if (!file || !file.type.startsWith('image/')) {
+            callback(file, null);
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                let width = img.width;
+                let height = img.height;
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round(height * (maxWidth / width));
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round(width * (maxHeight / height));
+                        height = maxHeight;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(function(blob) {
+                    if (blob) {
+                        const newName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+                        const compressed = new File([blob], newName, { type: 'image/jpeg', lastModified: Date.now() });
+                        callback(compressed, canvas.toDataURL('image/jpeg', 0.5));
+                    } else {
+                        callback(file, e.target.result);
+                    }
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = function() {
+                callback(file, null);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // 2. Fungsi Pop Up Pelaporan Kegiatan
     function openKegiatanModal() {
         const modal = document.getElementById('modalPelaporanKegiatan');
         if (modal) modal.classList.remove('hidden');
@@ -291,13 +348,76 @@
 
     function handleFotoKegiatanUploaded(input) {
         if (input.files && input.files[0]) {
+            const file = input.files[0];
             const status = document.getElementById('fotoKegiatanStatus');
+            const thumb = document.getElementById('fotoKegiatanThumb');
             if (status) {
-                status.textContent = input.files[0].name + ' (Siap dikirim)';
-                status.className = 'text-[11px] font-semibold text-emerald-600';
+                status.textContent = 'Mengompresi foto...';
+                status.className = 'text-[11px] font-semibold text-sky-600 animate-pulse';
             }
+
+            compressImageFile(file, 1280, 1280, 0.75, function(compressedFile, dataUrl) {
+                try {
+                    const dt = new DataTransfer();
+                    dt.items.add(compressedFile);
+                    input.files = dt.files;
+                } catch(e) {
+                    console.warn('DataTransfer not available', e);
+                }
+                if (status) {
+                    const sizeKb = Math.round(compressedFile.size / 1024);
+                    status.textContent = `${compressedFile.name} (${sizeKb} KB) ✓ Siap`;
+                    status.className = 'text-[11px] font-semibold text-emerald-600';
+                }
+                if (thumb && dataUrl) {
+                    thumb.innerHTML = `<img src="${dataUrl}" class="w-full h-full object-cover rounded-xl" />`;
+                }
+            });
         }
     }
+
+    function handleSuratTugasUploaded(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const status = document.getElementById('suratTugasStatus');
+            const thumb = document.getElementById('suratTugasThumb');
+            if (status) {
+                status.textContent = 'Mengompresi berkas...';
+                status.className = 'text-[11px] font-semibold text-sky-600 animate-pulse';
+            }
+
+            compressImageFile(file, 1280, 1280, 0.75, function(compressedFile, dataUrl) {
+                try {
+                    const dt = new DataTransfer();
+                    dt.items.add(compressedFile);
+                    input.files = dt.files;
+                } catch(e) {
+                    console.warn('DataTransfer not available', e);
+                }
+                if (status) {
+                    const sizeKb = Math.round(compressedFile.size / 1024);
+                    status.textContent = `${compressedFile.name} (${sizeKb} KB) ✓ Siap`;
+                    status.className = 'text-[11px] font-semibold text-emerald-600';
+                }
+                if (thumb && dataUrl) {
+                    thumb.innerHTML = `<img src="${dataUrl}" class="w-full h-full object-cover rounded-xl" />`;
+                }
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const formKegiatan = document.getElementById('formModalKegiatan');
+        if (formKegiatan) {
+            formKegiatan.addEventListener('submit', function() {
+                const btn = formKegiatan.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = `<span class="inline-flex items-center"><svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> Mengirim Laporan...</span>`;
+                }
+            });
+        }
+    });
 
     function submitKegiatan(e) {
         e.preventDefault();

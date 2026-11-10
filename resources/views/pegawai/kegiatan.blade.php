@@ -211,7 +211,7 @@
 
     <!-- Pagination List Kegiatan -->
     <div class="p-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-        <span>Menampilkan 1 - 6 dari 22 kegiatan bulan September 2026</span>
+        <span>Menampilkan {{ $activities->count() }} kegiatan bulan {{ \Carbon\Carbon::parse(request('month', date('Y-m')))->locale('id')->isoFormat('MMMM Y') }}</span>
         <div class="flex items-center space-x-1.5">
             <button type="button"
                 class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-400 cursor-not-allowed">Sebelumnya</button>

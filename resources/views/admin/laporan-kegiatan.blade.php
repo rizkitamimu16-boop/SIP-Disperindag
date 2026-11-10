@@ -244,8 +244,7 @@
                 viewBox="0 0 24 24" stroke-width="2">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
             </svg>
-            <span id="filterKegiatanActiveLabel" class="text-slate-500 font-medium">Filter aktif: semua
-                bidang • September 2026</span>
+            <span id="filterKegiatanActiveLabel" class="text-slate-500 font-medium">Filter aktif: {{ request('bidang', 'Semua Bidang') }} • {{ request('date') ? \Carbon\Carbon::parse(request('date'))->locale('id')->isoFormat('D MMMM Y') : \Carbon\Carbon::now()->locale('id')->isoFormat('MMMM Y') }}</span>
         </div>
     </div>
 

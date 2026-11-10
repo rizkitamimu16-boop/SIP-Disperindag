@@ -18,6 +18,9 @@
     function renderAdminCharts() {
         if (typeof Chart === 'undefined') return;
 
+        // Jika halaman indeks-kinerja sudah menginisialisasi chart secara dinamis dari database, jangan timpa
+        if (window.adminRadarInstance || window.adminTrenInstance) return;
+
         // 1. Radar Chart 3 Indikator (IKP 50/30/20)
         const ctxRadar = document.getElementById('chartAdminRadarKinerja');
         if (ctxRadar) {
