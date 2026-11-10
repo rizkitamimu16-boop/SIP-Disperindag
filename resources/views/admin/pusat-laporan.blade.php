@@ -632,6 +632,16 @@
                     activeBtn.classList.add('active', 'text-[#0D2240]', 'border-[#0D2240]', 'font-bold');
                     activeBtn.classList.remove('text-gray-500', 'border-transparent', 'font-medium');
                 }
+
+                const cleanTab = tabId.replace('tab-', '');
+                const tabInput = document.getElementById('activeTabInput');
+                if (tabInput) tabInput.value = cleanTab;
+
+                try {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', cleanTab);
+                    window.history.replaceState({}, '', url.toString());
+                } catch (e) {}
             }
 
             function toggleFilterType(tabName) {

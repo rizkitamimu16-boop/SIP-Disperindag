@@ -47,6 +47,17 @@ class LaporanKegiatan extends Model
         return $this->pegawai();
     }
 
+    public function getWaktuKirimFormattedAttribute(): string
+    {
+        if (!empty($this->waktu_kirim) && $this->waktu_kirim !== '00:00:00' && $this->waktu_kirim !== '00:00') {
+            return date('H:i', strtotime($this->waktu_kirim));
+        }
+        if (!empty($this->created_at)) {
+            return \Carbon\Carbon::parse($this->created_at)->timezone('Asia/Makassar')->format('H:i');
+        }
+        return '08:00';
+    }
+
     /**
      * Hitung skor produktivitas berdasarkan 4 subindikator PRD (§23):
      * 1. Kelengkapan Laporan (25%)

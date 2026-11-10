@@ -92,7 +92,10 @@ class AbsensiExport implements FromView, ShouldAutoSize
                     $dateStr = $dateObj->toDateString();
                     $colKey = $dateObj->format('d/m');
                     $att = $attendances->first(function ($a) use ($dateStr) {
-                        return Carbon::parse($a->tanggal)->format('Y-m-d') === $dateStr;
+                        if (is_object($a->tanggal)) {
+                            return $a->tanggal->toDateString() === $dateStr;
+                        }
+                        return str_starts_with((string)$a->tanggal, $dateStr);
                     });
                     if ($att) {
                         if ($att->jam_masuk && !$att->jam_pulang) {
@@ -146,11 +149,16 @@ class AbsensiExport implements FromView, ShouldAutoSize
                 $daily = [];
                 for ($d=1; $d<=$daysInMonth; $d++) {
                     $dateStr = sprintf('%04d-%02d-%02d', (int)$year, (int)$monthNum, $d);
-                    $att = $attendances->first(function ($a) use ($dateStr) {
-                        return Carbon::parse($a->tanggal)->format('Y-m-d') === $dateStr;
+                    $att = $attendances->first(function ($a) use ($dateStr, $d) {
+                        if (is_object($a->tanggal)) {
+                            return (int)$a->tanggal->format('j') === (int)$d || $a->tanggal->toDateString() === $dateStr;
+                        }
+                        $rawStr = (string)$a->tanggal;
+                        return str_starts_with($rawStr, $dateStr) || (int)date('j', strtotime($rawStr)) === (int)$d;
                     });
                     if ($att) {
-                        if ($att->jam_masuk && !$att->jam_pulang) {
+                        $isPastDay = ($dateStr < Carbon::today()->toDateString());
+                        if ($att->jam_masuk && !$att->jam_pulang && $isPastDay) {
                             $daily[$d] = 'PTG';
                         } elseif ($att->status == 'Hadir') {
                             $daily[$d] = 'H';
@@ -160,6 +168,10 @@ class AbsensiExport implements FromView, ShouldAutoSize
                             $daily[$d] = 'S';
                         } elseif ($att->status == 'Izin') {
                             $daily[$d] = 'I';
+                        } elseif ($att->status == 'Cuti') {
+                            $daily[$d] = 'C';
+                        } elseif ($att->status == 'Dinas Luar') {
+                            $daily[$d] = 'DL';
                         } elseif ($att->status == 'Alpha') {
                             $daily[$d] = 'TK';
                         } else {

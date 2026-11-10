@@ -137,4 +137,26 @@ class AdminKegiatanController extends Controller
 
         return back()->with('success', "Laporan kegiatan berhasil diverifikasi dengan predikat Kualitas {$kategori}.");
     }
+
+    public function destroy(int $id): RedirectResponse
+    {
+        $laporan = LaporanKegiatan::findOrFail($id);
+
+        if ($laporan->foto && \Illuminate\Support\Facades\Storage::disk('public')->exists($laporan->foto)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->foto);
+        }
+        if ($laporan->surat_tugas && \Illuminate\Support\Facades\Storage::disk('public')->exists($laporan->surat_tugas)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->surat_tugas);
+        }
+
+        $pegawaiId = $laporan->pegawai_id;
+        $periode = Carbon::parse($laporan->tanggal)->format('Y-m');
+        $namaKegiatan = $laporan->nama_kegiatan;
+        $laporan->delete();
+
+        // Sinkronkan ulang skor kinerja pegawai setelah laporan dihapus
+        \App\Models\SkorKinerja::simpanAtauPerbarui($pegawaiId, $periode);
+
+        return back()->with('success', "Laporan kegiatan '{$namaKegiatan}' berhasil dihapus dari sistem.");
+    }
 }

@@ -54,6 +54,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/kegiatan', [AdminKegiatanController::class, 'index'])->name('kegiatan');
     Route::post('/kegiatan/{id}/verifikasi', [AdminKegiatanController::class, 'verifikasi'])->name('kegiatan.verifikasi');
     Route::post('/laporan-kegiatan/{id}/verifikasi', [AdminKegiatanController::class, 'verifikasi'])->name('laporan-kegiatan.verifikasi');
+    Route::delete('/laporan-kegiatan/{id}', [AdminKegiatanController::class, 'destroy'])->name('laporan-kegiatan.destroy');
     
     // 5. Persetujuan Izin & Cuti
     Route::get('/persetujuan-izin-cuti', [AdminPengajuanController::class, 'index'])->name('persetujuan-izin-cuti');

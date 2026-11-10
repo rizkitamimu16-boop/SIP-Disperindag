@@ -134,7 +134,7 @@
                     <tr class="hover:bg-slate-50 transition {{ strtolower($rep->status_verifikasi) == 'menunggu review' ? 'bg-amber-50/10' : '' }}">
                         <td class="p-3.5 font-medium whitespace-nowrap">
                             <p class="font-bold text-gray-900">{{ \Carbon\Carbon::parse($rep->tanggal)->locale('id')->isoFormat('DD MMM Y (ddd)') }}</p>
-                            <p class="text-[11px] text-gray-500">{{ $rep->waktu_kirim ?? '-' }} WITA</p>
+                            <p class="text-[11px] text-gray-500">{{ $rep->waktu_kirim_formatted }} WITA</p>
                         </td>
                         <td class="p-3.5">
                             <span class="font-bold text-gray-900 block">{{ $rep->nama_kegiatan ?? '-' }}</span>
@@ -187,7 +187,7 @@
                             <button type="button"
                                 data-nama="{{ $rep->nama_kegiatan }}"
                                 data-tanggal="{{ \Carbon\Carbon::parse($rep->tanggal)->locale('id')->isoFormat('dddd, D MMMM Y') }}"
-                                data-waktu="{{ $rep->waktu_kirim ? $rep->waktu_kirim . ' WITA' : '-' }}"
+                                data-waktu="{{ $rep->waktu_kirim_formatted }} WITA"
                                 data-deskripsi="{{ $rep->deskripsi }}"
                                 data-status="{{ $rep->status_verifikasi ?? 'Menunggu Review' }}"
                                 data-prod="{{ $rep->nilai_produktivitas ?? 100 }}"

@@ -219,16 +219,16 @@
 
         <div class="mt-4 divide-y divide-gray-100">
             @forelse($recentAttendances ?? [] as $att)
-                <div class="py-3.5 flex items-center justify-between">
-                    <div class="flex items-center space-x-3.5">
+                <div class="py-3.5 flex items-center justify-between gap-3">
+                    <div class="flex items-center space-x-3.5 min-w-0 flex-1">
                         <div
                             class="w-10 h-10 rounded-xl {{ in_array(($att->status ?? ''), ['Hadir', 'Tepat Waktu']) ? 'bg-emerald-50 text-emerald-600' : (($att->status ?? '') == 'Terlambat' ? 'bg-amber-50 text-amber-600' : (($att->status ?? '') == 'Dinas Luar' ? 'bg-blue-50 text-blue-600' : (($att->status ?? '') == 'Sakit' ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'))) }} flex flex-col items-center justify-center shrink-0">
                             <span class="text-[10px] font-bold uppercase leading-tight">{{ \Carbon\Carbon::parse($att->tanggal ?? now())->locale('id')->isoFormat('ddd') }}</span>
                             <span class="text-sm font-extrabold leading-tight">{{ \Carbon\Carbon::parse($att->tanggal ?? now())->format('d') }}</span>
                         </div>
-                        <div>
-                            <p class="text-xs sm:text-sm font-bold text-gray-900">{{ \Carbon\Carbon::parse($att->tanggal ?? now())->locale('id')->isoFormat('dddd, DD MMMM Y') }}</p>
-                            <p class="text-[11px] text-gray-500">
+                        <div class="min-w-0">
+                            <p class="text-xs sm:text-sm font-bold text-gray-900 truncate">{{ \Carbon\Carbon::parse($att->tanggal ?? now())->locale('id')->isoFormat('dddd, DD MMMM Y') }}</p>
+                            <p class="text-[11px] text-gray-500 truncate">
                                 @if(in_array(($att->status ?? ''), ['Dinas Luar', 'Izin', 'Cuti', 'Sakit']))
                                     Keterangan: {{ $att->status }}
                                 @else
@@ -240,33 +240,33 @@
                             </p>
                         </div>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right shrink-0">
                         @if(($att->status ?? '') == 'Hadir')
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap bg-emerald-50 text-emerald-700 border border-emerald-200">
                                 Tepat Waktu
                             </span>
                         @elseif(($att->status ?? '') == 'Terlambat')
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap bg-amber-50 text-amber-700 border border-amber-200">
                                 Terlambat
                             </span>
                         @elseif(($att->status ?? '') == 'Dinas Luar')
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap bg-blue-50 text-blue-700 border border-blue-200">
                                 Dinas Luar (SPT)
                             </span>
                         @elseif(($att->status ?? '') == 'Sakit')
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap bg-rose-50 text-rose-700 border border-rose-200">
                                 Sakit
                             </span>
                         @elseif(in_array(($att->status ?? ''), ['Izin', 'Cuti']))
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap bg-indigo-50 text-indigo-700 border border-indigo-200">
                                 {{ $att->status }}
                             </span>
                         @else
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap bg-slate-50 text-slate-700 border border-slate-200">
                                 {{ ucfirst($att->status ?? 'Alpha') }}
                             </span>
                         @endif
-                        <p class="text-[11px] text-gray-400 mt-0.5">{{ in_array(($att->status ?? ''), ['Dinas Luar', 'Izin', 'Cuti', 'Sakit']) ? 'Disetujui' : (!empty($att->jam_pulang) ? 'Datang & Pulang' : 'Datang') }}</p>
+                        <p class="text-[11px] text-gray-400 mt-0.5 whitespace-nowrap">{{ in_array(($att->status ?? ''), ['Dinas Luar', 'Izin', 'Cuti', 'Sakit']) ? 'Disetujui' : (!empty($att->jam_pulang) ? 'Datang & Pulang' : 'Datang') }}</p>
                     </div>
                 </div>
             @empty

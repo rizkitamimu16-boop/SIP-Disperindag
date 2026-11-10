@@ -340,22 +340,36 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="py-3.5 px-3 text-center">
-                            <button type="button" 
-                                data-id="{{ $rep->id }}"
-                                data-nama="{{ $rep->pegawai->nama ?? '-' }}"
-                                data-kegiatan="{{ $rep->nama_kegiatan }}"
-                                data-tanggal="{{ $rep->tanggal }}"
-                                data-foto="{{ $rep->foto }}"
-                                data-surat-tugas="{{ $rep->surat_tugas }}"
-                                data-uraian="{{ $rep->deskripsi }}"
-                                data-status="{{ $rep->status_verifikasi }}"
-                                data-prod="{{ $rep->nilai_produktivitas ?? 0 }}"
-                                data-kual="{{ $rep->nilai_kualitas ?? '' }}"
-                                onclick="openReviewKegiatanModal(this)"
-                                class="px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer">
-                                Detail/Nilai
-                            </button>
+                        <td class="py-3.5 px-3 text-center whitespace-nowrap">
+                            <div class="inline-flex items-center space-x-1.5">
+                                <button type="button" 
+                                    data-id="{{ $rep->id }}"
+                                    data-nama="{{ $rep->pegawai->nama ?? '-' }}"
+                                    data-kegiatan="{{ $rep->nama_kegiatan }}"
+                                    data-tanggal="{{ $rep->tanggal }}"
+                                    data-foto="{{ $rep->foto }}"
+                                    data-surat-tugas="{{ $rep->surat_tugas }}"
+                                    data-uraian="{{ $rep->deskripsi }}"
+                                    data-status="{{ $rep->status_verifikasi }}"
+                                    data-prod="{{ $rep->nilai_produktivitas ?? 0 }}"
+                                    data-kual="{{ $rep->nilai_kualitas ?? '' }}"
+                                    onclick="openReviewKegiatanModal(this)"
+                                    class="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer">
+                                    Detail/Nilai
+                                </button>
+                                <form action="{{ route('admin.laporan-kegiatan.destroy', $rep->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan kegiatan ini secara permanen?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" 
+                                        style="color: #e11d48;"
+                                        class="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition cursor-pointer" 
+                                        title="Hapus Laporan">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     @empty

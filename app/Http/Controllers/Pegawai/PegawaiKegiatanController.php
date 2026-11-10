@@ -128,7 +128,7 @@ class PegawaiKegiatanController extends Controller
             'deskripsi'             => $validated['deskripsi'],
             'foto'                  => $photoPath,
             'surat_tugas'           => $suratTugasPath,
-            'waktu_kirim'           => Carbon::now()->format('H:i:s'),
+            'waktu_kirim'           => Carbon::now('Asia/Makassar')->format('H:i:s'),
             'nilai_produktivitas'   => $hasilProduktivitas['nilai'],
             'kategori_produktivitas' => $hasilProduktivitas['kategori'],
             'status_verifikasi'     => 'Menunggu Review',

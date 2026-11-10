@@ -259,6 +259,7 @@
             <button type="button" onclick="closeModal('modalResetSandiPegawai')"
                 class="px-4 py-2 bg-slate-100 text-gray-700 rounded-xl text-xs font-semibold hover:bg-slate-200 cursor-pointer">Batal</button>
             <button type="submit"
+                style="background-color: #d97706; color: #ffffff;"
                 class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer">Ya, Reset Sandi</button>
         </form>
     </div>
@@ -497,11 +498,12 @@
                 <div class="flex items-center justify-between pt-3 border-t border-gray-100">
                     <button type="submit" name="status_verifikasi" value="Ditolak"
                         onclick="return confirm('Apakah Anda yakin ingin menolak dan MENGHAPUS laporan kegiatan ini secara permanen dari sistem?')"
+                        style="background-color: #fff1f2; color: #be123c; border-color: #fecdd3;"
                         class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-bold transition cursor-pointer flex items-center space-x-1.5 text-xs sm:text-sm">
                         <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        <span>Tolak / Hapus</span>
+                        <span>Tolak & Hapus</span>
                     </button>
                     <button type="submit" name="status_verifikasi" value="Disetujui"
                         onclick="if(!document.getElementById('inputKualitas').value){ alert('Harap isi Nilai Kualitas (0-100) terlebih dahulu!'); document.getElementById('inputKualitas').focus(); return false; }"
