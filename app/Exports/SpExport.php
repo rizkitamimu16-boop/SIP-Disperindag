@@ -34,6 +34,16 @@ class SpExport implements FromCollection, WithHeadings, WithMapping
         if ($tingkat && $tingkat !== 'semua') {
             $query->where('tingkat_sp', $tingkat);
         }
+        $search = $this->request->get('search_sp');
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_surat', 'like', "%{$search}%")
+                  ->orWhereHas('pegawai', function($pq) use ($search) {
+                      $pq->where('nama', 'like', "%{$search}%")
+                         ->orWhere('nip', 'like', "%{$search}%");
+                  });
+            });
+        }
         
         $reports = $query->get()->map(function($sp) {
             return (object)[

@@ -33,6 +33,13 @@ class AbsensiExport implements FromView, ShouldAutoSize
         if ($bidang) {
             $query->where('bidang', $bidang);
         }
+        $search = $this->request->get('search_absensi');
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
+            });
+        }
         $pegawaiList = $query->get();
 
         if ($periode === 'tahunan') {
@@ -62,6 +69,7 @@ class AbsensiExport implements FromView, ShouldAutoSize
                     'total_tk' => $attendances->where('status', 'Alpha')->count(),
                     'total_tl' => $attendances->where('status', 'Terlambat')->count(),
                     'total_ptg' => $attendances->whereNull('jam_pulang')->whereNotNull('jam_masuk')->count(),
+                    'total_tap' => $attendances->whereNull('jam_pulang')->whereNotNull('jam_masuk')->count(),
                 ];
             });
             
@@ -127,6 +135,7 @@ class AbsensiExport implements FromView, ShouldAutoSize
                     'tk' => $attendances->where('status', 'Alpha')->count(),
                     'tl' => $attendances->where('status', 'Terlambat')->count(),
                     'ptg' => $attendances->whereNull('jam_pulang')->whereNotNull('jam_masuk')->count(),
+                    'tap' => $attendances->whereNull('jam_pulang')->whereNotNull('jam_masuk')->count(),
                     'hadir' => $attendances->whereIn('status', ['Hadir', 'Terlambat'])->count(),
                 ];
             });
@@ -191,6 +200,7 @@ class AbsensiExport implements FromView, ShouldAutoSize
                     'tk' => $attendances->where('status', 'Alpha')->count(),
                     'tl' => $attendances->where('status', 'Terlambat')->count(),
                     'ptg' => $attendances->whereNull('jam_pulang')->whereNotNull('jam_masuk')->count(),
+                    'tap' => $attendances->whereNull('jam_pulang')->whereNotNull('jam_masuk')->count(),
                     'hadir' => $attendances->whereIn('status', ['Hadir', 'Terlambat'])->count(),
                 ];
             });

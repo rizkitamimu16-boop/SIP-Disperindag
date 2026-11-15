@@ -69,6 +69,13 @@ class SkorKinerja extends Model
                 ->where('tanggal', $targetDate)
                 ->first();
 
+            // Cek batas akhir pulang dari pengaturan kantor
+            $batasAkhirPulangStr = $pengaturan->batas_akhir_pulang ?? '18:00:00';
+            $currentTimeStr = \Carbon\Carbon::now()->format('H:i:s');
+            $isPastDate = ($targetDate < \Carbon\Carbon::today()->toDateString());
+            $isPastCheckoutTimeToday = ($targetDate === \Carbon\Carbon::today()->toDateString() && $currentTimeStr > $batasAkhirPulangStr);
+            $isTapCondition = ($isPastDate || $isPastCheckoutTimeToday);
+
             // Cek juga pengajuan izin yang disetujui pada hari itu
             $izin = PengajuanIzin::where('pegawai_id', $pegawaiId)
                 ->where('status', 'Disetujui')
@@ -82,14 +89,14 @@ class SkorKinerja extends Model
             } elseif ($presensi) {
                 if ($presensi->status === 'Hadir') {
                     $nilaiKehadiran = 100.0;
-                    // Jika tanggal sudah lewat dari hari ini dan tidak ada absen pulang
-                    if ($presensi->tanggal < \Carbon\Carbon::today()->toDateString() && empty($presensi->jam_pulang)) {
+                    // Penalti jika tidak absen pulang setelah lewat batas akhir pulang
+                    if (empty($presensi->jam_pulang) && $isTapCondition) {
                         $nilaiKehadiran = 90.0; // Penalti tidak absen pulang
                     }
                 } elseif ($presensi->status === 'Terlambat') {
-                    $nilaiKehadiran = 85.0; // Penalti terlambat
-                    if ($presensi->tanggal < \Carbon\Carbon::today()->toDateString() && empty($presensi->jam_pulang)) {
-                        $nilaiKehadiran = 75.0;
+                    $nilaiKehadiran = 85.0; // Penalti terlambat langsung aktif
+                    if (empty($presensi->jam_pulang) && $isTapCondition) {
+                        $nilaiKehadiran = 75.0; // Penalti terlambat + tidak absen pulang
                     }
                 } elseif (in_array($presensi->status, ['Izin', 'Cuti', 'Sakit', 'Dinas Luar'])) {
                     $nilaiKehadiran = 100.0;
@@ -143,11 +150,25 @@ class SkorKinerja extends Model
             $dispensasiCount = $presensiList->whereIn('status', ['Izin', 'Cuti', 'Sakit', 'Dinas Luar'])->count();
             $alphaExplicitCount = $presensiList->where('status', 'Alpha')->count();
 
-            // Cek kehadiran tanpa absen pulang pada hari-hari yang telah lewat
-            $tidakPulangCount = $presensiList->whereIn('status', ['Hadir', 'Terlambat'])
-                ->whereNull('jam_pulang')
-                ->where('tanggal', '<', \Carbon\Carbon::today()->toDateString())
-                ->count();
+            // Cek kehadiran tanpa absen pulang (TAP):
+            // Berlaku untuk hari lampau atau hari ini yang sudah lewat batas akhir absen pulang kantor
+            $batasAkhirPulangStr = $pengaturan->batas_akhir_pulang ?? '18:00:00';
+            $currentTimeStr = \Carbon\Carbon::now()->format('H:i:s');
+            $todayDateStr = \Carbon\Carbon::today()->toDateString();
+
+            $tidakPulangCount = $presensiList->filter(function($p) use ($todayDateStr, $currentTimeStr, $batasAkhirPulangStr) {
+                if (!in_array($p->status, ['Hadir', 'Terlambat']) || !empty($p->jam_pulang)) {
+                    return false;
+                }
+                $tglStr = is_object($p->tanggal) ? $p->tanggal->format('Y-m-d') : substr((string)$p->tanggal, 0, 10);
+                if ($tglStr < $todayDateStr) {
+                    return true;
+                }
+                if ($tglStr === $todayDateStr && $currentTimeStr > $batasAkhirPulangStr) {
+                    return true;
+                }
+                return false;
+            })->count();
 
             // Total hari pegawai hadir atau memiliki dispensasi sah
             $totalHariHadir = $hadirCount + $terlambatCount + $dispensasiCount;

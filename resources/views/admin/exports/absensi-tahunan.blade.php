@@ -48,7 +48,7 @@
                 <th>Sakit</th>
                 <th>TK</th>
                 <th>TL</th>
-                <th>PTG</th>
+                <th>TAP</th>
             </tr>
         </thead>
         <tbody>
@@ -66,7 +66,7 @@
                 <td>{{ $row->total_sakit }}</td>
                 <td>{{ $row->total_tk }}</td>
                 <td>{{ $row->total_tl }}</td>
-                <td>{{ $row->total_ptg }}</td>
+                <td>{{ $row->total_tap ?? $row->total_ptg }}</td>
             </tr>
             @endforeach
         </tbody>

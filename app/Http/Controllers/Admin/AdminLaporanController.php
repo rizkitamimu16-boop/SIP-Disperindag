@@ -24,23 +24,46 @@ class AdminLaporanController extends Controller
         $spReports = collect();
 
         // 1. Laporan Absensi
-        $monthAbsensi = $request->get('month_absensi', Carbon::now()->format('Y-m'));
+        $periodeAbsensi = $request->get('periode_absensi', 'bulanan');
         $bidangAbsensi = $request->get('bidang_absensi');
         $statusAbsensi = $request->get('status_absensi');
+        $searchAbsensi = $request->get('search_absensi');
         
         $queryPegawaiAbsensi = Pegawai::query();
         if ($bidangAbsensi) {
             $queryPegawaiAbsensi->where('bidang', $bidangAbsensi);
         }
+        if ($searchAbsensi) {
+            $queryPegawaiAbsensi->where(function($q) use ($searchAbsensi) {
+                $q->where('nama', 'like', "%{$searchAbsensi}%")
+                  ->orWhere('nip', 'like', "%{$searchAbsensi}%");
+            });
+        }
         
         $pegawaiListAbsensi = $queryPegawaiAbsensi->get();
-        $yearAbsensi = explode('-', $monthAbsensi)[0] ?? Carbon::now()->year;
-        $monthNumAbsensi = explode('-', $monthAbsensi)[1] ?? Carbon::now()->month;
 
-        $attendanceReports = $pegawaiListAbsensi->map(function ($p) use ($yearAbsensi, $monthNumAbsensi, $statusAbsensi) {
-            $q = Presensi::where('pegawai_id', $p->id)
-                         ->whereYear('tanggal', $yearAbsensi)
-                         ->whereMonth('tanggal', $monthNumAbsensi);
+        $attendanceReports = $pegawaiListAbsensi->map(function ($p) use ($periodeAbsensi, $request, $statusAbsensi) {
+            $q = Presensi::where('pegawai_id', $p->id);
+
+            if ($periodeAbsensi === 'tahunan') {
+                $year = $request->get('year_absensi', Carbon::now()->year);
+                $q->whereYear('tanggal', $year);
+            } elseif ($periodeAbsensi === 'rentang') {
+                $start = $request->get('start_date_absensi');
+                $end = $request->get('end_date_absensi');
+                if ($start && $end) {
+                    $q->whereBetween('tanggal', [$start, $end]);
+                } elseif ($start) {
+                    $q->whereDate('tanggal', '>=', $start);
+                } elseif ($end) {
+                    $q->whereDate('tanggal', '<=', $end);
+                }
+            } else {
+                $month = $request->get('month_absensi', Carbon::now()->format('Y-m'));
+                $year = explode('-', $month)[0] ?? Carbon::now()->year;
+                $monthNum = explode('-', $month)[1] ?? Carbon::now()->month;
+                $q->whereYear('tanggal', $year)->whereMonth('tanggal', $monthNum);
+            }
                          
             if ($statusAbsensi && $statusAbsensi !== 'semua') {
                 if ($statusAbsensi === 'hadir') {
@@ -68,32 +91,110 @@ class AdminLaporanController extends Controller
         }
         
         // 2. Laporan Kinerja
-        $monthKinerja = $request->get('month_kinerja', Carbon::now()->format('Y-m'));
+        $periodeKinerja = $request->get('periode_kinerja', 'bulanan');
         $bidangKinerja = $request->get('bidang_kinerja');
         $kategoriKinerja = $request->get('kategori_kinerja');
+        $searchKinerja = $request->get('search_kinerja');
         
         $pegawaiQueryKinerja = Pegawai::where('status', 'Aktif');
         if ($bidangKinerja) {
             $pegawaiQueryKinerja->where('bidang', $bidangKinerja);
         }
+        if ($searchKinerja) {
+            $pegawaiQueryKinerja->where(function($q) use ($searchKinerja) {
+                $q->where('nama', 'like', "%{$searchKinerja}%")
+                  ->orWhere('nip', 'like', "%{$searchKinerja}%");
+            });
+        }
         $pegawaiListKinerja = $pegawaiQueryKinerja->get();
 
-        $performanceReports = $pegawaiListKinerja->map(function ($p) use ($monthKinerja) {
-            $skor = SkorKinerja::where('pegawai_id', $p->id)
-                ->where('periode', $monthKinerja)
-                ->first();
+        if ($periodeKinerja === 'tahunan') {
+            $yearKinerja = $request->get('year_kinerja', Carbon::now()->year);
+            $hasDataInYear = Presensi::whereYear('tanggal', $yearKinerja)->exists() 
+                          || LaporanKegiatan::whereYear('tanggal', $yearKinerja)->exists()
+                          || SkorKinerja::where('periode', 'like', "{$yearKinerja}-%")->exists();
 
-            if (!$skor) {
-                $skor = SkorKinerja::calculateLiveScore($p->id, $monthKinerja);
+            if (!$hasDataInYear) {
+                $performanceReports = collect();
+            } else {
+                $performanceReports = $pegawaiListKinerja->map(function ($p) use ($yearKinerja) {
+                    $skors = SkorKinerja::where('pegawai_id', $p->id)
+                        ->where('periode', 'like', "{$yearKinerja}-%")
+                        ->get();
+                    $hasAtt = Presensi::where('pegawai_id', $p->id)->whereYear('tanggal', $yearKinerja)->exists();
+                    $hasAct = LaporanKegiatan::where('pegawai_id', $p->id)->whereYear('tanggal', $yearKinerja)->exists();
+
+                    if ($skors->isEmpty() && !$hasAtt && !$hasAct) {
+                        return null;
+                    }
+
+                    $avgScore = $skors->isNotEmpty() ? $skors->avg('nilai_akhir') : 0;
+                    $kategori = 'Kurang';
+                    if ($avgScore >= 90) $kategori = 'Sangat Baik';
+                    elseif ($avgScore >= 80) $kategori = 'Baik';
+                    elseif ($avgScore >= 70) $kategori = 'Cukup';
+
+                    return (object)[
+                        'employee_name' => $p->nama ?? '-',
+                        'department'    => $p->bidang ?? '-',
+                        'ikp_score'     => round($avgScore, 1),
+                        'predikat'      => $kategori,
+                    ];
+                })->filter()->values();
             }
+        } elseif ($periodeKinerja === 'rentang') {
+            $startDate = $request->get('start_date_kinerja', Carbon::now()->startOfMonth()->toDateString());
+            $endDate = $request->get('end_date_kinerja', Carbon::today()->toDateString());
+            $hasDataInRange = Presensi::whereBetween('tanggal', [$startDate, $endDate])->exists()
+                           || LaporanKegiatan::whereBetween('tanggal', [$startDate, $endDate])->exists();
 
-            return (object)[
-                'employee_name' => $p->nama ?? '-',
-                'department'    => $p->bidang ?? '-',
-                'ikp_score'     => $skor->nilai_akhir ?? 0,
-                'predikat'      => $skor->kategori ?? 'Kurang',
-            ];
-        });
+            if (!$hasDataInRange) {
+                $performanceReports = collect();
+            } else {
+                $performanceReports = $pegawaiListKinerja->map(function ($p) use ($endDate) {
+                    $periodKey = substr($endDate, 0, 7);
+                    $skor = SkorKinerja::where('pegawai_id', $p->id)->where('periode', $periodKey)->first();
+                    if (!$skor) {
+                        $skor = SkorKinerja::calculateLiveScore($p->id, $periodKey);
+                    }
+                    return (object)[
+                        'employee_name' => $p->nama ?? '-',
+                        'department'    => $p->bidang ?? '-',
+                        'ikp_score'     => $skor->nilai_akhir ?? 0,
+                        'predikat'      => $skor->kategori ?? 'Kurang',
+                    ];
+                });
+            }
+        } else {
+            $monthKinerja = $request->get('month_kinerja', Carbon::now()->format('Y-m'));
+            $y = explode('-', $monthKinerja)[0] ?? Carbon::now()->year;
+            $m = explode('-', $monthKinerja)[1] ?? Carbon::now()->month;
+
+            $hasDataInMonth = Presensi::whereYear('tanggal', $y)->whereMonth('tanggal', $m)->exists()
+                           || LaporanKegiatan::whereYear('tanggal', $y)->whereMonth('tanggal', $m)->exists()
+                           || SkorKinerja::where('periode', $monthKinerja)->exists();
+
+            if (!$hasDataInMonth) {
+                $performanceReports = collect();
+            } else {
+                $performanceReports = $pegawaiListKinerja->map(function ($p) use ($monthKinerja) {
+                    $skor = SkorKinerja::where('pegawai_id', $p->id)
+                        ->where('periode', $monthKinerja)
+                        ->first();
+
+                    if (!$skor) {
+                        $skor = SkorKinerja::calculateLiveScore($p->id, $monthKinerja);
+                    }
+
+                    return (object)[
+                        'employee_name' => $p->nama ?? '-',
+                        'department'    => $p->bidang ?? '-',
+                        'ikp_score'     => $skor->nilai_akhir ?? 0,
+                        'predikat'      => $skor->kategori ?? 'Kurang',
+                    ];
+                });
+            }
+        }
         
         if ($kategoriKinerja && $kategoriKinerja !== 'semua') {
             $kategoriMap = [
@@ -111,6 +212,7 @@ class AdminLaporanController extends Controller
         $periodeKegiatan = $request->get('periode_kegiatan', 'rentang');
         $bidangKegiatan = $request->get('bidang_kegiatan');
         $statusKegiatan = $request->get('status_kegiatan');
+        $searchKegiatan = $request->get('search_kegiatan');
 
         $queryKegiatan = LaporanKegiatan::with('pegawai');
 
@@ -136,7 +238,28 @@ class AdminLaporanController extends Controller
             });
         }
         if ($statusKegiatan && $statusKegiatan !== 'semua') {
-            $queryKegiatan->where('status_verifikasi', ucfirst($statusKegiatan));
+            if ($statusKegiatan === 'menunggu') {
+                $queryKegiatan->where(function($sq) {
+                    $sq->where('status_verifikasi', 'Menunggu')
+                       ->orWhere('status_verifikasi', 'Menunggu Review');
+                });
+            } elseif ($statusKegiatan === 'disetujui') {
+                $queryKegiatan->where('status_verifikasi', 'Disetujui');
+            } elseif ($statusKegiatan === 'ditolak') {
+                $queryKegiatan->where('status_verifikasi', 'Ditolak');
+            } else {
+                $queryKegiatan->where('status_verifikasi', ucfirst($statusKegiatan));
+            }
+        }
+        if ($searchKegiatan) {
+            $queryKegiatan->where(function($q) use ($searchKegiatan) {
+                $q->where('nama_kegiatan', 'like', "%{$searchKegiatan}%")
+                  ->orWhere('deskripsi', 'like', "%{$searchKegiatan}%")
+                  ->orWhereHas('pegawai', function($pq) use ($searchKegiatan) {
+                      $pq->where('nama', 'like', "%{$searchKegiatan}%")
+                         ->orWhere('nip', 'like', "%{$searchKegiatan}%");
+                  });
+            });
         }
         
         $activityReports = $queryKegiatan->orderBy('tanggal', 'desc')->get()->map(function($act) {
@@ -149,11 +272,49 @@ class AdminLaporanController extends Controller
         });
         
         // 4. Laporan SP
-        $yearSp = $request->get('year_sp', Carbon::now()->year);
+        $periodeSp = $request->get('periode_sp', 'tahunan');
         $bidangSp = $request->get('bidang_sp');
         $tingkatSp = $request->get('tingkat_sp');
+        $searchSp = $request->get('search_sp');
         
-        $querySp = SuratPeringatan::with('pegawai')->whereYear('tanggal_terbit', $yearSp);
+        $querySp = SuratPeringatan::with('pegawai');
+
+        if ($periodeSp === 'tahunan') {
+            $yearSp = $request->get('year_sp', Carbon::now()->year);
+            $querySp->whereYear('tanggal_terbit', $yearSp);
+        } elseif ($periodeSp === 'bulanan') {
+            $month = $request->get('month_sp', Carbon::now()->format('Y-m'));
+            $y = explode('-', $month)[0] ?? Carbon::now()->year;
+            $m = explode('-', $month)[1] ?? Carbon::now()->month;
+            $querySp->whereYear('tanggal_terbit', $y)->whereMonth('tanggal_terbit', $m);
+        } elseif ($periodeSp === 'rentang') {
+            $start = $request->get('start_date_sp');
+            $end = $request->get('end_date_sp');
+            if ($start && $end) {
+                $querySp->whereBetween('tanggal_terbit', [$start, $end]);
+            }
+        } else {
+            $yearSp = $request->get('year_sp', Carbon::now()->year);
+            $querySp->whereYear('tanggal_terbit', $yearSp);
+        }
+        
+        if ($bidangSp) {
+            $querySp->whereHas('pegawai', function($q) use ($bidangSp) {
+                $q->where('bidang', $bidangSp);
+            });
+        }
+        if ($tingkatSp && $tingkatSp !== 'semua') {
+            $querySp->where('tingkat_sp', $tingkatSp);
+        }
+        if ($searchSp) {
+            $querySp->where(function($q) use ($searchSp) {
+                $q->where('nomor_surat', 'like', "%{$searchSp}%")
+                  ->orWhereHas('pegawai', function($pq) use ($searchSp) {
+                      $pq->where('nama', 'like', "%{$searchSp}%")
+                         ->orWhere('nip', 'like', "%{$searchSp}%");
+                  });
+            });
+        }
         
         if ($bidangSp) {
             $querySp->whereHas('pegawai', function($q) use ($bidangSp) {

@@ -185,7 +185,7 @@
             <div class="relative">
                 <select id="filterKegiatanBulan"
                     class="w-full h-10 px-3.5 pr-8 text-xs bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D2240]/20 text-gray-700 transition cursor-pointer appearance-none">
-                    <option value="Semua Bulan">Semua Bulan</option>
+                    <option value="Semua Bulan" selected>Semua Bulan</option>
                     <option value="01">Januari</option>
                     <option value="02">Februari</option>
                     <option value="03">Maret</option>
@@ -194,7 +194,7 @@
                     <option value="06">Juni</option>
                     <option value="07">Juli</option>
                     <option value="08">Agustus</option>
-                    <option value="09" selected>September</option>
+                    <option value="09">September</option>
                     <option value="10">Oktober</option>
                     <option value="11">November</option>
                     <option value="12">Desember</option>
@@ -357,18 +357,6 @@
                                     class="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer">
                                     Detail/Nilai
                                 </button>
-                                <form action="{{ route('admin.laporan-kegiatan.destroy', $rep->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan kegiatan ini secara permanen?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                        style="color: #e11d48;"
-                                        class="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition cursor-pointer" 
-                                        title="Hapus Laporan">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </form>
                             </div>
                         </td>
                     </tr>

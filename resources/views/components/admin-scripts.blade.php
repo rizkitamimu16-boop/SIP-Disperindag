@@ -21,14 +21,17 @@
         // Jika halaman indeks-kinerja sudah menginisialisasi chart secara dinamis dari database, jangan timpa
         if (window.adminRadarInstance || window.adminTrenInstance) return;
 
-        // 1. Radar Chart 3 Indikator (IKP 50/30/20)
+        // 1. Radar Chart 3 Indikator (IKP Dinamis)
         const ctxRadar = document.getElementById('chartAdminRadarKinerja');
         if (ctxRadar) {
             if (adminRadarInstance) adminRadarInstance.destroy();
+            const bKehadiran = typeof window.appBobotKehadiran !== 'undefined' ? window.appBobotKehadiran : 60;
+            const bProduktivitas = typeof window.appBobotProduktivitas !== 'undefined' ? window.appBobotProduktivitas : 25;
+            const bKualitas = typeof window.appBobotKualitas !== 'undefined' ? window.appBobotKualitas : 15;
             adminRadarInstance = new Chart(ctxRadar.getContext('2d'), {
                 type: 'radar',
                 data: {
-                    labels: ['Kehadiran (60%)', 'Produktivitas (25%)', 'Kualitas (15%)'],
+                    labels: [`Kehadiran (${bKehadiran}%)`, `Produktivitas (${bProduktivitas}%)`, `Kualitas (${bKualitas}%)`],
                     datasets: [{
                         label: 'Rata-Rata Capaian SKPD',
                         data: [88, 92, 85],
@@ -894,7 +897,7 @@
             if (filterKegiatanSearch) filterKegiatanSearch.value = '';
             if (filterKegiatanBidang) filterKegiatanBidang.value = 'Semua Bidang';
             if (filterKegiatanTanggal) filterKegiatanTanggal.value = '';
-            if (filterKegiatanBulan) filterKegiatanBulan.value = '09';
+            if (filterKegiatanBulan) filterKegiatanBulan.value = 'Semua Bulan';
             if (filterKegiatanTahun) filterKegiatanTahun.value = '2026';
             if (filterKegiatanStatus) filterKegiatanStatus.value = 'Semua Status';
             applyKegiatanFilter();

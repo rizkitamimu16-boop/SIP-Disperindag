@@ -70,10 +70,22 @@
                             {{ !empty($att->jarak_masuk) ? round($att->jarak_masuk) . ' meter' : '-' }}
                         </td>
                         <td class="p-3.5 {{ strtolower($att->status ?? '') == 'dinas luar' ? 'text-blue-700 font-semibold' : 'text-emerald-700 font-semibold' }}">
+                            @php
+                                $batasAkhirPulangStr = $officeSettings->batas_akhir_pulang ?? '18:00:00';
+                                $curTimeStr = \Carbon\Carbon::now()->format('H:i:s');
+                                $todayStr = \Carbon\Carbon::today()->toDateString();
+                                $attDateStr = is_object($att->tanggal ?? null) ? $att->tanggal->format('Y-m-d') : substr((string)($att->tanggal ?? ''), 0, 10);
+                                $isLewatBatasPulang = ($attDateStr < $todayStr) || ($attDateStr === $todayStr && $curTimeStr > $batasAkhirPulangStr);
+                                $isTidakAbsenPulang = !in_array(strtolower($att->status ?? ''), ['dinas luar', 'izin', 'cuti', 'sakit']) && !empty($att->jam_masuk) && empty($att->jam_pulang) && $isLewatBatasPulang;
+                            @endphp
                             @if(strtolower($att->status ?? '') == 'dinas luar')
                                 Surat Tugas
+                            @elseif(!empty($att->jam_pulang))
+                                {{ \Carbon\Carbon::parse($att->jam_pulang)->format('H:i') . ' WITA' }}
+                            @elseif($isTidakAbsenPulang)
+                                <span class="text-xs font-bold text-amber-600">Tidak Absen Pulang</span>
                             @else
-                                {{ !empty($att->jam_pulang) ? \Carbon\Carbon::parse($att->jam_pulang)->format('H:i') . ' WITA' : '-' }}
+                                <span class="text-gray-400 font-normal">Belum Pulang</span>
                             @endif
                         </td>
                         <td class="p-3.5 text-gray-600">

@@ -48,7 +48,30 @@ class KegiatanExport implements FromCollection, WithHeadings, WithMapping
             });
         }
         if ($status && $status !== 'semua') {
-            $query->where('status_verifikasi', ucfirst($status));
+            if ($status === 'menunggu') {
+                $query->where(function($sq) {
+                    $sq->where('status_verifikasi', 'Menunggu')
+                       ->orWhere('status_verifikasi', 'Menunggu Review');
+                });
+            } elseif ($status === 'disetujui') {
+                $query->where('status_verifikasi', 'Disetujui');
+            } elseif ($status === 'ditolak') {
+                $query->where('status_verifikasi', 'Ditolak');
+            } else {
+                $query->where('status_verifikasi', ucfirst($status));
+            }
+        }
+        
+        $search = $this->request->get('search_kegiatan');
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama_kegiatan', 'like', "%{$search}%")
+                  ->orWhere('deskripsi', 'like', "%{$search}%")
+                  ->orWhereHas('pegawai', function($pq) use ($search) {
+                      $pq->where('nama', 'like', "%{$search}%")
+                         ->orWhere('nip', 'like', "%{$search}%");
+                  });
+            });
         }
         
         $reports = $query->orderBy('tanggal', 'desc')->get()->map(function($act) {

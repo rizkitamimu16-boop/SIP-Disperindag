@@ -38,7 +38,7 @@
                 <th>I</th>
                 <th>TK</th>
                 <th>TL</th>
-                <th>PTG</th>
+                <th>TAP</th>
             </tr>
         </thead>
         <tbody>
@@ -55,7 +55,7 @@
                 <td>{{ $row->i }}</td>
                 <td>{{ $row->tk }}</td>
                 <td>{{ $row->tl }}</td>
-                <td>{{ $row->ptg }}</td>
+                <td>{{ $row->tap ?? $row->ptg }}</td>
             </tr>
             @endforeach
         </tbody>

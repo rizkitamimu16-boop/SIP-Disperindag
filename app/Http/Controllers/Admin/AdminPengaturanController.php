@@ -28,6 +28,14 @@ class AdminPengaturanController extends Controller
     {
         $pengaturan = PengaturanKantor::getPengaturan();
 
+        // Validasi penjumlahan bobot harus 100% jika diisi
+        if ($request->has('bobot_kehadiran') && $request->has('bobot_produktivitas') && $request->has('bobot_kualitas')) {
+            $totalBobot = floatval($request->bobot_kehadiran) + floatval($request->bobot_produktivitas) + floatval($request->bobot_kualitas);
+            if (abs($totalBobot - 100.0) > 0.01) {
+                return back()->withInput()->with('error', "Total akumulasi bobot IKP harus tepat 100%. Saat ini totalnya: {$totalBobot}%.");
+            }
+        }
+
         $pengaturan->update($request->only([
             'nama_skpd',
             'nama_instansi',

@@ -15,25 +15,25 @@
 
         <!-- Tabs Navigasi Laporan -->
         <div class="flex overflow-x-auto border-b border-gray-200 mb-6 custom-scrollbar gap-2">
-            <button type="button" onclick="openReportTab('tab-absensi')" id="btn-tab-absensi" class="report-tab-btn active px-4 py-3 text-sm font-bold text-[#0D2240] border-b-2 border-[#0D2240] whitespace-nowrap transition cursor-pointer">
+            <button type="button" onclick="openReportTab('tab-absensi')" id="btn-tab-absensi" class="report-tab-btn {{ ($activeTab ?? 'absensi') === 'absensi' ? 'active font-bold text-[#0D2240] border-[#0D2240]' : 'font-medium text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300' }} px-4 py-3 text-sm border-b-2 whitespace-nowrap transition cursor-pointer">
                 <div class="flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                     Laporan Absensi
                 </div>
             </button>
-            <button type="button" onclick="openReportTab('tab-kinerja')" id="btn-tab-kinerja" class="report-tab-btn px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 whitespace-nowrap transition cursor-pointer">
+            <button type="button" onclick="openReportTab('tab-kinerja')" id="btn-tab-kinerja" class="report-tab-btn {{ ($activeTab ?? 'absensi') === 'kinerja' ? 'active font-bold text-[#0D2240] border-[#0D2240]' : 'font-medium text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300' }} px-4 py-3 text-sm border-b-2 whitespace-nowrap transition cursor-pointer">
                 <div class="flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                     Laporan Kinerja
                 </div>
             </button>
-            <button type="button" onclick="openReportTab('tab-kegiatan')" id="btn-tab-kegiatan" class="report-tab-btn px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 whitespace-nowrap transition cursor-pointer">
+            <button type="button" onclick="openReportTab('tab-kegiatan')" id="btn-tab-kegiatan" class="report-tab-btn {{ ($activeTab ?? 'absensi') === 'kegiatan' ? 'active font-bold text-[#0D2240] border-[#0D2240]' : 'font-medium text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300' }} px-4 py-3 text-sm border-b-2 whitespace-nowrap transition cursor-pointer">
                 <div class="flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     Laporan Kegiatan
                 </div>
             </button>
-            <button type="button" onclick="openReportTab('tab-sp')" id="btn-tab-sp" class="report-tab-btn px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 whitespace-nowrap transition cursor-pointer">
+            <button type="button" onclick="openReportTab('tab-sp')" id="btn-tab-sp" class="report-tab-btn {{ ($activeTab ?? 'absensi') === 'sp' ? 'active font-bold text-[#0D2240] border-[#0D2240]' : 'font-medium text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300' }} px-4 py-3 text-sm border-b-2 whitespace-nowrap transition cursor-pointer">
                 <div class="flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     Laporan SP
@@ -116,7 +116,8 @@
                         <span class="text-sm text-gray-600">entri</span>
                     </div>
                     <div class="relative w-full sm:w-64">
-                        <input type="text" placeholder="Cari nama, NIP, atau ID pegawai..."
+                        <input type="text" name="search_absensi" value="{{ request('search_absensi') }}" placeholder="Cari nama atau NIP pegawai..."
+                            onkeydown="if(event.key === 'Enter'){ event.preventDefault(); document.getElementById('reportForm').submit(); }"
                             class="w-full h-10 pl-9 pr-3 text-xs bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#0D2240]">
                         <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24" stroke-width="2">
@@ -255,7 +256,8 @@
                         <span class="text-sm text-gray-600">entri</span>
                     </div>
                     <div class="relative w-full sm:w-64">
-                        <input type="text" placeholder="Cari nama, NIP, atau ID pegawai..."
+                        <input type="text" name="search_kinerja" value="{{ request('search_kinerja') }}" placeholder="Cari nama atau NIP pegawai..."
+                            onkeydown="if(event.key === 'Enter'){ event.preventDefault(); document.getElementById('reportForm').submit(); }"
                             class="w-full h-10 pl-9 pr-3 text-xs bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#0D2240]">
                         <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24" stroke-width="2">
@@ -393,7 +395,8 @@
                         <span class="text-sm text-gray-600">entri</span>
                     </div>
                     <div class="relative w-full sm:w-64">
-                        <input type="text" placeholder="Cari kegiatan atau nama..."
+                        <input type="text" name="search_kegiatan" value="{{ request('search_kegiatan') }}" placeholder="Cari kegiatan atau nama..."
+                            onkeydown="if(event.key === 'Enter'){ event.preventDefault(); document.getElementById('reportForm').submit(); }"
                             class="w-full h-10 pl-9 pr-3 text-xs bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#0D2240]">
                         <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24" stroke-width="2">
@@ -527,7 +530,8 @@
                         <span class="text-sm text-gray-600">entri</span>
                     </div>
                     <div class="relative w-full sm:w-64">
-                        <input type="text" placeholder="Cari nama atau No. SP..."
+                        <input type="text" name="search_sp" value="{{ request('search_sp') }}" placeholder="Cari nama atau No. SP..."
+                            onkeydown="if(event.key === 'Enter'){ event.preventDefault(); document.getElementById('reportForm').submit(); }"
                             class="w-full h-10 pl-9 pr-3 text-xs bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#0D2240]">
                         <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24" stroke-width="2">
@@ -679,8 +683,19 @@
                 }
                 
                 container.innerHTML = html;
+                const tabInput = document.getElementById('activeTabInput');
+                if (tabInput) tabInput.value = tabName;
                 document.getElementById('reportForm').submit();
             }
+
+            document.getElementById('reportForm').addEventListener('submit', function(e) {
+                const visibleTab = document.querySelector('.report-tab-content:not(.hidden)');
+                if (visibleTab) {
+                    const cleanTab = visibleTab.id.replace('tab-', '');
+                    const tabInput = document.getElementById('activeTabInput');
+                    if (tabInput) tabInput.value = cleanTab;
+                }
+            });
         </script>
     </div>
 </div>
