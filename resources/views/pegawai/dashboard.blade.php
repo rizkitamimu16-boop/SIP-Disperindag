@@ -40,6 +40,14 @@
             @php
                 $hasMasuk = !empty($todayAttendance?->jam_masuk);
                 $hasPulang = !empty($todayAttendance?->jam_pulang);
+                $nowWita = \Carbon\Carbon::now('Asia/Makassar');
+                $jamPulangNormalStr = $nowWita->isFriday() 
+                    ? ($officeSettings->jam_pulang_jumat ?? '16:00:00') 
+                    : ($officeSettings->jam_pulang ?? '16:00:00');
+                $jamPulangNormal = \Carbon\Carbon::createFromTimeString($jamPulangNormalStr, 'Asia/Makassar');
+                $batasAkhirPulang = \Carbon\Carbon::createFromTimeString($officeSettings->batas_akhir_pulang ?? '18:00:00', 'Asia/Makassar');
+                $isSudahWaktunyaPulang = $nowWita->gte($jamPulangNormal);
+                $isLewatBatasPulang = $nowWita->gt($batasAkhirPulang);
             @endphp
 
             <!-- Aksi 1: Absen Datang (Buka Modal Presensi Datang) -->
@@ -73,6 +81,24 @@
                     <span class="text-xs sm:text-sm font-bold">Sudah Pulang</span>
                     <span class="text-[10px] text-sky-200 mt-0.5">Pukul {{ \Carbon\Carbon::parse($todayAttendance->jam_pulang)->format('H:i') }} WITA</span>
                 </button>
+            @elseif($hasMasuk && !$isSudahWaktunyaPulang)
+                <button type="button" onclick="Swal.fire({title: 'Belum Waktunya Pulang', text: 'Absen pulang kantor baru dibuka pukul {{ $jamPulangNormal->format('H:i') }} WITA.', icon: 'info', confirmButtonText: 'Mengerti'})"
+                    class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-slate-800/70 hover:bg-slate-800 text-slate-300 font-medium border border-slate-700 shadow-sm transition active:scale-98 cursor-pointer min-w-[125px]">
+                    <svg class="w-5 h-5 mb-1 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span class="text-xs sm:text-sm font-bold text-white">Absen Pulang</span>
+                    <span class="text-[10px] text-amber-300 mt-0.5 font-medium">Buka {{ $jamPulangNormal->format('H:i') }} WITA</span>
+                </button>
+            @elseif($hasMasuk && $isLewatBatasPulang)
+                <button type="button" onclick="Swal.fire({title: 'Batas Waktu Berakhir', text: 'Batas waktu absen pulang telah berakhir ({{ $batasAkhirPulang->format('H:i') }} WITA). Anda tidak dapat melakukan absen pulang.', icon: 'warning', confirmButtonText: 'Tutup'})"
+                    class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-amber-950/60 hover:bg-amber-950/80 text-amber-200 font-medium border border-amber-600/40 shadow-sm transition active:scale-98 cursor-pointer min-w-[125px]">
+                    <svg class="w-5 h-5 mb-1 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-xs sm:text-sm font-bold text-white">Absen Pulang</span>
+                    <span class="text-[10px] text-amber-300 mt-0.5">Lewat Batas</span>
+                </button>
             @elseif($hasMasuk)
                 <button type="button" onclick="openPresensiModal('pulang')"
                     class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-medium shadow-sm transition active:scale-98 cursor-pointer min-w-[125px]">
@@ -80,16 +106,16 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
                     <span class="text-xs sm:text-sm font-bold">Absen Pulang</span>
-                    <span class="text-[10px] text-sky-100 mt-0.5">Siap Pulang</span>
+                    <span class="text-[10px] text-sky-100 mt-0.5">Buka s/d {{ $batasAkhirPulang->format('H:i') }}</span>
                 </button>
             @else
-                <button type="button" onclick="openPresensiModal('pulang')"
+                <button type="button" onclick="Swal.fire({title: 'Perhatian', text: 'Anda belum melakukan absen datang hari ini. Silakan absen datang terlebih dahulu.', icon: 'warning', confirmButtonText: 'Tutup'})"
                     class="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium border border-white/15 shadow-sm transition active:scale-98 cursor-pointer min-w-[125px]">
-                    <svg class="w-5 h-5 mb-1 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <svg class="w-5 h-5 mb-1 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
                     <span class="text-xs sm:text-sm font-bold">Absen Pulang</span>
-                    <span class="text-[10px] text-slate-300 mt-0.5">{{ isset($officeSettings->jam_pulang) ? 'Pukul ' . \Carbon\Carbon::parse($officeSettings->jam_pulang)->format('H:i') : 'Pukul 16:30' }}</span>
+                    <span class="text-[10px] text-slate-300 mt-0.5">Pukul {{ $jamPulangNormal->format('H:i') }}</span>
                 </button>
             @endif
 

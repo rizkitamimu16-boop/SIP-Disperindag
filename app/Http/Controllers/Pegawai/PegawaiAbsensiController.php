@@ -153,29 +153,40 @@ class PegawaiAbsensiController extends Controller
                 return response()->json(['success' => false, 'message' => 'Anda sudah melakukan absen pulang hari ini.'], 422);
             }
 
-            $now = Carbon::now();
-            $batasAkhirPulang = Carbon::createFromTimeString($office->batas_akhir_pulang);
+            $now = Carbon::now('Asia/Makassar');
+            $jamPulangNormal = $now->isFriday() 
+                ? Carbon::createFromTimeString($office->jam_pulang_jumat, 'Asia/Makassar') 
+                : Carbon::createFromTimeString($office->jam_pulang, 'Asia/Makassar');
 
-            if ($now->gt($batasAkhirPulang)) {
-                return response()->json(['success' => false, 'message' => 'Batas waktu absen pulang telah lewat (' . $office->batas_akhir_pulang . '). Anda tidak dapat absen pulang hari ini.'], 422);
+            // Validasi: Belum memasuki jam pulang kantor
+            if ($now->lt($jamPulangNormal)) {
+                $jamBukaPulang = $jamPulangNormal->format('H:i');
+                return response()->json([
+                    'success' => false,
+                    'message' => "Belum waktunya absen pulang! Jam kepulangan kantor baru dibuka pukul {$jamBukaPulang} WITA."
+                ], 422);
             }
 
-            $jamPulangNormal = $now->isFriday() 
-                ? Carbon::createFromTimeString($office->jam_pulang_jumat) 
-                : Carbon::createFromTimeString($office->jam_pulang);
+            $batasAkhirPulang = Carbon::createFromTimeString($office->batas_akhir_pulang, 'Asia/Makassar');
 
-            $isPulangCepat = $now->lt($jamPulangNormal);
+            if ($now->gt($batasAkhirPulang)) {
+                $jamBatasPulang = Carbon::parse($office->batas_akhir_pulang)->format('H:i');
+                return response()->json([
+                    'success' => false,
+                    'message' => "Batas waktu absen pulang telah lewat ({$jamBatasPulang} WITA). Anda tidak dapat absen pulang hari ini."
+                ], 422);
+            }
 
             $attendance->update([
                 'jam_pulang'    => $nowTime,
-                'status_pulang' => $isPulangCepat ? 'Pulang Cepat' : 'Tepat Waktu',
+                'status_pulang' => 'Tepat Waktu',
                 'jarak_pulang'  => $distance,
                 'foto_pulang'   => $photoPath,
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Presensi pulang berhasil dicatat ' . ($isPulangCepat ? '(Pulang Cepat)' : '(Tepat Waktu)'),
+                'message' => 'Presensi pulang berhasil dicatat (Tepat Waktu)',
                 'time'    => $nowTime
             ]);
         }
