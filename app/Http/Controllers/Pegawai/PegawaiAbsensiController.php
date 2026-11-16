@@ -125,12 +125,27 @@ class PegawaiAbsensiController extends Controller
                 return response()->json(['success' => false, 'message' => 'Anda sudah melakukan absen masuk hari ini.'], 422);
             }
 
-            $batasTerlambat = Carbon::createFromTimeString($office->batas_terlambat);
-            $batasAkhirMasuk = Carbon::createFromTimeString($office->batas_akhir_masuk);
-            $now = Carbon::now();
+            $now = Carbon::now('Asia/Makassar');
+            $jamMasukNormal = Carbon::createFromTimeString($office->jam_masuk ?? '07:30:00', 'Asia/Makassar');
+            $batasTerlambat = Carbon::createFromTimeString($office->batas_terlambat ?? '08:30:00', 'Asia/Makassar');
+            $batasAkhirMasuk = Carbon::createFromTimeString($office->batas_akhir_masuk ?? '11:00:00', 'Asia/Makassar');
 
+            // Validasi: Belum masuk jam buka presensi datang
+            if ($now->lt($jamMasukNormal)) {
+                $jamBukaStr = substr($office->jam_masuk ?? '07:30:00', 0, 5);
+                return response()->json([
+                    'success' => false, 
+                    'message' => "Belum waktu absen datang! Presensi datang baru dibuka pada pukul {$jamBukaStr} WITA sesuai pengaturan sistem kantor."
+                ], 422);
+            }
+
+            // Validasi: Batas waktu absen masuk telah lewat
             if ($now->gt($batasAkhirMasuk)) {
-                return response()->json(['success' => false, 'message' => 'Batas waktu absen masuk telah lewat (' . $office->batas_akhir_masuk . '). Anda tidak dapat absen masuk hari ini.'], 422);
+                $batasAkhirStr = substr($office->batas_akhir_masuk ?? '11:00:00', 0, 5);
+                return response()->json([
+                    'success' => false, 
+                    'message' => "Batas waktu absen masuk telah lewat ({$batasAkhirStr} WITA). Anda tidak dapat absen masuk hari ini."
+                ], 422);
             }
 
             $isLate = $now->gt($batasTerlambat);

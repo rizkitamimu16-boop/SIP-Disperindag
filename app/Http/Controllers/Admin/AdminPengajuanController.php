@@ -64,6 +64,11 @@ class AdminPengajuanController extends Controller
             };
 
             for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+                // Hari libur akhir pekan (Sabtu & Minggu) bukan hari kerja kantor, lewati pencatatan presensi
+                if ($date->isWeekend()) {
+                    continue;
+                }
+
                 Presensi::updateOrCreate(
                     [
                         'pegawai_id' => $pengajuan->pegawai_id,
@@ -75,8 +80,12 @@ class AdminPengajuanController extends Controller
                 );
             }
         } elseif ($validated['status'] === 'Ditolak') {
-            // Jika ditolak, dan tidak ada data absen di tanggal tersebut, jadikan Alpha
+            // Jika ditolak, dan tidak ada data absen di tanggal tersebut, jadikan Alpha (kecuali akhir pekan)
             for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
+                if ($date->isWeekend()) {
+                    continue;
+                }
+
                 $existing = Presensi::where('pegawai_id', $pengajuan->pegawai_id)
                     ->where('tanggal', $date->toDateString())
                     ->first();

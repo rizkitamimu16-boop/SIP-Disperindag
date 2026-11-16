@@ -205,6 +205,16 @@
                                 <span class="text-[11px] font-semibold text-rose-600 bg-white px-2.5 py-0.5 rounded border border-rose-200">Tidak Hadir</span>
                             </div>
                         </td>
+                        @elseif(($att->status ?? '') === 'Libur')
+                        <td colspan="6" class="py-3.5 px-3">
+                            <div class="w-full flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-200">
+                                <span class="text-xs font-semibold text-gray-600 flex items-center space-x-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                                    <span>Hari Libur Akhir Pekan (Sabtu / Minggu)</span>
+                                </span>
+                                <span class="text-[11px] font-semibold text-gray-500 bg-white px-2.5 py-0.5 rounded border border-gray-200">Libur Kantor</span>
+                            </div>
+                        </td>
                         @else
                         <td class="py-3.5 px-3 text-emerald-700 font-bold whitespace-nowrap">{{ $att->jam_masuk ? date('H:i', strtotime($att->jam_masuk)).' WITA' : '-' }}</td>
                         <td class="py-3.5 px-3 whitespace-nowrap">

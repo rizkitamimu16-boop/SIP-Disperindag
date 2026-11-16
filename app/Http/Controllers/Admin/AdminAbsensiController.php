@@ -51,12 +51,13 @@ class AdminAbsensiController extends Controller
                 $p->setRelation('pegawai', $pegawai);
                 $dailyRoster->push($p);
             } else {
-                // Pegawai belum absen -> Alpha / Belum Hadir
+                // Pegawai belum absen -> Cek apakah akhir pekan atau hari kerja
+                $isWeekend = Carbon::parse($targetDate)->isWeekend();
                 $p = new Presensi([
                     'pegawai_id'   => $pegawai->id,
                     'tanggal'      => $targetDate,
-                    'status'       => 'Alpha',
-                    'status_masuk' => 'Belum Hadir',
+                    'status'       => $isWeekend ? 'Libur' : 'Alpha',
+                    'status_masuk' => $isWeekend ? 'Libur Akhir Pekan' : 'Belum Hadir',
                     'jam_masuk'    => null,
                     'jam_pulang'   => null,
                 ]);

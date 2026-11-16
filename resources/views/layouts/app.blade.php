@@ -46,6 +46,8 @@
     </div>
 
     @stack('modals')
+    <!-- Universal Table Sorter Script (Pengurutan Heading A-Z / Z-A) -->
+    <script src="{{ asset('js/table-sorter.js') }}?v={{ file_exists(public_path('js/table-sorter.js')) ? filemtime(public_path('js/table-sorter.js')) : time() }}"></script>
     @stack('scripts')
 
     @if(session('success'))

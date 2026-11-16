@@ -65,6 +65,20 @@ class SkorKinerja extends Model
 
         if ($isDaily) {
             $targetDate = $periode;
+            $carbonDate = \Carbon\Carbon::parse($targetDate);
+            if ($carbonDate->isWeekend()) {
+                $scoreData = new self();
+                $scoreData->pegawai_id = $pegawaiId;
+                $scoreData->periode = $periode;
+                $scoreData->nilai_kehadiran = 100.0;
+                $scoreData->nilai_produktivitas = 100.0;
+                $scoreData->nilai_kualitas = 100.0;
+                $scoreData->nilai_akhir = 100.0;
+                $scoreData->kategori = 'Sangat Baik';
+                $scoreData->status = 'Libur';
+                return $scoreData;
+            }
+
             $presensi = Presensi::where('pegawai_id', $pegawaiId)
                 ->where('tanggal', $targetDate)
                 ->first();
@@ -132,9 +146,10 @@ class SkorKinerja extends Model
             $year = \Carbon\Carbon::parse($periode)->year;
             $month = \Carbon\Carbon::parse($periode)->month;
 
-            // Hitung jumlah hari kerja aktif yang sudah terekam di sistem pada bulan tersebut
+            // Hitung jumlah hari kerja aktif yang sudah terekam di sistem pada bulan tersebut (hanya hari kerja Senin-Jumat)
             $workDaysInOffice = Presensi::whereYear('tanggal', $year)
                 ->whereMonth('tanggal', $month)
+                ->whereRaw('DAYOFWEEK(tanggal) NOT IN (1, 7)')
                 ->distinct('tanggal')
                 ->count('tanggal');
             
@@ -143,6 +158,7 @@ class SkorKinerja extends Model
             $presensiList = Presensi::where('pegawai_id', $pegawaiId)
                 ->whereYear('tanggal', $year)
                 ->whereMonth('tanggal', $month)
+                ->whereRaw('DAYOFWEEK(tanggal) NOT IN (1, 7)')
                 ->get();
 
             $hadirCount = $presensiList->where('status', 'Hadir')->count();
