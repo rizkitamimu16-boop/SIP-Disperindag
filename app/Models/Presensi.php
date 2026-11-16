@@ -24,6 +24,7 @@ class Presensi extends Model
         'jarak_pulang',
         'foto_pulang',
         'status',
+        'keterangan',
     ];
 
     protected function casts(): array

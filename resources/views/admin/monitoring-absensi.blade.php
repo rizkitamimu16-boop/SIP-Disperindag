@@ -83,8 +83,10 @@
                 <select id="filterAbsensiTahun"
                     class="w-full h-10 px-3.5 pr-8 text-xs bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D2240]/20 text-gray-700 transition cursor-pointer appearance-none">
                     <option value="Semua Tahun">Semua Tahun</option>
-                    <option value="2026" selected>Tahun 2026</option>
-                    <option value="2025">Tahun 2025</option>
+                    @php $curYear = (int)date('Y'); @endphp
+                    @for($y = $curYear + 1; $y >= $curYear - 3; $y--)
+                        <option value="{{ $y }}" {{ $y == $curYear ? 'selected' : '' }}>Tahun {{ $y }}</option>
+                    @endfor
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">

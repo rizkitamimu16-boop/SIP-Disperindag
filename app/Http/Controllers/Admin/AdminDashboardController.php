@@ -24,6 +24,7 @@ class AdminDashboardController extends Controller
 
         $pendingPengajuanCount = PengajuanIzin::where('status', 'Menunggu Review')->count();
         $pendingKegiatanCount = LaporanKegiatan::where('status_verifikasi', 'Menunggu Review')->count();
+        $pendingTugasLapanganCount = LaporanKegiatan::where('status_verifikasi', 'Menunggu Review')->where('is_tugas_lapangan', true)->count();
 
         $kehadiranHariIni = Presensi::with('pegawai')
             ->where('tanggal', $today)
@@ -46,6 +47,7 @@ class AdminDashboardController extends Controller
             'dinasLuar',
             'pendingPengajuanCount',
             'pendingKegiatanCount',
+            'pendingTugasLapanganCount',
             'kehadiranHariIni',
             'pendingPengajuan',
             'officeSettings'

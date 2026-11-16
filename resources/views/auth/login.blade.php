@@ -64,7 +64,7 @@
 
         <!-- Footer Kolom Kiri -->
         <div class="text-xs text-slate-400 border-t border-slate-700/60 pt-4">
-            © 2026 Sekretariat DISPERDAGIN • Sekretariat
+            © {{ date('Y') }} Sekretariat DISPERDAGIN • Sekretariat
         </div>
     </div>
 
@@ -212,7 +212,7 @@
 
         <!-- Footer Mobile -->
         <p class="mt-6 text-xs text-gray-400 text-center lg:hidden">
-            © 2026 Sekretariat DISPERDAGIN
+            © {{ date('Y') }} Sekretariat DISPERDAGIN
         </p>
 
     </div>

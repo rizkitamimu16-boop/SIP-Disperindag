@@ -898,7 +898,7 @@
             if (filterKegiatanBidang) filterKegiatanBidang.value = 'Semua Bidang';
             if (filterKegiatanTanggal) filterKegiatanTanggal.value = '';
             if (filterKegiatanBulan) filterKegiatanBulan.value = 'Semua Bulan';
-            if (filterKegiatanTahun) filterKegiatanTahun.value = '2026';
+            if (filterKegiatanTahun) filterKegiatanTahun.value = new Date().getFullYear().toString();
             if (filterKegiatanStatus) filterKegiatanStatus.value = 'Semua Status';
             applyKegiatanFilter();
         };

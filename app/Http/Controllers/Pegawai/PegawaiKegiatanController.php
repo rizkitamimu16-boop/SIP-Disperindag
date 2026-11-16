@@ -64,16 +64,18 @@ class PegawaiKegiatanController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'nama_kegiatan' => 'required|string|max:255',
-            'deskripsi'     => 'required|string',
-            'tanggal'       => 'required|date',
-            'foto'          => 'nullable|image|max:10240',
-            'surat_tugas'   => 'nullable|image|max:10240',
+            'nama_kegiatan'     => 'required|string|max:255',
+            'deskripsi'         => 'required|string',
+            'tanggal'           => 'required|date',
+            'foto'              => 'nullable|image|max:10240',
+            'surat_tugas'       => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:10240',
+            'is_tugas_lapangan' => 'nullable|boolean',
+            'jam_mulai_tugas'   => 'nullable|string',
         ], [
             'nama_kegiatan.required' => 'Nama kegiatan wajib diisi.',
             'deskripsi.required'     => 'Deskripsi uraian kegiatan wajib diisi.',
             'tanggal.required'       => 'Tanggal pelaksanaan kegiatan wajib ditentukan.',
-            'surat_tugas.image'      => 'Berkas Surat Turun Lapangan harus berupa format gambar (JPG/PNG).',
+            'surat_tugas.mimes'      => 'Berkas Surat Tugas harus berupa format JPG, PNG, atau PDF.',
         ]);
 
         $employee = Auth::user()->pegawai;
@@ -94,9 +96,18 @@ class PegawaiKegiatanController extends Controller
             ->whereDate('tanggal', $tanggalReq)
             ->first();
 
-        if (!$isDinasLuar) {
+        $isTugasLapangan = $request->boolean('is_tugas_lapangan');
+
+        if ($isTugasLapangan) {
+            if (!$request->hasFile('foto')) {
+                return back()->with('error', 'Laporan tugas lapangan wajib menyertakan Foto Dokumentasi / Selfie di lokasi tugas.');
+            }
+            if (!$request->hasFile('surat_tugas')) {
+                return back()->with('error', 'Laporan tugas lapangan wajib menyertakan Foto / Berkas Surat Tugas.');
+            }
+        } elseif (!$isDinasLuar) {
             if (!$presensi || !$presensi->jam_masuk) {
-                return back()->with('error', 'Anda belum melakukan Absen Datang. Laporan kegiatan hanya dapat dikirim selama jam kerja.');
+                return back()->with('error', 'Anda belum melakukan Absen Datang di kantor. Laporan kegiatan reguler hanya dapat dikirim selama jam kerja, atau centang pilihan "Tugas Lapangan / Dinas Luar" jika langsung bertugas di luar kantor.');
             }
             if ($presensi->jam_pulang) {
                 return back()->with('error', 'Anda sudah melakukan Absen Pulang. Jam kerja telah selesai sehingga tidak dapat menambah laporan kegiatan.');
@@ -121,18 +132,53 @@ class PegawaiKegiatanController extends Controller
             'foto'          => $photoPath,
         ], $employee->id);
 
-        LaporanKegiatan::create([
+        $jamMulai = Carbon::now('Asia/Makassar')->format('H:i:s');
+        if ($request->filled('jam_mulai_tugas')) {
+            $inputJam = trim($request->input('jam_mulai_tugas'));
+            if (preg_match('/^\d{1,2}:\d{2}$/', $inputJam)) {
+                $jamMulai = $inputJam . ':00';
+            } elseif (preg_match('/^\d{1,2}:\d{2}:\d{2}$/', $inputJam)) {
+                $jamMulai = $inputJam;
+            }
+        }
+
+        $laporan = LaporanKegiatan::create([
             'pegawai_id'            => $employee->id,
             'tanggal'               => $validated['tanggal'],
             'nama_kegiatan'         => $validated['nama_kegiatan'],
             'deskripsi'             => $validated['deskripsi'],
             'foto'                  => $photoPath,
             'surat_tugas'           => $suratTugasPath,
-            'waktu_kirim'           => Carbon::now('Asia/Makassar')->format('H:i:s'),
+            'is_tugas_lapangan'     => $isTugasLapangan,
+            'waktu_kirim'           => $jamMulai,
             'nilai_produktivitas'   => $hasilProduktivitas['nilai'],
             'kategori_produktivitas' => $hasilProduktivitas['kategori'],
             'status_verifikasi'     => 'Menunggu Review',
         ]);
+
+        // Jika dicentang tugas lapangan dan belum memiliki rekaman presensi datang hari itu,
+        // buatkan rekaman presensi sementara berstatus Dinas Luar agar terlindungi dari vonis Alpha / SP.
+        if ($isTugasLapangan) {
+            if (!$presensi) {
+                \App\Models\Presensi::create([
+                    'pegawai_id'   => $employee->id,
+                    'tanggal'      => $tanggalReq,
+                    'jam_masuk'    => $jamMulai,
+                    'status_masuk' => 'Tepat Waktu',
+                    'jarak_masuk'  => 0,
+                    'status'       => 'Dinas Luar',
+                    'keterangan'   => 'Dinas Luar Lapangan (Menunggu Review)',
+                ]);
+            } elseif ($presensi->status === 'Alpha' || empty($presensi->jam_masuk)) {
+                $presensi->update([
+                    'jam_masuk'    => $jamMulai,
+                    'status_masuk' => 'Tepat Waktu',
+                    'jarak_masuk'  => 0,
+                    'status'       => 'Dinas Luar',
+                    'keterangan'   => 'Dinas Luar Lapangan (Menunggu Review)',
+                ]);
+            }
+        }
 
         return back()->with('success', 'Laporan kegiatan harian berhasil dikirim untuk verifikasi admin/atasan.');
     }

@@ -90,6 +90,12 @@ class AdminKegiatanController extends Controller
 
         // Jika status Ditolak, hapus laporan dan berkas lampirannya secara permanen
         if ($validated['status_verifikasi'] === 'Ditolak') {
+            $isTugasLapangan = (bool)$laporan->is_tugas_lapangan;
+            $pegawaiId = $laporan->pegawai_id;
+            $tanggalLap = $laporan->tanggal;
+            $periode = Carbon::parse($tanggalLap)->format('Y-m');
+            $namaKegiatan = $laporan->nama_kegiatan;
+
             if ($laporan->foto && \Illuminate\Support\Facades\Storage::disk('public')->exists($laporan->foto)) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->foto);
             }
@@ -97,15 +103,46 @@ class AdminKegiatanController extends Controller
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->surat_tugas);
             }
 
-            $pegawaiId = $laporan->pegawai_id;
-            $periode = Carbon::parse($laporan->tanggal)->format('Y-m');
-            $namaKegiatan = $laporan->nama_kegiatan;
             $laporan->delete();
 
-            // Sinkronkan ulang skor kinerja pegawai setelah laporan dihapus
+            // Jika laporan ini tugas lapangan dan tidak ada laporan tugas lapangan lain yang disetujui,
+            // batalkan dispensasi presensi Dinas Luar dan ubah menjadi Alpha
+            if ($isTugasLapangan) {
+                $hasOtherApprovedFieldTask = LaporanKegiatan::where('pegawai_id', $pegawaiId)
+                    ->whereDate('tanggal', $tanggalLap)
+                    ->where('is_tugas_lapangan', true)
+                    ->where('status_verifikasi', 'Disetujui')
+                    ->exists();
+
+                if (!$hasOtherApprovedFieldTask) {
+                    $presensi = \App\Models\Presensi::where('pegawai_id', $pegawaiId)
+                        ->whereDate('tanggal', $tanggalLap)
+                        ->first();
+
+                    if ($presensi && ($presensi->status === 'Dinas Luar' || str_contains($presensi->keterangan ?? '', 'Lapangan'))) {
+                        $presensi->update([
+                            'status'       => 'Alpha',
+                            'jam_masuk'    => null,
+                            'status_masuk' => null,
+                            'jarak_masuk'  => null,
+                            'jam_pulang'   => null,
+                            'status_pulang'=> null,
+                            'keterangan'   => 'Laporan Tugas Lapangan Ditolak (Alpha)',
+                        ]);
+                    }
+                }
+            }
+
+            // Sinkronkan ulang skor kinerja pegawai setelah laporan dihapus / status presensi berubah
             \App\Models\SkorKinerja::simpanAtauPerbarui($pegawaiId, $periode);
 
-            return back()->with('success', "Laporan kegiatan '{$namaKegiatan}' berhasil ditolak dan dihapus dari sistem.");
+            // Sinkronkan draf Surat Peringatan (SP) jika akumulasi Alpha bertambah
+            $pegawai = \App\Models\Pegawai::find($pegawaiId);
+            if ($pegawai) {
+                \App\Models\SuratPeringatan::syncDraftSpForPegawai($pegawai);
+            }
+
+            return back()->with('success', "Laporan kegiatan '{$namaKegiatan}' berhasil ditolak. Status presensi disesuaikan.");
         }
 
         // Jika Disetujui, nilai_kualitas wajib diisi
@@ -131,6 +168,30 @@ class AdminKegiatanController extends Controller
             'kategori_kualitas' => $kategori,
             'catatan_kualitas'  => $validated['catatan_kualitas'] ?? $laporan->catatan_kualitas,
         ]);
+
+        // Jika laporan yang disetujui adalah tugas lapangan, sahkan status presensi menjadi Dinas Luar resmi
+        if ($laporan->is_tugas_lapangan) {
+            $presensi = \App\Models\Presensi::where('pegawai_id', $laporan->pegawai_id)
+                ->whereDate('tanggal', $laporan->tanggal)
+                ->first();
+
+            if ($presensi) {
+                $presensi->update([
+                    'status'     => 'Dinas Luar',
+                    'keterangan' => 'Dinas Luar Lapangan (Disetujui)',
+                ]);
+            } else {
+                \App\Models\Presensi::create([
+                    'pegawai_id'   => $laporan->pegawai_id,
+                    'tanggal'      => $laporan->tanggal,
+                    'jam_masuk'    => $laporan->waktu_kirim ?? '07:30:00',
+                    'status_masuk' => 'Tepat Waktu',
+                    'jarak_masuk'  => 0,
+                    'status'       => 'Dinas Luar',
+                    'keterangan'   => 'Dinas Luar Lapangan (Disetujui)',
+                ]);
+            }
+        }
 
         // Sinkronkan ulang skor kinerja pegawai
         \App\Models\SkorKinerja::simpanAtauPerbarui($laporan->pegawai_id, Carbon::parse($laporan->tanggal)->format('Y-m'));

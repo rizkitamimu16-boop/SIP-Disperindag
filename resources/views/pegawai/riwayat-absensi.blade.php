@@ -108,7 +108,11 @@
                             @elseif(strtolower($att->status ?? '') == 'terlambat')
                                 <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Terlambat</span>
                             @elseif(strtolower($att->status ?? '') == 'dinas luar')
-                                <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">Dinas Luar</span>
+                                @if(str_contains($att->keterangan ?? '', 'Menunggu Review'))
+                                    <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Dinas Luar (Review)</span>
+                                @else
+                                    <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">Dinas Luar</span>
+                                @endif
                             @elseif(strtolower($att->status ?? '') == 'izin' || strtolower($att->status ?? '') == 'cuti' || strtolower($att->status ?? '') == 'sakit')
                                 <span class="inline-block whitespace-nowrap px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">{{ ucfirst($att->status) }}</span>
                             @else

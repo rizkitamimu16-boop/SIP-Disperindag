@@ -406,6 +406,28 @@
         }
     }
 
+    function toggleTugasLapangan(isChecked) {
+        const fieldJam = document.getElementById('fieldJamMulaiTugas');
+        const fotoBadge = document.getElementById('fotoRequiredBadge');
+        const suratBadge = document.getElementById('suratRequiredBadge');
+        const uploadFoto = document.getElementById('uploadFotoKegiatan');
+        const uploadSurat = document.getElementById('uploadSuratTugas');
+
+        if (isChecked) {
+            if (fieldJam) fieldJam.classList.remove('hidden');
+            if (fotoBadge) fotoBadge.innerHTML = '<span class="text-red-500 font-bold">* Wajib Foto di Lokasi</span>';
+            if (suratBadge) suratBadge.innerHTML = '<span class="text-red-500 font-bold">* Wajib Surat Tugas</span>';
+            if (uploadFoto) uploadFoto.setAttribute('required', 'required');
+            if (uploadSurat) uploadSurat.setAttribute('required', 'required');
+        } else {
+            if (fieldJam) fieldJam.classList.add('hidden');
+            if (fotoBadge) fotoBadge.innerHTML = '<span class="text-gray-400 font-normal">(Opsional)</span>';
+            if (suratBadge) suratBadge.innerHTML = '<span class="text-gray-400 font-normal">(Opsional)</span>';
+            if (uploadFoto) uploadFoto.removeAttribute('required');
+            if (uploadSurat) uploadSurat.removeAttribute('required');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const formKegiatan = document.getElementById('formModalKegiatan');
         if (formKegiatan) {

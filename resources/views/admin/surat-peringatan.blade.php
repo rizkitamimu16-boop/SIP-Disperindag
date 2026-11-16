@@ -172,7 +172,7 @@
                         DOCX
                     </div>
                     <div>
-                        <div class="text-xs font-bold text-gray-900" id="currentTemplateName">Template_SP_DISPERINDAG_2026.docx</div>
+                        <div class="text-xs font-bold text-gray-900" id="currentTemplateName">Template_SP_DISPERINDAG_{{ date('Y') }}.docx</div>
                         <div class="text-[11px] text-gray-500">Status: <span class="text-emerald-600 font-semibold">Aktif & Digunakan Sistem</span></div>
                     </div>
                 </div>
@@ -285,7 +285,7 @@
                 </label>
                 <div class="relative">
                     <input type="text" id="inputNomorSuratResmi" name="nomor_surat" required
-                        placeholder="Contoh: 800/015/DISPERINDAG/2026"
+                        placeholder="Contoh: 800/015/DISPERINDAG/{{ date('Y') }}"
                         class="w-full h-10 px-3.5 font-mono text-xs border border-gray-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#0D2240] focus:border-transparent text-gray-900 font-semibold">
                 </div>
                 <p class="text-[10px] text-gray-400 mt-1">Sesuai penomoran pada Buku Agenda Surat Keluar Dinas Perindag.</p>

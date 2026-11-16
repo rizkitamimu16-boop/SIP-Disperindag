@@ -137,7 +137,14 @@
                             <p class="text-[11px] text-gray-500">{{ $rep->waktu_kirim_formatted }} WITA</p>
                         </td>
                         <td class="p-3.5">
-                            <span class="font-bold text-gray-900 block">{{ $rep->nama_kegiatan ?? '-' }}</span>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="font-bold text-gray-900 block">{{ $rep->nama_kegiatan ?? '-' }}</span>
+                                @if($rep->is_tugas_lapangan)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                        Tugas Lapangan
+                                    </span>
+                                @endif
+                            </div>
                             <span class="text-[11px] text-slate-500">{{ $employee->bidang ?? '-' }}</span>
                         </td>
                         <td class="p-3.5 max-w-xs">

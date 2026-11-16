@@ -220,10 +220,34 @@
                     required></textarea>
             </div>
 
-            <!-- Foto Dokumentasi Pekerjaan (Opsional) -->
+            <!-- Checkbox Opsi Tugas Lapangan / Dinas Luar -->
+            <div class="bg-amber-50/90 border border-amber-200 rounded-2xl p-4 flex items-start space-x-3 transition">
+                <input type="checkbox" name="is_tugas_lapangan" id="checkTugasLapangan" value="1"
+                    class="mt-1 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer"
+                    onchange="toggleTugasLapangan(this.checked)">
+                <div class="flex-1">
+                    <label for="checkTugasLapangan" class="text-xs sm:text-sm font-bold text-amber-950 cursor-pointer block">
+                        Tugas Lapangan / Dinas Luar (Turun Langsung Sebelum ke Kantor)
+                    </label>
+                    <p class="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
+                        Centang opsi ini jika Anda langsung menuju lokasi tugas dinas luar (pasar, IKM, sidak konsumen) sebelum sempat absen datang di kantor. Wajib menyertakan <b>Foto Selfie di Lokasi</b> dan <b>Surat Tugas</b>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Jam Mulai Tugas Lapangan (Muncul jika dicentang) -->
+            <div id="fieldJamMulaiTugas" class="hidden">
+                <label class="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5">Jam Mulai Tugas Lapangan <span class="text-red-500">*</span></label>
+                <input type="time" name="jam_mulai_tugas" id="jamMulaiTugas" value="{{ date('H:i') }}"
+                    class="w-full text-xs sm:text-sm bg-white border border-gray-300 rounded-xl p-3 text-gray-800 focus:ring-2 focus:ring-[#0D2240] focus:outline-none transition">
+                <p class="text-[11px] text-gray-400 mt-1">Waktu saat Anda mulai melaksanakan tugas dinas luar di lokasi lapangan.</p>
+            </div>
+
+            <!-- Foto Dokumentasi Pekerjaan -->
             <div>
-                <label class="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5">Foto Dokumentasi Pekerjaan
-                    (Opsional)</label>
+                <label class="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5">
+                    Foto Dokumentasi Pekerjaan <span id="fotoRequiredBadge" class="text-gray-400 font-normal">(Opsional)</span>
+                </label>
                 <div
                     class="border border-dashed border-gray-300 bg-slate-50/50 rounded-2xl p-4 flex items-center justify-between">
                     <div class="flex items-center space-x-3">
@@ -256,9 +280,11 @@
                 </div>
             </div>
 
-            <!-- Foto Surat Turun Lapangan / Surat Tugas (Opsional) -->
+            <!-- Foto Surat Turun Lapangan / Surat Tugas -->
             <div>
-                <label class="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5">Foto Surat Turun Lapangan / Surat Tugas (Opsional)</label>
+                <label class="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5">
+                    Surat Perintah Tugas / Turun Lapangan <span id="suratRequiredBadge" class="text-gray-400 font-normal">(Opsional)</span>
+                </label>
                 <div class="border border-dashed border-gray-300 bg-slate-50/50 rounded-2xl p-4 flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                         <div id="suratTugasThumb"
@@ -268,11 +294,11 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-xs sm:text-sm font-bold text-gray-900">Surat Turun Lapangan</p>
+                            <p class="text-xs sm:text-sm font-bold text-gray-900">Surat Tugas</p>
                             <p id="suratTugasStatus" class="text-[11px] text-gray-400">Opsional</p>
                         </div>
                     </div>
-                    <input type="file" name="surat_tugas" id="uploadSuratTugas" class="hidden" accept="image/*"
+                    <input type="file" name="surat_tugas" id="uploadSuratTugas" class="hidden" accept="image/*,application/pdf"
                         onchange="handleSuratTugasUploaded(this)">
                     <button type="button" onclick="document.getElementById('uploadSuratTugas').click()"
                         class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-800 text-xs font-semibold px-3.5 py-2 rounded-xl shadow-xs transition flex items-center space-x-1.5 cursor-pointer">
@@ -539,6 +565,28 @@
                 }
             };
             reader.readAsDataURL(file);
+        }
+    }
+
+    function toggleTugasLapangan(isChecked) {
+        const fieldJam = document.getElementById('fieldJamMulaiTugas');
+        const fotoBadge = document.getElementById('fotoRequiredBadge');
+        const suratBadge = document.getElementById('suratRequiredBadge');
+        const uploadFoto = document.getElementById('uploadFotoKegiatan');
+        const uploadSurat = document.getElementById('uploadSuratTugas');
+
+        if (isChecked) {
+            if (fieldJam) fieldJam.classList.remove('hidden');
+            if (fotoBadge) fotoBadge.innerHTML = '<span class="text-red-500 font-bold">* Wajib Foto di Lokasi</span>';
+            if (suratBadge) suratBadge.innerHTML = '<span class="text-red-500 font-bold">* Wajib Surat Tugas</span>';
+            if (uploadFoto) uploadFoto.setAttribute('required', 'required');
+            if (uploadSurat) uploadSurat.setAttribute('required', 'required');
+        } else {
+            if (fieldJam) fieldJam.classList.add('hidden');
+            if (fotoBadge) fotoBadge.innerHTML = '<span class="text-gray-400 font-normal">(Opsional)</span>';
+            if (suratBadge) suratBadge.innerHTML = '<span class="text-gray-400 font-normal">(Opsional)</span>';
+            if (uploadFoto) uploadFoto.removeAttribute('required');
+            if (uploadSurat) uploadSurat.removeAttribute('required');
         }
     }
 

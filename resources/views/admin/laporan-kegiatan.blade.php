@@ -91,8 +91,7 @@
                         DISPERDAGIN</p>
                 </div>
                 <span
-                    class="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg">September
-                    2026</span>
+                    class="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg">{{ \Carbon\Carbon::now('Asia/Makassar')->locale('id')->isoFormat('MMMM Y') }}</span>
             </div>
             <div class="h-64 sm:h-72 w-full mt-4">
                 <canvas id="chartLaporanBidang"></canvas>
@@ -211,8 +210,10 @@
                 <select id="filterKegiatanTahun"
                     class="w-full h-10 px-3.5 pr-8 text-xs bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D2240]/20 text-gray-700 transition cursor-pointer appearance-none">
                     <option value="Semua Tahun">Semua Tahun</option>
-                    <option value="2026" selected>Tahun 2026</option>
-                    <option value="2025">Tahun 2025</option>
+                    @php $currentYear = (int)date('Y'); @endphp
+                    @for($y = $currentYear + 1; $y >= $currentYear - 3; $y--)
+                        <option value="{{ $y }}" {{ $y == $currentYear ? 'selected' : '' }}>Tahun {{ $y }}</option>
+                    @endfor
                 </select>
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -289,7 +290,16 @@
                             <span class="text-[11px] text-gray-400">NIP {{ $rep->pegawai->nip ?? '-' }}</span>
                         </td>
                         <td class="py-3.5 px-3 text-gray-600 font-mono text-xs">{{ $rep->tanggal ? \Carbon\Carbon::parse($rep->tanggal)->locale('id')->translatedFormat('l, d F Y') : '-' }}</td>
-                        <td class="py-3.5 px-3 font-bold text-gray-900">{{ $rep->nama_kegiatan }}</td>
+                        <td class="py-3.5 px-3">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="font-bold text-gray-900">{{ $rep->nama_kegiatan }}</span>
+                                @if($rep->is_tugas_lapangan)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                        Tugas Lapangan
+                                    </span>
+                                @endif
+                            </div>
+                        </td>
                         <td class="py-3.5 px-3 text-gray-600">
                             <div class="max-h-24 overflow-y-auto whitespace-pre-wrap pr-2">{{ $rep->deskripsi }}</div>
                         </td>

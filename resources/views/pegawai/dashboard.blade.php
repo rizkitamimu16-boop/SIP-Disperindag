@@ -250,9 +250,15 @@
                                 Terlambat
                             </span>
                         @elseif(($att->status ?? '') == 'Dinas Luar')
-                            <span class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap bg-blue-50 text-blue-700 border border-blue-200">
-                                Dinas Luar
-                            </span>
+                            @if(str_contains($att->keterangan ?? '', 'Menunggu Review'))
+                                <span class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap bg-amber-50 text-amber-700 border border-amber-200">
+                                    Dinas Luar (Review)
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap bg-blue-50 text-blue-700 border border-blue-200">
+                                    Dinas Luar
+                                </span>
+                            @endif
                         @elseif(($att->status ?? '') == 'Sakit')
                             <span class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap bg-rose-50 text-rose-700 border border-rose-200">
                                 Sakit
@@ -277,7 +283,11 @@
                             $isTidakAbsenPulang = !$isDispensasi && !empty($att->jam_masuk) && !$isSudahPulang && $isLewatBatasPulang;
                         @endphp
                         @if($isDispensasi)
-                            <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5 whitespace-nowrap">Disetujui</p>
+                            @if(str_contains($att->keterangan ?? '', 'Menunggu Review'))
+                                <p class="text-[10px] sm:text-[11px] text-amber-600 font-semibold mt-0.5 whitespace-nowrap">Menunggu Review</p>
+                            @else
+                                <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5 whitespace-nowrap">Disetujui</p>
+                            @endif
                         @elseif($isSudahPulang)
                             <p class="text-[10px] sm:text-[11px] text-gray-400 mt-0.5 whitespace-nowrap">Datang & Pulang</p>
                         @elseif($isTidakAbsenPulang)

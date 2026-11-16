@@ -19,6 +19,7 @@ class LaporanKegiatan extends Model
         'deskripsi',
         'foto',
         'surat_tugas',
+        'is_tugas_lapangan',
         'waktu_kirim',
         'nilai_produktivitas',
         'kategori_produktivitas',
@@ -32,6 +33,7 @@ class LaporanKegiatan extends Model
     {
         return [
             'tanggal'             => 'date',
+            'is_tugas_lapangan'   => 'boolean',
             'nilai_produktivitas' => 'float',
             'nilai_kualitas'      => 'float',
         ];

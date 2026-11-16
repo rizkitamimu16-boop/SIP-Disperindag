@@ -10,6 +10,34 @@
 @section('content')
 <div class="space-y-6">
 
+    @if(($pendingTugasLapanganCount ?? 0) > 0)
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 rounded-2xl p-4 sm:p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-start space-x-3.5">
+            <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <div>
+                <h4 class="text-xs sm:text-sm font-bold text-amber-950">
+                    Terdapat {{ $pendingTugasLapanganCount }} Laporan Tugas Lapangan Menunggu Review
+                </h4>
+                <p class="text-[11px] sm:text-xs text-amber-800 mt-0.5 leading-relaxed">
+                    Pegawai langsung bertugas ke lapangan sebelum absen kantor. Harap lakukan verifikasi laporan agar status kehadiran Dinas Luar dan kalkulasi nilai kinerja resmi tercatat sebelum tutup buku/ekspor laporan.
+                </p>
+            </div>
+        </div>
+        <div class="shrink-0 pl-12 sm:pl-0">
+            <a href="{{ route('admin.laporan-kegiatan') }}" class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-xs transition">
+                <span>Periksa Sekarang</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+    </div>
+    @endif
+
     <!-- HERO BANNER (Sesuai Gambar Referensi) -->
     <div
         class="bg-[#0B2144] text-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-sm relative overflow-hidden">
@@ -21,8 +49,7 @@
             <!-- Kiri: Tanggal, Live Clock & Badge Info -->
             <div class="lg:col-span-6 flex flex-col justify-center">
                 <span id="heroDateUpper"
-                    class="text-xs font-bold tracking-wider text-sky-200 uppercase">MINGGU, 6 SEPTEMBER
-                    2026</span>
+                    class="text-xs font-bold tracking-wider text-sky-200 uppercase">{{ strtoupper(\Carbon\Carbon::now('Asia/Makassar')->locale('id')->isoFormat('dddd, D MMMM Y')) }}</span>
                 <div class="flex items-baseline space-x-2 my-1">
                     <div id="liveClock"
                         class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">07:42:15</div>
