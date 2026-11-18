@@ -58,7 +58,7 @@ class AbsensiExport implements FromView, WithStyles, WithColumnWidths
 
         if ($periode === 'tahunan') {
             $year = (int)$this->request->get('year_absensi', Carbon::now()->year);
-            $reports = $pegawaiList->map(function ($p) use ($year) {
+            $reports = $pegawaiList->map(function ($p) use ($year, $todayDateStr, $currentTimeStr, $batasAkhirPulangStr) {
                 $attendances = Presensi::where('pegawai_id', $p->id)
                     ->whereYear('tanggal', $year)
                     ->get();
@@ -71,6 +71,14 @@ class AbsensiExport implements FromView, WithStyles, WithColumnWidths
                                               ->whereIn('status', ['Hadir', 'Terlambat'])
                                               ->count();
                 }
+
+                $totalTap = $attendances->filter(function($a) use ($todayDateStr, $currentTimeStr, $batasAkhirPulangStr) {
+                    $dateStr = is_object($a->tanggal) ? $a->tanggal->toDateString() : substr((string)$a->tanggal, 0, 10);
+                    $isPastDay = ($dateStr < $todayDateStr);
+                    $isToday = ($dateStr === $todayDateStr);
+                    $isTapCondition = ($isPastDay || ($isToday && $currentTimeStr > $batasAkhirPulangStr));
+                    return (!empty($a->jam_masuk) && empty($a->jam_pulang) && $isTapCondition);
+                })->count();
                 
                 return (object)[
                     'employee_name' => $p->nama,
@@ -82,7 +90,7 @@ class AbsensiExport implements FromView, WithStyles, WithColumnWidths
                     'total_sakit'   => $attendances->where('status', 'Sakit')->count(),
                     'total_tk'      => $attendances->where('status', 'Alpha')->count(),
                     'total_tl'      => $attendances->where('status', 'Terlambat')->count(),
-                    'total_tap'     => $attendances->whereNull('jam_pulang')->whereNotNull('jam_masuk')->count(),
+                    'total_tap'     => $totalTap,
                 ];
             });
             
@@ -160,13 +168,21 @@ class AbsensiExport implements FromView, WithStyles, WithColumnWidths
 
                     if ($att) {
                         $isTapCondition = ($isPastDay || ($isToday && $currentTimeStr > $batasAkhirPulangStr));
-                        if ($att->status === 'Terlambat') {
+                        $isLate = ($att->status === 'Terlambat');
+                        $isTap = (!empty($att->jam_masuk) && empty($att->jam_pulang) && $isTapCondition);
+
+                        if ($isLate) {
                             $tlCount++;
                         }
-
-                        if (!empty($att->jam_masuk) && empty($att->jam_pulang) && $isTapCondition) {
-                            $daily[$colKey] = 'TAP';
+                        if ($isTap) {
                             $tapCount++;
+                        }
+
+                        if ($isLate && $isTap) {
+                            $daily[$colKey] = 'TL/TAP';
+                            $hCount++;
+                        } elseif ($isTap) {
+                            $daily[$colKey] = 'TAP';
                             $hCount++;
                         } elseif ($att->status === 'Hadir') {
                             $daily[$colKey] = 'H';
@@ -301,13 +317,21 @@ class AbsensiExport implements FromView, WithStyles, WithColumnWidths
 
                     if ($att) {
                         $isTapCondition = ($isPastDay || ($isToday && $currentTimeStr > $batasAkhirPulangStr));
-                        if ($att->status === 'Terlambat') {
+                        $isLate = ($att->status === 'Terlambat');
+                        $isTap = (!empty($att->jam_masuk) && empty($att->jam_pulang) && $isTapCondition);
+
+                        if ($isLate) {
                             $tlCount++;
                         }
-
-                        if (!empty($att->jam_masuk) && empty($att->jam_pulang) && $isTapCondition) {
-                            $daily[$d] = 'TAP';
+                        if ($isTap) {
                             $tapCount++;
+                        }
+
+                        if ($isLate && $isTap) {
+                            $daily[$d] = 'TL/TAP';
+                            $hCount++;
+                        } elseif ($isTap) {
+                            $daily[$d] = 'TAP';
                             $hCount++;
                         } elseif ($att->status === 'Hadir') {
                             $daily[$d] = 'H';
@@ -404,7 +428,7 @@ class AbsensiExport implements FromView, WithStyles, WithColumnWidths
             $numDates = count($this->viewData['dates'] ?? []);
             for ($i = 0; $i < $numDates; $i++) {
                 $colLetter = Coordinate::stringFromColumnIndex(4 + $i);
-                $widths[$colLetter] = 6;
+                $widths[$colLetter] = 6.8;
             }
             for ($j = 0; $j < 6; $j++) {
                 $colLetter = Coordinate::stringFromColumnIndex(4 + $numDates + $j);
@@ -416,7 +440,7 @@ class AbsensiExport implements FromView, WithStyles, WithColumnWidths
             // Kolom tanggal (D s/d ...)
             for ($d = 1; $d <= $daysInMonth; $d++) {
                 $colLetter = Coordinate::stringFromColumnIndex(3 + $d);
-                $widths[$colLetter] = 4.5;
+                $widths[$colLetter] = 6.8;
             }
             // 6 Kolom Rekapitulasi (H, S, I, TK, TL, TAP)
             for ($j = 1; $j <= 6; $j++) {

@@ -19,6 +19,9 @@
         .weekend-cell { background-color: #fef2f2 !important; color: #dc2626 !important; }
         .tk-cell { color: #dc2626 !important; font-weight: bold; }
         .tap-cell { color: #d97706 !important; font-weight: bold; }
+        .tl-cell { color: #ea580c !important; font-weight: bold; }
+        .tltap-cell { color: #b45309 !important; font-weight: bold; }
+        .legend { margin-top: 12px; font-size: 8.5px; color: #475569; }
     </style>
 </head>
 <body>
@@ -64,9 +67,26 @@
                     $colKey = $date->format('d/m');
                     $isWeekend = $date->isWeekend();
                     $val = $row->daily[$colKey] ?? '-';
+                    $cellClass = '';
+                    $cellStyle = '';
+                    if ($isWeekend) {
+                        $cellClass = 'weekend-cell';
+                        $cellStyle = 'background-color: #fef2f2; color: #dc2626;';
+                    } elseif ($val === 'TK') {
+                        $cellClass = 'tk-cell';
+                        $cellStyle = 'color: #dc2626; font-weight: bold;';
+                    } elseif ($val === 'TL/TAP') {
+                        $cellClass = 'tltap-cell';
+                        $cellStyle = 'color: #b45309; font-weight: bold;';
+                    } elseif ($val === 'TAP') {
+                        $cellClass = 'tap-cell';
+                        $cellStyle = 'color: #d97706; font-weight: bold;';
+                    } elseif ($val === 'TL') {
+                        $cellClass = 'tl-cell';
+                        $cellStyle = 'color: #ea580c; font-weight: bold;';
+                    }
                 @endphp
-                <td class="{{ $isWeekend ? 'weekend-cell' : ($val === 'TK' ? 'tk-cell' : ($val === 'TAP' ? 'tap-cell' : '')) }}" 
-                    style="{{ $isWeekend ? 'background-color: #fef2f2; color: #dc2626;' : ($val === 'TK' ? 'color: #dc2626; font-weight: bold;' : ($val === 'TAP' ? 'color: #d97706; font-weight: bold;' : '')) }}">
+                <td class="{{ $cellClass }}" style="{{ $cellStyle }}">
                     {{ $val }}
                 </td>
                 @endforeach
@@ -80,6 +100,11 @@
             @endforeach
         </tbody>
     </table>
+
+    <div class="legend">
+        <strong>Keterangan:</strong> 
+        H = Hadir | S = Sakit | I = Izin/Cuti/DL | TK = Tanpa Keterangan | TL = Terlambat | TAP = Tidak Absen Pulang | TL/TAP = Terlambat & Tidak Absen Pulang
+    </div>
 
     <table style="width: 100%; border: none; margin-top: 30px;" border="0">
         <tr>
