@@ -18,7 +18,10 @@
         return Math.round(R * c);
     }
 
-    // 1. Fungsi Pop Up Presensi Kehadiran (Gambar 1)
+    // 1. Fungsi Pop Up Presensi Kehadiran (Live Web Camera & Hybrid Fallback)
+    let liveStream = null;
+    let currentCameraFacing = 'user'; // 'user' (depan) atau 'environment' (belakang)
+
     function openPresensiModal(type) {
         currentPresensiType = type || 'masuk';
         const modal = document.getElementById('modalPresensiKehadiran');
@@ -30,51 +33,161 @@
         }
         if (modal) {
             modal.classList.remove('hidden');
-            syncLocation(); // Auto-sync when opened
+            syncLocation(); // Auto-sync GPS
+            retakeLiveSnapshot(); // Reset snapshot and start live camera
         }
     }
 
     function closePresensiModal() {
+        stopLiveCamera();
         const modal = document.getElementById('modalPresensiKehadiran');
         if (modal) modal.classList.add('hidden');
     }
 
-    let currentOriginalImage = null;
+    async function startLiveCamera() {
+        const video = document.getElementById('videoPresensiLive');
+        if (!video) return;
 
-    function applyWatermark() {
-        if (!currentOriginalImage) return;
-        
-        const img = currentOriginalImage;
+        stopLiveCamera();
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.warn('getUserMedia tidak didukung di browser ini.');
+            showCameraFallbackNotice('Browser tidak mendukung live camera. Silakan gunakan kamera bawaan / galeri.');
+            return;
+        }
+
+        try {
+            const constraints = {
+                video: {
+                    facingMode: currentCameraFacing,
+                    width: { ideal: 1280, max: 1280 },
+                    height: { ideal: 720, max: 720 }
+                },
+                audio: false
+            };
+
+            liveStream = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = liveStream;
+            await video.play();
+
+            if (currentCameraFacing === 'user') {
+                video.classList.add('-scale-x-100');
+            } else {
+                video.classList.remove('-scale-x-100');
+            }
+
+            const statusText = document.getElementById('fotoStatusText');
+            if (statusText) {
+                statusText.textContent = 'Kamera aktif (Siap jepret wajah)';
+                statusText.className = 'text-[11px] font-semibold text-emerald-600';
+            }
+        } catch (err) {
+            console.warn('Camera access error:', err);
+            showCameraFallbackNotice('Izin kamera ditolak / tidak tersedia. Gunakan kamera bawaan / galeri.');
+        }
+    }
+
+    function stopLiveCamera() {
+        if (liveStream) {
+            liveStream.getTracks().forEach(track => track.stop());
+            liveStream = null;
+        }
+        const video = document.getElementById('videoPresensiLive');
+        if (video) video.srcObject = null;
+    }
+
+    function switchLiveCamera() {
+        currentCameraFacing = currentCameraFacing === 'user' ? 'environment' : 'user';
+        startLiveCamera();
+    }
+
+    function showCameraFallbackNotice(msg) {
+        const statusText = document.getElementById('fotoStatusText');
+        if (statusText) {
+            statusText.textContent = msg;
+            statusText.className = 'text-[11px] font-semibold text-amber-600';
+        }
+    }
+
+    function captureLiveSnapshot() {
+        const video = document.getElementById('videoPresensiLive');
+        if (!video || !video.videoWidth) {
+            Swal.fire('Perhatian', 'Kamera belum siap. Silakan tunggu 1 detik atau gunakan kamera bawaan.', 'warning');
+            return;
+        }
+
         const canvas = document.createElement('canvas');
         const MAX_WIDTH = 800;
-        const MAX_HEIGHT = 800;
-        let width = img.width;
-        let height = img.height;
+        let width = video.videoWidth;
+        let height = video.videoHeight;
 
-        if (width > height) {
-            if (width > MAX_WIDTH) {
-                height *= MAX_WIDTH / width;
-                width = MAX_WIDTH;
-            }
-        } else {
-            if (height > MAX_HEIGHT) {
-                width *= MAX_HEIGHT / height;
-                height = MAX_HEIGHT;
-            }
+        if (width > MAX_WIDTH) {
+            height = Math.round(height * (MAX_WIDTH / width));
+            width = MAX_WIDTH;
         }
 
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
 
-        // --- Menambahkan Watermark GPS & Waktu ---
+        // Unmirror if front camera so photo and text look natural
+        if (currentCameraFacing === 'user') {
+            ctx.translate(width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, width, height);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        } else {
+            ctx.drawImage(video, 0, 0, width, height);
+        }
+
+        // Apply watermark GPS & Time
+        drawWatermarkOnCanvas(ctx, canvas.width, canvas.height);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        currentPhotoBase64 = compressedBase64;
+
+        // Show snapshot preview
+        const previewImg = document.getElementById('snapshotPreviewImg');
+        const previewContainer = document.getElementById('snapshotPreviewContainer');
+        const btnCapture = document.getElementById('btnCaptureLive');
+        const btnRetake = document.getElementById('btnRetakeLive');
+        const statusText = document.getElementById('fotoStatusText');
+
+        if (previewImg) previewImg.src = compressedBase64;
+        if (previewContainer) previewContainer.classList.remove('hidden');
+        if (btnCapture) btnCapture.classList.add('hidden');
+        if (btnRetake) btnRetake.classList.remove('hidden');
+
+        if (statusText) {
+            statusText.textContent = 'Foto wajah tersimpan ✓';
+            statusText.className = 'text-[11px] font-bold text-emerald-700';
+        }
+
+        stopLiveCamera();
+    }
+
+    function retakeLiveSnapshot() {
+        currentPhotoBase64 = null;
+        const previewContainer = document.getElementById('snapshotPreviewContainer');
+        const previewImg = document.getElementById('snapshotPreviewImg');
+        const btnCapture = document.getElementById('btnCaptureLive');
+        const btnRetake = document.getElementById('btnRetakeLive');
+
+        if (previewContainer) previewContainer.classList.add('hidden');
+        if (previewImg) previewImg.src = '';
+        if (btnCapture) btnCapture.classList.remove('hidden');
+        if (btnRetake) btnRetake.classList.add('hidden');
+
+        startLiveCamera();
+    }
+
+    function drawWatermarkOnCanvas(ctx, canvasWidth, canvasHeight) {
         var now = new Date();
         var tglStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
         var jamStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + " WITA";
-        var coordsStr = (currentLat && currentLng) ? currentLat.toFixed(6) + ", " + currentLng.toFixed(6) : "GPS Tidak Terdeteksi";
+        var coordsStr = (currentLat && currentLng) ? currentLat.toFixed(6) + ", " + currentLng.toFixed(6) : "GPS Menyesuaikan...";
 
-        var fontSize = Math.max(14, Math.floor(canvas.width * 0.032));
+        var fontSize = Math.max(13, Math.floor(canvasWidth * 0.030));
         var lineHeight = fontSize * 1.35;
 
         var textLines = [
@@ -88,18 +201,17 @@
 
         // Kotak latar belakang transparan
         ctx.fillStyle = "rgba(15, 35, 63, 0.90)";
-        ctx.fillRect(0, canvas.height - boxHeight, canvas.width, boxHeight);
+        ctx.fillRect(0, canvasHeight - boxHeight, canvasWidth, boxHeight);
 
-        var accentWidth = Math.max(6, canvas.width * 0.012);
+        var accentWidth = Math.max(6, canvasWidth * 0.012);
         ctx.fillStyle = "#38bdf8";
-        ctx.fillRect(0, canvas.height - boxHeight, accentWidth, boxHeight);
+        ctx.fillRect(0, canvasHeight - boxHeight, accentWidth, boxHeight);
 
         ctx.font = "bold " + fontSize + "px Arial, sans-serif";
-        var paddingLeft = accentWidth + (canvas.width * 0.025);
+        var paddingLeft = accentWidth + (canvasWidth * 0.025);
 
-        // Menulis teks watermark
         for (var i = 0; i < textLines.length; i++) {
-          var yPos = canvas.height - boxHeight + boxPadding + (i * lineHeight) + fontSize * 0.8;
+          var yPos = canvasHeight - boxHeight + boxPadding + (i * lineHeight) + fontSize * 0.8;
           var color = (i === 2) ? "#FFFFFF" : "#38bdf8";
 
           ctx.strokeStyle = '#000000';
@@ -109,35 +221,74 @@
           ctx.fillStyle = color;
           ctx.fillText(textLines[i], paddingLeft, yPos);
         }
-        // --- Akhir Watermark ---
+    }
 
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-        currentPhotoBase64 = compressedBase64;
+    // Fallback file handler (Kamera Bawaan / Galeri) menggunakan URL.createObjectURL aman memori
+    function handleFotoPresensi(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+
+        stopLiveCamera();
 
         const statusText = document.getElementById('fotoStatusText');
         if (statusText) {
-            statusText.textContent = 'Foto tersimpan (OK ✓)';
-            statusText.className = 'text-[11px] font-bold text-emerald-700';
+            statusText.textContent = 'Memproses foto...';
+            statusText.className = 'text-[11px] font-semibold text-sky-600 animate-pulse';
         }
-        const thumb = document.getElementById('fotoPresensiThumb');
-        if (thumb) {
-            thumb.innerHTML = `<img src="${compressedBase64}" class="w-full h-full object-cover rounded-xl" />`;
-        }
-    }
 
-    function handleFotoPresensi(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    currentOriginalImage = img;
-                    applyWatermark();
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = function() {
+            const MAX_WIDTH = 800;
+            const MAX_HEIGHT = 800;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height = Math.round(height * (MAX_WIDTH / width));
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width = Math.round(width * (MAX_HEIGHT / height));
+                    height = MAX_HEIGHT;
+                }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            drawWatermarkOnCanvas(ctx, canvas.width, canvas.height);
+
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+            currentPhotoBase64 = compressedBase64;
+
+            const previewImg = document.getElementById('snapshotPreviewImg');
+            const previewContainer = document.getElementById('snapshotPreviewContainer');
+            const btnCapture = document.getElementById('btnCaptureLive');
+            const btnRetake = document.getElementById('btnRetakeLive');
+
+            if (previewImg) previewImg.src = compressedBase64;
+            if (previewContainer) previewContainer.classList.remove('hidden');
+            if (btnCapture) btnCapture.classList.add('hidden');
+            if (btnRetake) btnRetake.classList.remove('hidden');
+
+            if (statusText) {
+                statusText.textContent = 'Foto tersimpan (OK ✓)';
+                statusText.className = 'text-[11px] font-bold text-emerald-700';
+            }
+
+            URL.revokeObjectURL(objectUrl);
+        };
+        img.onerror = function() {
+            URL.revokeObjectURL(objectUrl);
+            Swal.fire('Error', 'Gagal memuat foto. Format file mungkin tidak didukung.', 'error');
+        };
+        img.src = objectUrl;
     }
 
     function syncLocation() {
@@ -288,51 +439,51 @@
         });
     }
 
-    // Helper kompresi gambar client-side (mencegah memory crash & timeout di HP)
+    // Helper kompresi gambar client-side (Zero-Crash Pre-Scaling hemat RAM via URL.createObjectURL)
     function compressImageFile(file, maxWidth, maxHeight, quality, callback) {
         if (!file || !file.type.startsWith('image/')) {
             callback(file, null);
             return;
         }
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                let width = img.width;
-                let height = img.height;
-                if (width > height) {
-                    if (width > maxWidth) {
-                        height = Math.round(height * (maxWidth / width));
-                        width = maxWidth;
-                    }
-                } else {
-                    if (height > maxHeight) {
-                        width = Math.round(width * (maxHeight / height));
-                        height = maxHeight;
-                    }
-                }
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
 
-                canvas.toBlob(function(blob) {
-                    if (blob) {
-                        const newName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
-                        const compressed = new File([blob], newName, { type: 'image/jpeg', lastModified: Date.now() });
-                        callback(compressed, canvas.toDataURL('image/jpeg', 0.5));
-                    } else {
-                        callback(file, e.target.result);
-                    }
-                }, 'image/jpeg', quality);
-            };
-            img.onerror = function() {
-                callback(file, null);
-            };
-            img.src = e.target.result;
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = function() {
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = Math.round(height * (maxWidth / width));
+                    width = maxWidth;
+                }
+            } else {
+                if (height > maxHeight) {
+                    width = Math.round(width * (maxHeight / height));
+                    height = maxHeight;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob(function(blob) {
+                URL.revokeObjectURL(objectUrl);
+                if (blob) {
+                    const newName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+                    const compressed = new File([blob], newName, { type: 'image/jpeg', lastModified: Date.now() });
+                    callback(compressed, canvas.toDataURL('image/jpeg', 0.5));
+                } else {
+                    callback(file, null);
+                }
+            }, 'image/jpeg', quality);
         };
-        reader.readAsDataURL(file);
+        img.onerror = function() {
+            URL.revokeObjectURL(objectUrl);
+            callback(file, null);
+        };
+        img.src = objectUrl;
     }
 
     // 2. Fungsi Pop Up Pelaporan Kegiatan
