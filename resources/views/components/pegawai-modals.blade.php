@@ -407,7 +407,22 @@
             </button>
         </div>
         <div class="space-y-3">
-            <img id="fotoLaporanModalImage" src="" alt="Bukti Laporan" class="w-full h-auto max-h-64 object-contain rounded-xl border border-gray-200 bg-slate-50">
+            <div id="fotoLaporanModalImageContainer">
+                <img id="fotoLaporanModalImage" src="" alt="Bukti Laporan" class="w-full h-auto max-h-64 object-contain rounded-xl border border-gray-200 bg-slate-50">
+            </div>
+            <div id="fotoLaporanModalPdfContainer" class="hidden p-5 rounded-xl border border-red-200 bg-red-50/50 text-center space-y-3">
+                <div class="w-12 h-12 rounded-xl bg-red-100 text-red-600 mx-auto flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-gray-900">Dokumen Berkas (PDF)</p>
+                    <p class="text-[11px] text-gray-500">Berkas Surat Tugas elektronik terlampir</p>
+                </div>
+                <a id="fotoLaporanModalPdfLink" href="#" target="_blank" class="inline-flex items-center space-x-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    <span>Buka Dokumen PDF</span>
+                </a>
+            </div>
             <div class="text-xs space-y-1 text-gray-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
                 <p><span class="font-bold text-gray-500 w-16 inline-block">Kegiatan:</span> <span id="fotoLaporanModalKegiatan"></span></p>
             </div>
@@ -482,8 +497,25 @@
                     <img id="detailModalFoto" src="" alt="Foto Laporan" class="w-full h-auto max-h-56 object-contain rounded-xl border border-gray-200 bg-slate-50">
                 </div>
                 <div id="detailModalSuratContainer" class="hidden">
-                    <span class="text-gray-500 block mb-1 font-medium">Foto Surat Turun Lapangan:</span>
-                    <img id="detailModalSurat" src="" alt="Surat Tugas" class="w-full h-auto max-h-56 object-contain rounded-xl border border-gray-200 bg-slate-50">
+                    <span class="text-gray-500 block mb-1 font-medium">Surat Turun Lapangan:</span>
+                    <div id="detailModalSuratImageContainer">
+                        <img id="detailModalSurat" src="" alt="Surat Tugas" class="w-full h-auto max-h-56 object-contain rounded-xl border border-gray-200 bg-slate-50">
+                    </div>
+                    <div id="detailModalSuratPdfContainer" class="hidden p-3 rounded-xl border border-red-200 bg-red-50/50 flex items-center justify-between">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-gray-900">Berkas Surat Tugas (PDF)</p>
+                                <p class="text-[10px] text-gray-500">Klik tombol untuk membaca dokumen</p>
+                            </div>
+                        </div>
+                        <a id="detailModalSuratPdfLink" href="#" target="_blank" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-xs transition flex items-center space-x-1 cursor-pointer">
+                            <span>Buka PDF</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -579,13 +611,29 @@
         }
 
         const suratContainer = document.getElementById('detailModalSuratContainer');
-        const suratEl = document.getElementById('detailModalSurat');
-        if (data.surat_tugas && data.surat_tugas !== '') {
-            suratContainer.classList.remove('hidden');
-            suratEl.src = data.surat_tugas.startsWith('http') ? data.surat_tugas : '/storage/' + data.surat_tugas;
-        } else {
-            suratContainer.classList.add('hidden');
-            suratEl.src = '';
+        if (suratContainer) {
+            if (data.surat_tugas && data.surat_tugas !== '') {
+                const fullSuratUrl = data.surat_tugas.startsWith('http') ? data.surat_tugas : '/storage/' + data.surat_tugas;
+                const isPdf = fullSuratUrl.toLowerCase().split('?')[0].endsWith('.pdf');
+                const imgContainer = document.getElementById('detailModalSuratImageContainer');
+                const pdfContainer = document.getElementById('detailModalSuratPdfContainer');
+                const pdfLink = document.getElementById('detailModalSuratPdfLink');
+                const imgEl = document.getElementById('detailModalSurat');
+
+                if (isPdf) {
+                    if (imgContainer) imgContainer.classList.add('hidden');
+                    if (pdfContainer) pdfContainer.classList.remove('hidden');
+                    if (pdfLink) pdfLink.href = fullSuratUrl;
+                    if (imgEl) imgEl.src = '';
+                } else {
+                    if (imgContainer) imgContainer.classList.remove('hidden');
+                    if (pdfContainer) pdfContainer.classList.add('hidden');
+                    if (imgEl) imgEl.src = fullSuratUrl;
+                }
+                suratContainer.classList.remove('hidden');
+            } else {
+                suratContainer.classList.add('hidden');
+            }
         }
 
         modal.classList.remove('hidden');
@@ -601,8 +649,18 @@
             }
             const thumbEl = document.getElementById('suratTugasThumb');
             if (thumbEl) {
-                const objUrl = URL.createObjectURL(file);
-                thumbEl.innerHTML = `<img src="${objUrl}" class="w-full h-full object-cover">`;
+                const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+                if (isPdf) {
+                    thumbEl.innerHTML = `
+                        <div class="w-full h-full bg-red-100 text-red-600 flex flex-col items-center justify-center p-1">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                            <span class="text-[9px] font-bold mt-0.5">PDF</span>
+                        </div>
+                    `;
+                } else {
+                    const objUrl = URL.createObjectURL(file);
+                    thumbEl.innerHTML = `<img src="${objUrl}" class="w-full h-full object-cover">`;
+                }
             }
         }
     }

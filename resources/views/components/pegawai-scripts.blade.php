@@ -834,7 +834,24 @@
 
     function openFotoLaporanModal(kegiatan, fotoUrl) {
         document.getElementById('fotoLaporanModalKegiatan').textContent = kegiatan;
-        document.getElementById('fotoLaporanModalImage').src = fotoUrl;
+
+        const isPdf = fotoUrl && fotoUrl.toLowerCase().split('?')[0].endsWith('.pdf');
+        const imgContainer = document.getElementById('fotoLaporanModalImageContainer');
+        const pdfContainer = document.getElementById('fotoLaporanModalPdfContainer');
+        const pdfLink = document.getElementById('fotoLaporanModalPdfLink');
+        const imgEl = document.getElementById('fotoLaporanModalImage');
+
+        if (isPdf) {
+            if (imgContainer) imgContainer.classList.add('hidden');
+            if (pdfContainer) pdfContainer.classList.remove('hidden');
+            if (pdfLink) pdfLink.href = fotoUrl;
+            if (imgEl) imgEl.src = '';
+        } else {
+            if (imgContainer) imgContainer.classList.remove('hidden');
+            if (pdfContainer) pdfContainer.classList.add('hidden');
+            if (imgEl) imgEl.src = fotoUrl;
+        }
+
         document.getElementById('modalFotoLaporan').classList.remove('hidden');
     }
 

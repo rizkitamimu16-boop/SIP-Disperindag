@@ -307,7 +307,24 @@
     function openFotoLaporanModal(nama, kegiatan, fotoUrl) {
         document.getElementById('fotoLaporanModalNama').textContent = nama;
         document.getElementById('fotoLaporanModalKegiatan').textContent = kegiatan;
-        document.getElementById('fotoLaporanModalImage').src = fotoUrl;
+        
+        const isPdf = fotoUrl && fotoUrl.toLowerCase().split('?')[0].endsWith('.pdf');
+        const imgContainer = document.getElementById('fotoLaporanModalImageContainer');
+        const pdfContainer = document.getElementById('fotoLaporanModalPdfContainer');
+        const pdfLink = document.getElementById('fotoLaporanModalPdfLink');
+        const imgEl = document.getElementById('fotoLaporanModalImage');
+
+        if (isPdf) {
+            if (imgContainer) imgContainer.classList.add('hidden');
+            if (pdfContainer) pdfContainer.classList.remove('hidden');
+            if (pdfLink) pdfLink.href = fotoUrl;
+            if (imgEl) imgEl.src = '';
+        } else {
+            if (imgContainer) imgContainer.classList.remove('hidden');
+            if (pdfContainer) pdfContainer.classList.add('hidden');
+            if (imgEl) imgEl.src = fotoUrl;
+        }
+
         openModal('modalFotoLaporan');
     }
 
@@ -940,7 +957,23 @@
             const suratContainer = document.getElementById('modalReviewSuratContainer');
             if (suratContainer) {
                 if (suratTugas && suratTugas !== '') {
-                    document.getElementById('modalReviewSurat').src = suratTugas.startsWith('http') ? suratTugas : '/storage/' + suratTugas;
+                    const fullSuratUrl = suratTugas.startsWith('http') ? suratTugas : '/storage/' + suratTugas;
+                    const isPdf = fullSuratUrl.toLowerCase().split('?')[0].endsWith('.pdf');
+                    const imgContainer = document.getElementById('modalReviewSuratImageContainer');
+                    const pdfContainer = document.getElementById('modalReviewSuratPdfContainer');
+                    const pdfLink = document.getElementById('modalReviewSuratPdfLink');
+                    const imgEl = document.getElementById('modalReviewSurat');
+
+                    if (isPdf) {
+                        if (imgContainer) imgContainer.classList.add('hidden');
+                        if (pdfContainer) pdfContainer.classList.remove('hidden');
+                        if (pdfLink) pdfLink.href = fullSuratUrl;
+                        if (imgEl) imgEl.src = '';
+                    } else {
+                        if (imgContainer) imgContainer.classList.remove('hidden');
+                        if (pdfContainer) pdfContainer.classList.add('hidden');
+                        if (imgEl) imgEl.src = fullSuratUrl;
+                    }
                     suratContainer.classList.remove('hidden');
                 } else {
                     suratContainer.classList.add('hidden');

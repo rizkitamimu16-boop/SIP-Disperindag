@@ -447,8 +447,25 @@
                     <img id="modalReviewFoto" src="" alt="Foto Laporan" class="w-full h-auto max-h-48 object-contain rounded-xl border border-gray-200 bg-slate-50">
                 </div>
                 <div id="modalReviewSuratContainer" class="hidden">
-                    <span class="text-gray-500 block mb-1">Foto Surat Turun Lapangan:</span>
-                    <img id="modalReviewSurat" src="" alt="Surat Tugas" class="w-full h-auto max-h-48 object-contain rounded-xl border border-gray-200 bg-slate-50">
+                    <span class="text-gray-500 block mb-1">Surat Turun Lapangan:</span>
+                    <div id="modalReviewSuratImageContainer">
+                        <img id="modalReviewSurat" src="" alt="Surat Tugas" class="w-full h-auto max-h-48 object-contain rounded-xl border border-gray-200 bg-slate-50">
+                    </div>
+                    <div id="modalReviewSuratPdfContainer" class="hidden p-3 rounded-xl border border-red-200 bg-red-50/50 flex items-center justify-between">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-gray-900">Berkas Surat Tugas (PDF)</p>
+                                <p class="text-[10px] text-gray-500">Klik tombol untuk membaca dokumen</p>
+                            </div>
+                        </div>
+                        <a id="modalReviewSuratPdfLink" href="#" target="_blank" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-xs transition flex items-center space-x-1 cursor-pointer">
+                            <span>Buka PDF</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -674,7 +691,22 @@
             </button>
         </div>
         <div class="space-y-3">
-            <img id="fotoLaporanModalImage" src="" alt="Bukti Laporan" class="w-full h-auto max-h-64 object-contain rounded-xl border border-gray-200 bg-slate-50">
+            <div id="fotoLaporanModalImageContainer">
+                <img id="fotoLaporanModalImage" src="" alt="Bukti Laporan" class="w-full h-auto max-h-64 object-contain rounded-xl border border-gray-200 bg-slate-50">
+            </div>
+            <div id="fotoLaporanModalPdfContainer" class="hidden p-5 rounded-xl border border-red-200 bg-red-50/50 text-center space-y-3">
+                <div class="w-12 h-12 rounded-xl bg-red-100 text-red-600 mx-auto flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-gray-900">Dokumen Berkas (PDF)</p>
+                    <p class="text-[11px] text-gray-500">Berkas Surat Tugas elektronik terlampir</p>
+                </div>
+                <a id="fotoLaporanModalPdfLink" href="#" target="_blank" class="inline-flex items-center space-x-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    <span>Buka Dokumen PDF</span>
+                </a>
+            </div>
             <div class="text-xs space-y-1 text-gray-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
                 <p><span class="font-bold text-gray-500 w-16 inline-block">Pegawai:</span> <span id="fotoLaporanModalNama"></span></p>
                 <p><span class="font-bold text-gray-500 w-16 inline-block">Kegiatan:</span> <span id="fotoLaporanModalKegiatan"></span></p>
