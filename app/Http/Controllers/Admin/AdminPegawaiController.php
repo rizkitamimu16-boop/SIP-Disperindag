@@ -30,7 +30,10 @@ class AdminPegawaiController extends Controller
             });
         }
 
-        if ($request->filled('bidang') && in_array($request->bidang, Pegawai::BIDANG_RESMI)) {
+        $user = auth()->user();
+        if ($user && $user->isKabid()) {
+            $query->where('bidang', $user->bidang);
+        } elseif ($request->filled('bidang') && in_array($request->bidang, Pegawai::BIDANG_RESMI)) {
             $query->where('bidang', $request->bidang);
         }
 
@@ -70,6 +73,11 @@ class AdminPegawaiController extends Controller
             'username.unique'   => 'Username sudah digunakan, silakan pilih username lain.',
             'password.min'      => 'Password minimal 6 karakter.',
         ]);
+
+        $user = auth()->user();
+        if ($user && $user->isKabid()) {
+            $validated['bidang'] = $user->bidang;
+        }
 
         // Buat data Pegawai
         $pegawai = Pegawai::create([
@@ -121,6 +129,10 @@ class AdminPegawaiController extends Controller
     public function update(Request $request, int $id): RedirectResponse
     {
         $pegawai = Pegawai::with('user')->findOrFail($id);
+        $user = auth()->user();
+        if ($user && $user->isKabid() && $pegawai->bidang !== $user->bidang) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengubah data pegawai di luar bidang Anda.');
+        }
 
         $validated = $request->validate([
             'nip'      => 'required|string|max:50|unique:pegawai,nip,' . $id,
@@ -142,6 +154,10 @@ class AdminPegawaiController extends Controller
             'email.unique'      => 'Email sudah terdaftar untuk pengguna lain.',
         ]);
 
+        if ($user && $user->isKabid()) {
+            $validated['bidang'] = $user->bidang;
+        }
+
         $pegawai->update([
             'nip'     => $validated['nip'],
             'nama'    => $validated['nama'],
@@ -159,7 +175,7 @@ class AdminPegawaiController extends Controller
             $pegawai->user->update([
                 'nama'   => $validated['nama'],
                 'email'  => $validated['email'],
-                'status' => strtolower($validated['status']),
+                'status' => 'aktif', // Status akun pengguna tetap aktif (enum: aktif/nonaktif)
             ]);
 
             if ($oldEmail !== $validated['email'] || $oldStatus !== strtolower($validated['status'])) {
@@ -176,6 +192,10 @@ class AdminPegawaiController extends Controller
     public function resetPassword(Request $request, int $id): RedirectResponse
     {
         $pegawai = Pegawai::with('user')->findOrFail($id);
+        $user = auth()->user();
+        if ($user && $user->isKabid() && $pegawai->bidang !== $user->bidang) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mereset kata sandi pegawai di luar bidang Anda.');
+        }
         
         if (!$pegawai->user) {
             return redirect()->back()->with('error', 'Akun login untuk pegawai ini tidak ditemukan.');
@@ -196,6 +216,11 @@ class AdminPegawaiController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
+        $user = auth()->user();
+        if ($user && $user->isKabid()) {
+            return redirect()->back()->with('error', 'Kepala Bidang tidak memiliki wewenang untuk menghapus data pegawai.');
+        }
+
         $pegawai = Pegawai::findOrFail($id);
         $nama = $pegawai->nama;
         $pegawai->delete();

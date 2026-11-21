@@ -45,13 +45,17 @@ class AppServiceProvider extends ServiceProvider
             try {
                 $userRole = strtolower($user->peran ?? $user->role ?? '');
                 if ($userRole === 'admin' || $userRole === 'administrator') {
-                    // 1. Pengajuan Izin / Cuti / Sakit yang menunggu review
+                    $isKabid = method_exists($user, 'isKabid') && $user->isKabid();
+                    $kabidBidang = $user->bidang ?? null;
+
+                    // 1. Pengajuan Izin / Cuti / Sakit yang menunggu review (scope bidang untuk Kabid)
                     try {
-                        $izins = PengajuanIzin::with('pegawai')
-                            ->whereIn('status', ['Menunggu Review', 'menunggu review', 'Pending', 'pending'])
-                            ->latest()
-                            ->take(8)
-                            ->get();
+                        $izinQuery = PengajuanIzin::with('pegawai')
+                            ->whereIn('status', ['Menunggu Review', 'menunggu review', 'Pending', 'pending']);
+                        if ($isKabid && $kabidBidang) {
+                            $izinQuery->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+                        }
+                        $izins = $izinQuery->latest()->take(8)->get();
                         foreach ($izins as $izin) {
                             $notifItems[] = [
                                 'type'  => 'izin',
@@ -65,13 +69,14 @@ class AppServiceProvider extends ServiceProvider
                         }
                     } catch (\Exception $e) {}
 
-                    // 2. Laporan Kegiatan yang menunggu verifikasi
+                    // 2. Laporan Kegiatan yang menunggu verifikasi (scope bidang untuk Kabid)
                     try {
-                        $kegiatans = LaporanKegiatan::with('pegawai')
-                            ->whereIn('status_verifikasi', ['Menunggu Review', 'menunggu review', 'Pending', 'pending'])
-                            ->latest()
-                            ->take(8)
-                            ->get();
+                        $kegiatanQuery = LaporanKegiatan::with('pegawai')
+                            ->whereIn('status_verifikasi', ['Menunggu Review', 'menunggu review', 'Pending', 'pending']);
+                        if ($isKabid && $kabidBidang) {
+                            $kegiatanQuery->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+                        }
+                        $kegiatans = $kegiatanQuery->latest()->take(8)->get();
                         foreach ($kegiatans as $keg) {
                             $notifItems[] = [
                                 'type'  => 'kegiatan',
@@ -85,34 +90,49 @@ class AppServiceProvider extends ServiceProvider
                         }
                     } catch (\Exception $e) {}
 
-                    // 3. Draf SP baru yang belum bernomor
-                    try {
-                        $sps = SuratPeringatan::with('pegawai')
-                            ->where(function($q) {
-                                $q->whereNull('nomor_surat')->orWhere('nomor_surat', '');
-                            })
-                            ->latest()
-                            ->take(5)
-                            ->get();
-                        foreach ($sps as $sp) {
-                            $notifItems[] = [
-                                'type'  => 'sp',
-                                'title' => 'Draf ' . ($sp->tingkat_sp ?? 'SP'),
-                                'desc'  => ($sp->pegawai->nama ?? 'Pegawai') . ' terdeteksi ' . ($sp->jumlah_alpha ?? 0) . ' kali Alpha',
-                                'time'  => $sp->created_at ? $sp->created_at->diffForHumans() : 'Baru saja',
-                                'url'   => route('admin.sp'),
-                                'icon'  => 'alert',
-                                'color' => 'amber',
-                            ];
-                        }
-                    } catch (\Exception $e) {}
+                    // 3. Draf SP baru yang belum bernomor (Hanya untuk Super Admin & Admin Global; Kabid tidak mengelola SP)
+                    if (!$isKabid) {
+                        try {
+                            $sps = SuratPeringatan::with('pegawai')
+                                ->where(function($q) {
+                                    $q->whereNull('nomor_surat')->orWhere('nomor_surat', '');
+                                })
+                                ->latest()
+                                ->take(5)
+                                ->get();
+                            foreach ($sps as $sp) {
+                                $notifItems[] = [
+                                    'type'  => 'sp',
+                                    'title' => 'Draf ' . ($sp->tingkat_sp ?? 'SP'),
+                                    'desc'  => ($sp->pegawai->nama ?? 'Pegawai') . ' terdeteksi ' . ($sp->jumlah_alpha ?? 0) . ' kali Alpha',
+                                    'time'  => $sp->created_at ? $sp->created_at->diffForHumans() : 'Baru saja',
+                                    'url'   => route('admin.sp'),
+                                    'icon'  => 'alert',
+                                    'color' => 'amber',
+                                ];
+                            }
+                        } catch (\Exception $e) {}
+                    }
 
                     // Hitung total seluruh tugas pending yang masih perlu ditindaklanjuti
-                    $pendingIzinCount = PengajuanIzin::whereIn('status', ['Menunggu Review', 'menunggu review', 'Pending', 'pending'])->count();
-                    $pendingKegiatanCount = LaporanKegiatan::whereIn('status_verifikasi', ['Menunggu Review', 'menunggu review', 'Pending', 'pending'])->count();
-                    $pendingSpCount = SuratPeringatan::where(function($q) {
-                        $q->whereNull('nomor_surat')->orWhere('nomor_surat', '');
-                    })->count();
+                    $pIzinQ = PengajuanIzin::whereIn('status', ['Menunggu Review', 'menunggu review', 'Pending', 'pending']);
+                    if ($isKabid && $kabidBidang) {
+                        $pIzinQ->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+                    }
+                    $pendingIzinCount = $pIzinQ->count();
+
+                    $pKegQ = LaporanKegiatan::whereIn('status_verifikasi', ['Menunggu Review', 'menunggu review', 'Pending', 'pending']);
+                    if ($isKabid && $kabidBidang) {
+                        $pKegQ->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+                    }
+                    $pendingKegiatanCount = $pKegQ->count();
+
+                    $pendingSpCount = 0;
+                    if (!$isKabid) {
+                        $pendingSpCount = SuratPeringatan::where(function($q) {
+                            $q->whereNull('nomor_surat')->orWhere('nomor_surat', '');
+                        })->count();
+                    }
 
                     $notifCount = max(count($notifItems), $pendingIzinCount + $pendingKegiatanCount + $pendingSpCount);
 

@@ -15,6 +15,10 @@ class AdminSpController extends Controller
 {
     public function index(Request $request): View
     {
+        if (auth()->user() && auth()->user()->isKabid()) {
+            abort(403, 'Kepala Bidang tidak memiliki wewenang untuk mengakses menu Surat Peringatan (SP).');
+        }
+
         // Deteksi ambang batas dan sinkronisasi draf SP otomatis
         SuratPeringatan::syncAllDrafts();
 
@@ -48,6 +52,10 @@ class AdminSpController extends Controller
 
     public function terbitkan(Request $request, $id): RedirectResponse
     {
+        if (auth()->user() && auth()->user()->isKabid()) {
+            abort(403, 'Kepala Bidang tidak memiliki wewenang untuk menerbitkan Surat Peringatan (SP).');
+        }
+
         $request->validate([
             'nomor_surat' => 'required|string|max:100',
         ]);
@@ -65,6 +73,10 @@ class AdminSpController extends Controller
 
     public function exportPdf($id)
     {
+        if (auth()->user() && auth()->user()->isKabid()) {
+            abort(403, 'Kepala Bidang tidak memiliki wewenang untuk mencetak Surat Peringatan (SP).');
+        }
+
         $sp = SuratPeringatan::with('pegawai')->findOrFail($id);
         
         if (empty($sp->nomor_surat)) {

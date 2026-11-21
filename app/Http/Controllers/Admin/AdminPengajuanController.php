@@ -14,7 +14,15 @@ class AdminPengajuanController extends Controller
 {
     public function index(Request $request): View
     {
+        $user = auth()->user();
+        $isKabid = $user ? $user->isKabid() : false;
+        $kabidBidang = $isKabid ? $user->bidang : null;
+
         $query = PengajuanIzin::with('pegawai')->latest();
+
+        if ($isKabid) {
+            $query->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+        }
 
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
@@ -22,23 +30,35 @@ class AdminPengajuanController extends Controller
 
         $leaveRequests = $query->get();
 
+        $statsBase = PengajuanIzin::query();
+        if ($isKabid) {
+            $statsBase->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+        }
+
         $stats = [
-            'total'    => PengajuanIzin::count(),
-            'pending'  => PengajuanIzin::where('status', 'Menunggu Review')->count(),
-            'approved' => PengajuanIzin::where('status', 'Disetujui')->count(),
-            'rejected' => PengajuanIzin::where('status', 'Ditolak')->count(),
+            'total'    => (clone $statsBase)->count(),
+            'pending'  => (clone $statsBase)->where('status', 'Menunggu Review')->count(),
+            'approved' => (clone $statsBase)->where('status', 'Disetujui')->count(),
+            'rejected' => (clone $statsBase)->where('status', 'Ditolak')->count(),
         ];
 
         return view('admin.persetujuan-izin-cuti', [
             'leaveRequests' => $leaveRequests,
             'pengajuanList' => $leaveRequests,
             'stats'         => $stats,
+            'isKabid'       => $isKabid,
+            'kabidBidang'   => $kabidBidang,
         ]);
     }
 
     public function updateStatus(Request $request, int $id): RedirectResponse
     {
-        $pengajuan = PengajuanIzin::findOrFail($id);
+        $pengajuan = PengajuanIzin::with('pegawai')->findOrFail($id);
+
+        $user = auth()->user();
+        if ($user && $user->isKabid() && ($pengajuan->pegawai->bidang ?? '') !== $user->bidang) {
+            abort(403, 'Anda tidak berwenang memproses permohonan izin pegawai di luar bidang Anda.');
+        }
 
         $validated = $request->validate([
             'status'        => 'required|in:Disetujui,Ditolak',
@@ -104,6 +124,6 @@ class AdminPengajuanController extends Controller
             }
         }
 
-        return back()->with('success', "Pengajuan {$pengajuan->jenis} pegawai {$pengajuan->pegawai->nama} berhasil diubah menjadi '{$validated['status']}'.");
+        return redirect()->route('admin.persetujuan-izin-cuti')->with('success', "Status pengajuan telah diubah menjadi {$validated['status']}.");
     }
 }

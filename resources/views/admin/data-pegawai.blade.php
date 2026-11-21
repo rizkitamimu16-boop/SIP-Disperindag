@@ -81,14 +81,21 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
             </div>
-            <select name="bidang" onchange="this.form.submit()"
-                class="h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700 outline-none focus:bg-white">
-                <option value="">Semua Bidang</option>
-                <option value="Sekretariat" {{ request('bidang') == 'Sekretariat' ? 'selected' : '' }}>Sekretariat</option>
-                <option value="Perdagangan" {{ request('bidang') == 'Perdagangan' ? 'selected' : '' }}>Perdagangan</option>
-                <option value="Perindustrian" {{ request('bidang') == 'Perindustrian' ? 'selected' : '' }}>Perindustrian</option>
-                <option value="Perlindungan Konsumen" {{ request('bidang') == 'Perlindungan Konsumen' ? 'selected' : '' }}>Perlindungan Konsumen</option>
-            </select>
+            @if(auth()->user()->isKabid())
+                <input type="hidden" name="bidang" value="{{ auth()->user()->bidang }}">
+                <div class="h-10 px-3.5 bg-purple-50 border border-purple-200 rounded-xl text-purple-900 text-xs font-bold flex items-center shrink-0">
+                    Bidang: {{ auth()->user()->bidang }}
+                </div>
+            @else
+                <select name="bidang" onchange="this.form.submit()"
+                    class="h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700 outline-none focus:bg-white">
+                    <option value="">Semua Bidang</option>
+                    <option value="Sekretariat" {{ request('bidang') == 'Sekretariat' ? 'selected' : '' }}>Sekretariat</option>
+                    <option value="Perdagangan" {{ request('bidang') == 'Perdagangan' ? 'selected' : '' }}>Perdagangan</option>
+                    <option value="Perindustrian" {{ request('bidang') == 'Perindustrian' ? 'selected' : '' }}>Perindustrian</option>
+                    <option value="Perlindungan Konsumen" {{ request('bidang') == 'Perlindungan Konsumen' ? 'selected' : '' }}>Perlindungan Konsumen</option>
+                </select>
+            @endif
             <select name="status" onchange="this.form.submit()"
                 class="h-10 px-3 text-xs bg-slate-50 border border-gray-200 rounded-xl text-gray-700 outline-none focus:bg-white">
                 <option value="">Semua Status</option>
@@ -184,6 +191,7 @@
                                     </svg>
                                 </button>
 
+                                @if(!auth()->user()->isKabid())
                                 <!-- Icon 3: Hapus Pegawai (Tempat Sampah) -->
                                 <button type="button" 
                                     onclick="bukaModalHapusPegawai({{ $emp->id }}, '{{ addslashes($emp->nama) }}')"
@@ -193,6 +201,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
                                 </button>
+                                @endif
                             </div>
                         </td>
                     </tr>

@@ -158,6 +158,12 @@
             </div>
 
             <!-- 2. Dropdown Bidang -->
+            @if(auth()->user()->isKabid())
+            <input type="hidden" id="filterKegiatanBidang" value="{{ auth()->user()->bidang }}">
+            <div class="h-10 px-3.5 bg-purple-50 border border-purple-200 rounded-xl text-purple-900 text-xs font-bold flex items-center shrink-0">
+                Bidang: {{ auth()->user()->bidang }}
+            </div>
+            @else
             <div class="relative">
                 <select id="filterKegiatanBidang"
                     class="w-full h-10 px-3.5 pr-8 text-xs sm:text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D2240]/20 focus:border-[#0D2240] text-gray-700 transition cursor-pointer appearance-none">
@@ -173,6 +179,7 @@
                     </svg>
                 </div>
             </div>
+            @endif
 
             <!-- 3. Filter Tanggal Spesifik -->
             <div class="relative">
@@ -245,7 +252,7 @@
                 viewBox="0 0 24 24" stroke-width="2">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
             </svg>
-            <span id="filterKegiatanActiveLabel" class="text-slate-500 font-medium">Filter aktif: {{ request('bidang', 'Semua Bidang') }} • {{ request('date') ? \Carbon\Carbon::parse(request('date'))->locale('id')->isoFormat('D MMMM Y') : \Carbon\Carbon::now()->locale('id')->isoFormat('MMMM Y') }}</span>
+            <span id="filterKegiatanActiveLabel" class="text-slate-500 font-medium">Filter aktif: {{ auth()->user()->isKabid() ? 'Bidang ' . auth()->user()->bidang : request('bidang', 'Semua Bidang') }} • {{ request('date') ? \Carbon\Carbon::parse(request('date'))->locale('id')->isoFormat('D MMMM Y') : \Carbon\Carbon::now()->locale('id')->isoFormat('MMMM Y') }}</span>
         </div>
     </div>
 

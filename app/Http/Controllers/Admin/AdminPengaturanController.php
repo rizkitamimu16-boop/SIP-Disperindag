@@ -14,6 +14,11 @@ class AdminPengaturanController extends Controller
 {
     public function index(): View
     {
+        $user = auth()->user();
+        if ($user && $user->isKabid()) {
+            abort(403, 'Kepala Bidang tidak memiliki wewenang untuk mengakses pengaturan sistem.');
+        }
+
         $pengaturan = PengaturanKantor::getPengaturan();
         $adminUsers = User::where('peran', 'admin')->latest()->get();
 
@@ -26,6 +31,11 @@ class AdminPengaturanController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        if (!$user || $user->isKabid()) {
+            return back()->withErrors(['error' => 'Anda tidak memiliki wewenang untuk memperbarui konfigurasi sistem kantor.']);
+        }
+
         $pengaturan = PengaturanKantor::getPengaturan();
 
         // Validasi penjumlahan bobot harus 100% jika diisi
@@ -67,11 +77,17 @@ class AdminPengaturanController extends Controller
 
     public function storeAdmin(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        if (!$user || $user->isKabid()) {
+            return back()->withErrors(['error' => 'Anda tidak memiliki wewenang untuk menambahkan akun administrator baru.']);
+        }
+
         $validated = $request->validate([
             'nama'     => 'required|string|max:255',
             'username' => 'required|string|max:100|unique:pengguna,username',
             'email'    => 'required|email|unique:pengguna,email',
             'password' => 'required|string|min:6',
+            'bidang'   => 'nullable|string|in:Perindustrian,Perdagangan,Sekretariat,Perlindungan Konsumen',
         ], [
             'nama.required'     => 'Nama lengkap administrator wajib diisi.',
             'username.required' => 'Username login administrator wajib diisi.',
@@ -79,6 +95,7 @@ class AdminPengaturanController extends Controller
             'email.required'    => 'Email kedinasan wajib diisi.',
             'email.unique'      => 'Email sudah terdaftar untuk pengguna lain.',
             'password.min'      => 'Kata sandi minimal 6 karakter.',
+            'bidang.in'         => 'Bidang harus salah satu dari 4 bidang resmi instansi atau dikosongkan untuk Administrator Global.',
         ]);
 
         User::create([
@@ -87,14 +104,21 @@ class AdminPengaturanController extends Controller
             'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
             'peran'    => 'admin',
+            'bidang'   => !empty($validated['bidang']) ? $validated['bidang'] : null,
             'status'   => 'aktif',
         ]);
 
-        return back()->with('success', "Akun Administrator baru '{$validated['nama']}' berhasil ditambahkan ke sistem.");
+        $roleText = !empty($validated['bidang']) ? "Kepala Bidang {$validated['bidang']}" : "Administrator Global";
+        return back()->with('success', "Akun {$roleText} '{$validated['nama']}' berhasil ditambahkan ke sistem.");
     }
 
     public function updateAdmin(Request $request, int $id): RedirectResponse
     {
+        $user = auth()->user();
+        if (!$user || $user->isKabid()) {
+            return back()->withErrors(['error' => 'Anda tidak memiliki wewenang untuk mengubah akun administrator.']);
+        }
+
         $admin = User::where('peran', 'admin')->findOrFail($id);
 
         $validated = $request->validate([
@@ -102,6 +126,7 @@ class AdminPengaturanController extends Controller
             'username' => 'required|string|max:100|unique:pengguna,username,' . $id,
             'email'    => 'required|email|unique:pengguna,email,' . $id,
             'password' => 'nullable|string|min:6',
+            'bidang'   => 'nullable|string|in:Perindustrian,Perdagangan,Sekretariat,Perlindungan Konsumen',
             'status'   => 'required|in:aktif,nonaktif',
         ], [
             'nama.required'     => 'Nama lengkap administrator wajib diisi.',
@@ -110,11 +135,13 @@ class AdminPengaturanController extends Controller
             'email.required'    => 'Email kedinasan wajib diisi.',
             'email.unique'      => 'Email sudah terdaftar untuk pengguna lain.',
             'password.min'      => 'Kata sandi minimal 6 karakter.',
+            'bidang.in'         => 'Bidang harus salah satu dari 4 bidang resmi instansi atau dikosongkan.',
         ]);
 
         $admin->nama = $validated['nama'];
         $admin->username = $validated['username'];
         $admin->email = $validated['email'];
+        $admin->bidang = !empty($validated['bidang']) ? $validated['bidang'] : null;
         $admin->status = $validated['status'];
 
         if (!empty($validated['password'])) {
@@ -126,15 +153,16 @@ class AdminPengaturanController extends Controller
         return back()->with('success', "Akun Administrator '{$admin->nama}' berhasil diperbarui.");
     }
 
-    public function destroyAdmin(int $id): \Illuminate\Http\RedirectResponse
+    public function destroyAdmin(int $id): RedirectResponse
     {
-        if (auth()->id() !== 1) {
-            return back()->withErrors(['error' => 'Hanya Administrator Utama yang berhak menghapus akun admin lain.']);
+        $user = auth()->user();
+        if (!$user || !$user->isSuperAdmin()) {
+            return back()->withErrors(['error' => 'Hanya Administrator Utama (Super Admin) yang berhak menghapus akun admin lain.']);
         }
 
-        $admin = \App\Models\User::where('peran', 'admin')->findOrFail($id);
+        $admin = User::where('peran', 'admin')->findOrFail($id);
         
-        if (auth()->id() === $admin->id) {
+        if ($user->id === $admin->id) {
             return back()->withErrors(['error' => 'Anda tidak dapat menghapus akun Anda sendiri.']);
         }
         

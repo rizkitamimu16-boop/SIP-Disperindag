@@ -112,8 +112,12 @@ class AbsensiExport implements FromView, WithStyles, WithColumnWidths
             }
 
             // Hari kerja kantor aktif (Senin - Jumat yang ada presensi)
+            $weekdayClause = \Illuminate\Support\Facades\DB::getDriverName() === 'sqlite'
+                ? "strftime('%w', tanggal) NOT IN ('0', '6')"
+                : "DAYOFWEEK(tanggal) NOT IN (1, 7)";
+
             $activeOfficeDates = Presensi::whereBetween('tanggal', [$startDate, $endDate])
-                ->whereRaw('DAYOFWEEK(tanggal) NOT IN (1, 7)')
+                ->whereRaw($weekdayClause)
                 ->distinct('tanggal')
                 ->pluck('tanggal')
                 ->map(fn($t) => is_object($t) ? $t->toDateString() : substr((string)$t, 0, 10))
@@ -255,9 +259,13 @@ class AbsensiExport implements FromView, WithStyles, WithColumnWidths
             $daysInMonth = Carbon::parse($month.'-01')->daysInMonth;
 
             // Daftar tanggal hari kerja kantor yang aktif tercatat di sistem pada bulan tersebut (Senin - Jumat)
+            $weekdayClause = \Illuminate\Support\Facades\DB::getDriverName() === 'sqlite'
+                ? "strftime('%w', tanggal) NOT IN ('0', '6')"
+                : "DAYOFWEEK(tanggal) NOT IN (1, 7)";
+
             $activeOfficeDates = Presensi::whereYear('tanggal', $year)
                 ->whereMonth('tanggal', $monthNum)
-                ->whereRaw('DAYOFWEEK(tanggal) NOT IN (1, 7)')
+                ->whereRaw($weekdayClause)
                 ->distinct('tanggal')
                 ->pluck('tanggal')
                 ->map(fn($t) => is_object($t) ? $t->toDateString() : substr((string)$t, 0, 10))

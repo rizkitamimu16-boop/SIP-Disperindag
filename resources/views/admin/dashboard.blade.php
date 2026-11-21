@@ -2,8 +2,8 @@
 
 @section('title', 'Dashboard - Panel Administrator')
 
-@section('header_title', 'Selamat pagi, Administrator')
-@section('header_subtitle', 'Ringkasan sistem dan kehadiran hari ini')
+@section('header_title', 'Selamat datang, ' . (auth()->user()->name ?? 'Administrator'))
+@section('header_subtitle', (auth()->user() && auth()->user()->isKabid()) ? 'Ringkasan sistem & kehadiran staf Bidang ' . auth()->user()->bidang : 'Ringkasan sistem dan kehadiran hari ini')
 
 
 
@@ -79,13 +79,14 @@
                 </div>
             </div>
 
-            <!-- Kanan: Box Portal Administrator -->
+            <!-- Kanan: Box Portal Administrator / Kepala Bidang -->
             <div
                 class="lg:col-span-6 bg-white/10 backdrop-blur-xs rounded-2xl p-6 sm:p-7 border border-white/15 flex flex-col justify-center items-center text-center">
-                <h3 class="text-lg sm:text-xl font-bold text-white tracking-tight">Portal Administrator</h3>
+                <h3 class="text-lg sm:text-xl font-bold text-white tracking-tight">
+                    {{ (auth()->user() && auth()->user()->isKabid()) ? 'Portal Kepala Bidang' : 'Portal Administrator' }}
+                </h3>
                 <p class="text-xs sm:text-sm text-slate-200 mt-2 leading-relaxed max-w-md">
-                    Kelola absensi, perizinan, dan laporan kegiatan seluruh pegawai DISPERDAGIN secara
-                    terpusat.
+                    {{ (auth()->user() && auth()->user()->isKabid()) ? 'Monitoring absensi, persetujuan perizinan, dan verifikasi kegiatan staf Bidang ' . auth()->user()->bidang . '.' : 'Kelola absensi, perizinan, dan laporan kegiatan seluruh pegawai DISPERDAGIN secara terpusat.' }}
                 </p>
             </div>
         </div>
@@ -114,7 +115,7 @@
             </div>
             <div class="mt-1">
                 <div class="text-4xl font-extrabold text-[#0D2240] tracking-tight">{{ $totalPegawai ?? 0 }}</div>
-                <p class="text-[11px] font-medium text-gray-400 mt-1">Pegawai terdaftar aktif</p>
+                <p class="text-[11px] font-medium text-gray-400 mt-1">{{ !empty($kabidBidang) ? 'Pegawai aktif Bidang ' . $kabidBidang : 'Pegawai terdaftar aktif' }}</p>
             </div>
         </div>
 

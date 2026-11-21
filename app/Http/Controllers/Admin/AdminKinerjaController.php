@@ -27,17 +27,23 @@ class AdminKinerjaController extends Controller
             $periodLabel = Carbon::parse($currentPeriod)->locale('id')->isoFormat('MMMM Y');
         }
 
+        $user = auth()->user();
+        $isKabid = $user ? $user->isKabid() : false;
+        $kabidBidang = $isKabid ? $user->bidang : null;
+
         $query = Pegawai::query();
+
+        if ($isKabid) {
+            $query->where('bidang', $kabidBidang);
+        } elseif ($request->filled('bidang') && $request->bidang != 'Semua Bidang') {
+            $query->where('bidang', $request->bidang);
+        }
 
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('nama', 'like', '%' . $request->search . '%')
                   ->orWhere('nip', 'like', '%' . $request->search . '%');
             });
-        }
-
-        if ($request->filled('bidang') && $request->bidang != 'Semua Bidang') {
-            $query->where('bidang', $request->bidang);
         }
 
         $pegawais = $query->get();
@@ -121,6 +127,8 @@ class AdminKinerjaController extends Controller
                 'trend_labels' => $trendLabels,
                 'trend_data' => $trendScores,
             ]),
+            'isKabid'       => $isKabid,
+            'kabidBidang'   => $kabidBidang,
         ]);
     }
 

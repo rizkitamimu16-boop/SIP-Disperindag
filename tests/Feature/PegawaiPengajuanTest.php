@@ -56,8 +56,8 @@ class PegawaiPengajuanTest extends TestCase
         $pengajuan = PengajuanIzin::create([
             'pegawai_id' => $pegawai->id,
             'jenis' => 'Dinas Luar',
-            'tanggal_mulai' => '2026-09-27',
-            'tanggal_selesai' => '2026-09-28',
+            'tanggal_mulai' => '2026-09-28',
+            'tanggal_selesai' => '2026-09-29',
             'alasan' => 'Dinas Luar Kota',
             'status' => 'Menunggu Review'
         ]);

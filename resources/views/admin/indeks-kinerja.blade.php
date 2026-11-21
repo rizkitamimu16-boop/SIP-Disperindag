@@ -41,6 +41,12 @@
             </div>
 
             <!-- 2. Dropdown Bidang -->
+            @if(auth()->user()->isKabid())
+            <input type="hidden" name="bidang" value="{{ auth()->user()->bidang }}">
+            <div class="h-10 px-3.5 bg-purple-50 border border-purple-200 rounded-xl text-purple-900 text-xs font-bold flex items-center shrink-0">
+                Bidang: {{ auth()->user()->bidang }}
+            </div>
+            @else
             <div class="relative">
                 <select name="bidang" class="w-full h-10 px-3.5 pr-8 text-xs sm:text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D2240]/20 focus:border-[#0D2240] text-gray-700 transition cursor-pointer appearance-none" onchange="document.getElementById('filterKinerjaForm').submit()">
                     <option value="Semua Bidang" {{ request('bidang') == 'Semua Bidang' ? 'selected' : '' }}>Semua Bidang</option>
@@ -55,6 +61,7 @@
                     </svg>
                 </div>
             </div>
+            @endif
 
             <!-- 3. Tipe Filter: Bulanan / Harian -->
             <div class="relative">

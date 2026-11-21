@@ -2,7 +2,7 @@
      SIDEBAR PEGAWAI (8 Menu Navigasi Pegawai)
      =================================================================== -->
 <aside id="sidebar"
-    class="fixed inset-y-0 left-0 w-64 bg-[#0D2240] text-white flex flex-col justify-between z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
+    class="fixed inset-y-0 left-0 w-64 bg-[#0D2240] text-white flex flex-col justify-between z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out overflow-x-hidden">
 
     <!-- Bagian Atas Sidebar -->
     <div class="flex flex-col flex-1 overflow-y-auto">
@@ -110,22 +110,27 @@
     </div>
 
     <!-- Bagian Bawah Sidebar (Profil Pegawai & Logout) -->
-    <div class="p-3 border-t border-slate-700/60 bg-slate-900/40">
-        <div class="flex items-center justify-between p-2 rounded-lg">
-            <div class="flex items-center space-x-3">
+    <div class="p-3 border-t border-slate-700/60 bg-slate-900/40 shrink-0" style="overflow: hidden; max-width: 100%;">
+        <div class="flex items-center justify-between p-2 rounded-lg gap-2" style="width: 100%; min-width: 0; box-sizing: border-box;">
+            <div class="flex items-center min-w-0 flex-1" style="min-width: 0; flex: 1 1 0%; gap: 10px; overflow: hidden;">
                 <div
-                    class="w-9 h-9 rounded-full bg-[#163660] border border-white/20 flex items-center justify-center font-bold text-white text-xs shrink-0">
+                    class="w-9 h-9 rounded-full bg-[#163660] border border-white/20 flex items-center justify-center font-bold text-white text-xs shrink-0"
+                    style="width: 36px; height: 36px; min-width: 36px; flex-shrink: 0;">
                     {{ strtoupper(substr(auth()->user()->name ?? 'Pegawai', 0, 2)) }}
                 </div>
-                <div class="overflow-hidden">
-                    <p class="text-xs font-semibold text-white truncate">{{ auth()->user()->name ?? 'Pegawai PPPK' }}</p>
-                    <p class="text-[11px] text-slate-400 truncate">{{ auth()->user()->role ?? 'Staf PPPK' }} • DISPERDAGIN</p>
+                <div class="min-w-0 flex-1" style="min-width: 0; flex: 1 1 0%; overflow: hidden;">
+                    <p class="text-xs font-semibold text-white truncate" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; width: 100%; margin: 0;" title="{{ auth()->user()->name ?? 'Pegawai PPPK' }}">
+                        {{ auth()->user()->name ?? 'Pegawai PPPK' }}
+                    </p>
+                    <p class="text-[11px] text-slate-400 truncate" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; width: 100%; margin: 0;" title="{{ auth()->user()->role ?? 'Staf PPPK' }} • DISPERDAGIN">
+                        {{ auth()->user()->role ?? 'Staf PPPK' }} • DISPERDAGIN
+                    </p>
                 </div>
             </div>
-            <form action="{{ route('logout') }}" method="POST" class="inline">
+            <form action="{{ route('logout') }}" method="POST" class="inline shrink-0" style="flex-shrink: 0; margin: 0; display: inline-flex;">
                 @csrf
-                <button type="submit" title="Keluar Akun" class="p-1.5 text-slate-400 hover:text-red-400 rounded transition cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <button type="submit" title="Keluar Akun" class="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800/60 rounded-lg transition cursor-pointer" style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 6px; flex-shrink: 0;">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="width: 20px; height: 20px; flex-shrink: 0;">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>

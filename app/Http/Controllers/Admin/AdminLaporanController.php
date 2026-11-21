@@ -16,6 +16,10 @@ class AdminLaporanController extends Controller
 {
     public function index(Request $request): View
     {
+        if (auth()->user() && auth()->user()->isKabid()) {
+            abort(403, 'Kepala Bidang tidak memiliki wewenang untuk mengakses menu Pusat Laporan.');
+        }
+
         $activeTab = $request->get('tab', 'absensi');
         
         $attendanceReports = collect();
@@ -349,6 +353,10 @@ class AdminLaporanController extends Controller
     
     public function export(Request $request, $format)
     {
+        if (auth()->user() && auth()->user()->isKabid()) {
+            abort(403, 'Kepala Bidang tidak memiliki wewenang untuk mengekspor rekapitulasi Pusat Laporan.');
+        }
+
         $activeTab = $request->get('tab', 'absensi');
         $settings = \App\Models\PengaturanKantor::getPengaturan();
         

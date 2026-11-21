@@ -75,7 +75,7 @@ class SkorKinerja extends Model
                 $scoreData->nilai_kualitas = 100.0;
                 $scoreData->nilai_akhir = 100.0;
                 $scoreData->kategori = 'Sangat Baik';
-                $scoreData->status = 'Libur';
+                $scoreData->status = 'Draft'; // Gunakan nilai enum valid 'Draft' (tabel skor_kinerja: Final, Draft)
                 return $scoreData;
             }
 
@@ -146,10 +146,14 @@ class SkorKinerja extends Model
             $year = \Carbon\Carbon::parse($periode)->year;
             $month = \Carbon\Carbon::parse($periode)->month;
 
+            $weekdayClause = \Illuminate\Support\Facades\DB::getDriverName() === 'sqlite'
+                ? "strftime('%w', tanggal) NOT IN ('0', '6')"
+                : "DAYOFWEEK(tanggal) NOT IN (1, 7)";
+
             // Hitung jumlah hari kerja aktif yang sudah terekam di sistem pada bulan tersebut (hanya hari kerja Senin-Jumat)
             $workDaysInOffice = Presensi::whereYear('tanggal', $year)
                 ->whereMonth('tanggal', $month)
-                ->whereRaw('DAYOFWEEK(tanggal) NOT IN (1, 7)')
+                ->whereRaw($weekdayClause)
                 ->distinct('tanggal')
                 ->count('tanggal');
             
@@ -158,7 +162,7 @@ class SkorKinerja extends Model
             $presensiList = Presensi::where('pegawai_id', $pegawaiId)
                 ->whereYear('tanggal', $year)
                 ->whereMonth('tanggal', $month)
-                ->whereRaw('DAYOFWEEK(tanggal) NOT IN (1, 7)')
+                ->whereRaw($weekdayClause)
                 ->get();
 
             $hadirCount = $presensiList->where('status', 'Hadir')->count();

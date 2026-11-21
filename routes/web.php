@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\AdminLaporanController;
 use App\Http\Controllers\Admin\AdminPegawaiController;
 use App\Http\Controllers\Admin\AdminPengajuanController;
 use App\Http\Controllers\Admin\AdminPengaturanController;
+use App\Http\Controllers\Admin\AdminProfilController;
 use App\Http\Controllers\Admin\AdminSpController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Pegawai\PegawaiAbsensiController;
@@ -85,6 +86,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/pengaturan/admin/{id}', [AdminPengaturanController::class, 'updateAdmin'])->name('pengaturan.admin.update');
     Route::put('/pengaturan-sistem/admin/{id}', [AdminPengaturanController::class, 'updateAdmin'])->name('pengaturan-sistem.admin.update');
     Route::delete('/pengaturan-sistem/admin/{id}', [AdminPengaturanController::class, 'destroyAdmin'])->name('pengaturan-sistem.admin.destroy');
+
+    // 10. Profil Administrator & Kepala Bidang
+    Route::get('/profil', [AdminProfilController::class, 'index'])->name('profil');
+    Route::post('/profil', [AdminProfilController::class, 'update'])->name('profil.update');
 });
 
 // 4. Panel Pegawai PPPK (Wajib Auth & Peran: pegawai)
@@ -121,6 +126,20 @@ Route::middleware(['auth', 'role:pegawai'])->prefix('pegawai')->name('pegawai.')
 });
 
 // Route bantuan untuk shared hosting / cPanel jika terminal SSH bermasalah
+Route::get('/jalankan-migrasi', function () {
+    if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
+        abort(403, 'Akses terbatas: Hanya Administrator Utama yang dapat menjalankan migrasi database.');
+    }
+    try {
+        Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return '<h3 style="font-family: sans-serif; color: #16a34a; text-align: center; margin-top: 50px;">'
+             . '&#10004; Migrasi skema database berhasil dijalankan!<br><pre style="text-align: left; background: #f1f5f9; padding: 15px; border-radius: 8px; max-width: 600px; margin: 20px auto;">' . htmlspecialchars(Illuminate\Support\Facades\Artisan::output()) . '</pre></h3>';
+    } catch (\Exception $e) {
+        return '<h3 style="font-family: sans-serif; color: #dc2626; text-align: center; margin-top: 50px;">'
+             . 'Gagal menjalankan migrasi: ' . htmlspecialchars($e->getMessage()) . '</h3>';
+    }
+});
+
 Route::get('/buat-storage-link', function () {
     try {
         $link = public_path('storage');

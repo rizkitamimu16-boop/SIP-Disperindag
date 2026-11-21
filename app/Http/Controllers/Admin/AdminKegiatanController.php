@@ -14,8 +14,16 @@ class AdminKegiatanController extends Controller
     public function index(Request $request): View
     {
         $today = Carbon::today()->toDateString();
+        $user = auth()->user();
+        $isKabid = $user ? $user->isKabid() : false;
+        $kabidBidang = $isKabid ? $user->bidang : null;
+
         // Base query for table
         $query = LaporanKegiatan::with('pegawai')->latest();
+
+        if ($isKabid) {
+            $query->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+        }
 
         if ($request->filled('date')) {
             $query->where('tanggal', $request->date);
@@ -31,10 +39,15 @@ class AdminKegiatanController extends Controller
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
-        $totalLaporan = LaporanKegiatan::whereMonth('tanggal', $currentMonth)->whereYear('tanggal', $currentYear)->count();
-        $terverifikasi = LaporanKegiatan::whereMonth('tanggal', $currentMonth)->whereYear('tanggal', $currentYear)->where('status_verifikasi', 'Disetujui')->count();
-        $menungguReview = LaporanKegiatan::whereMonth('tanggal', $currentMonth)->whereYear('tanggal', $currentYear)->where('status_verifikasi', 'Menunggu Review')->count();
-        $avgProduktivitas = LaporanKegiatan::whereMonth('tanggal', $currentMonth)->whereYear('tanggal', $currentYear)->avg('nilai_produktivitas') ?? 0;
+        $statsBase = LaporanKegiatan::whereMonth('tanggal', $currentMonth)->whereYear('tanggal', $currentYear);
+        if ($isKabid) {
+            $statsBase->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+        }
+
+        $totalLaporan = (clone $statsBase)->count();
+        $terverifikasi = (clone $statsBase)->where('status_verifikasi', 'Disetujui')->count();
+        $menungguReview = (clone $statsBase)->where('status_verifikasi', 'Menunggu Review')->count();
+        $avgProduktivitas = (clone $statsBase)->avg('nilai_produktivitas') ?? 0;
         $avgProduktivitas = number_format($avgProduktivitas, 1);
 
         // Chart 1: Distribusi per Bidang
@@ -45,7 +58,11 @@ class AdminKegiatanController extends Controller
             'Perlindungan Konsumen' => ['masuk' => 0, 'terverifikasi' => 0],
         ];
         
-        $laporanBulanIni = LaporanKegiatan::with('pegawai')->whereMonth('tanggal', $currentMonth)->whereYear('tanggal', $currentYear)->get();
+        $laporanBulanIniQuery = LaporanKegiatan::with('pegawai')->whereMonth('tanggal', $currentMonth)->whereYear('tanggal', $currentYear);
+        if ($isKabid) {
+            $laporanBulanIniQuery->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+        }
+        $laporanBulanIni = $laporanBulanIniQuery->get();
         foreach ($laporanBulanIni as $lap) {
             $b = $lap->pegawai->bidang ?? 'Lainnya';
             if (isset($bidangData[$b])) {
@@ -62,7 +79,11 @@ class AdminKegiatanController extends Controller
         for ($i = 6; $i >= 0; $i--) {
             $d = Carbon::today()->subDays($i);
             $trenLabels[] = $d->format('d M');
-            $trenData[] = LaporanKegiatan::whereDate('tanggal', $d->toDateString())->count();
+            $tQuery = LaporanKegiatan::whereDate('tanggal', $d->toDateString());
+            if ($isKabid) {
+                $tQuery->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+            }
+            $trenData[] = $tQuery->count();
         }
 
         return view('admin.laporan-kegiatan', [
@@ -75,12 +96,18 @@ class AdminKegiatanController extends Controller
             'chartBidang'      => $bidangData,
             'chartTrenLabels'  => $trenLabels,
             'chartTrenData'    => $trenData,
+            'isKabid'          => $isKabid,
+            'kabidBidang'      => $kabidBidang,
         ]);
     }
 
     public function verifikasi(Request $request, int $id): RedirectResponse
     {
-        $laporan = LaporanKegiatan::findOrFail($id);
+        $laporan = LaporanKegiatan::with('pegawai')->findOrFail($id);
+        $user = auth()->user();
+        if ($user && $user->isKabid() && ($laporan->pegawai->bidang ?? '') !== $user->bidang) {
+            abort(403, 'Anda tidak berwenang memverifikasi kegiatan pegawai di luar bidang Anda.');
+        }
 
         $validated = $request->validate([
             'status_verifikasi' => 'required|in:Disetujui,Ditolak,Menunggu Review',
@@ -201,7 +228,11 @@ class AdminKegiatanController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
-        $laporan = LaporanKegiatan::findOrFail($id);
+        $laporan = LaporanKegiatan::with('pegawai')->findOrFail($id);
+        $user = auth()->user();
+        if ($user && $user->isKabid() && ($laporan->pegawai->bidang ?? '') !== $user->bidang) {
+            abort(403, 'Anda tidak berwenang menghapus kegiatan pegawai di luar bidang Anda.');
+        }
 
         if ($laporan->foto && \Illuminate\Support\Facades\Storage::disk('public')->exists($laporan->foto)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->foto);

@@ -17,24 +17,35 @@ class AdminAbsensiController extends Controller
         $today = Carbon::today()->toDateString();
         $targetDate = $request->get('date', $today);
 
-        // Ambil seluruh pegawai aktif PPPK (23 pegawai)
-        $pegawaiList = Pegawai::where('status', 'Aktif')->orderBy('nama')->get();
+        $user = auth()->user();
+        $isKabid = $user ? $user->isKabid() : false;
+        $kabidBidang = $isKabid ? $user->bidang : null;
+
+        // Ambil pegawai aktif PPPK (scoped jika Kabid)
+        $pegawaiQuery = Pegawai::where('status', 'Aktif')->orderBy('nama');
+        if ($isKabid) {
+            $pegawaiQuery->where('bidang', $kabidBidang);
+        }
+        $pegawaiList = $pegawaiQuery->get();
         $totalPegawai = $pegawaiList->count();
 
         // Ambil data presensi yang sudah tercatat pada targetDate
-        $presensiHariIni = Presensi::with('pegawai')
-            ->where('tanggal', $targetDate)
-            ->get()
-            ->keyBy('pegawai_id');
+        $presensiQuery = Presensi::with('pegawai')->where('tanggal', $targetDate);
+        if ($isKabid) {
+            $presensiQuery->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+        }
+        $presensiHariIni = $presensiQuery->get()->keyBy('pegawai_id');
 
         // Ambil izin/cuti/sakit yang disetujui pada targetDate
-        $izinsHariIni = PengajuanIzin::where('status', 'Disetujui')
+        $izinQuery = PengajuanIzin::where('status', 'Disetujui')
             ->whereDate('tanggal_mulai', '<=', $targetDate)
-            ->whereDate('tanggal_selesai', '>=', $targetDate)
-            ->get()
-            ->keyBy('pegawai_id');
+            ->whereDate('tanggal_selesai', '>=', $targetDate);
+        if ($isKabid) {
+            $izinQuery->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+        }
+        $izinsHariIni = $izinQuery->get()->keyBy('pegawai_id');
 
-        // Bentuk list presensi harian lengkap untuk seluruh 23 pegawai aktif
+        // Bentuk list presensi harian lengkap untuk seluruh pegawai aktif di bawah wewenang
         $dailyRoster = collect();
         foreach ($pegawaiList as $pegawai) {
             if ($presensiHariIni->has($pegawai->id)) {
@@ -67,9 +78,12 @@ class AdminAbsensiController extends Controller
         }
 
         // Ambil juga riwayat presensi hari-hari lainnya agar filter bulan/tahun tetap menyajikan data historis
-        $pastPresensis = Presensi::with('pegawai')
-            ->where('tanggal', '!=', $targetDate)
-            ->latest('tanggal')
+        $pastQuery = Presensi::with('pegawai')
+            ->where('tanggal', '!=', $targetDate);
+        if ($isKabid) {
+            $pastQuery->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+        }
+        $pastPresensis = $pastQuery->latest('tanggal')
             ->take(300)
             ->get();
 
@@ -88,6 +102,8 @@ class AdminAbsensiController extends Controller
             'selectedDate'  => $targetDate,
             'totalPegawai'  => $totalPegawai,
             'stats'         => $stats,
+            'isKabid'       => $isKabid,
+            'kabidBidang'   => $kabidBidang,
         ]);
     }
 }

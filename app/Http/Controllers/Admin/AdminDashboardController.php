@@ -16,23 +16,39 @@ class AdminDashboardController extends Controller
     public function index(): View
     {
         $today = Carbon::today()->toDateString();
+        $user = auth()->user();
+        $isKabid = $user ? $user->isKabid() : false;
+        $kabidBidang = $isKabid ? $user->bidang : null;
 
-        $totalPegawai = Pegawai::count();
-        $hadirHariIni = Presensi::where('tanggal', $today)->whereIn('status', ['Hadir', 'Terlambat'])->count();
-        $izinSakitCuti = Presensi::where('tanggal', $today)->whereIn('status', ['Izin', 'Cuti', 'Sakit'])->count();
-        $dinasLuar = Presensi::where('tanggal', $today)->where('status', 'Dinas Luar')->count();
+        // Base queries scoped by Bidang jika login sebagai Kabid
+        $pegawaiQuery = Pegawai::query();
+        $presensiQuery = Presensi::query();
+        $izinQuery = PengajuanIzin::query();
+        $kegiatanQuery = LaporanKegiatan::query();
 
-        $pendingPengajuanCount = PengajuanIzin::where('status', 'Menunggu Review')->count();
-        $pendingKegiatanCount = LaporanKegiatan::where('status_verifikasi', 'Menunggu Review')->count();
-        $pendingTugasLapanganCount = LaporanKegiatan::where('status_verifikasi', 'Menunggu Review')->where('is_tugas_lapangan', true)->count();
+        if ($isKabid) {
+            $pegawaiQuery->where('bidang', $kabidBidang);
+            $presensiQuery->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+            $izinQuery->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+            $kegiatanQuery->whereHas('pegawai', fn($q) => $q->where('bidang', $kabidBidang));
+        }
 
-        $kehadiranHariIni = Presensi::with('pegawai')
+        $totalPegawai = (clone $pegawaiQuery)->count();
+        $hadirHariIni = (clone $presensiQuery)->where('tanggal', $today)->whereIn('status', ['Hadir', 'Terlambat'])->count();
+        $izinSakitCuti = (clone $presensiQuery)->where('tanggal', $today)->whereIn('status', ['Izin', 'Cuti', 'Sakit'])->count();
+        $dinasLuar = (clone $presensiQuery)->where('tanggal', $today)->where('status', 'Dinas Luar')->count();
+
+        $pendingPengajuanCount = (clone $izinQuery)->where('status', 'Menunggu Review')->count();
+        $pendingKegiatanCount = (clone $kegiatanQuery)->where('status_verifikasi', 'Menunggu Review')->count();
+        $pendingTugasLapanganCount = (clone $kegiatanQuery)->where('status_verifikasi', 'Menunggu Review')->where('is_tugas_lapangan', true)->count();
+
+        $kehadiranHariIni = (clone $presensiQuery)->with('pegawai')
             ->where('tanggal', $today)
             ->latest()
             ->take(10)
             ->get();
 
-        $pendingPengajuan = PengajuanIzin::with('pegawai')
+        $pendingPengajuan = (clone $izinQuery)->with('pegawai')
             ->where('status', 'Menunggu Review')
             ->latest()
             ->take(5)
@@ -50,7 +66,9 @@ class AdminDashboardController extends Controller
             'pendingTugasLapanganCount',
             'kehadiranHariIni',
             'pendingPengajuan',
-            'officeSettings'
+            'officeSettings',
+            'isKabid',
+            'kabidBidang'
         ));
     }
 }

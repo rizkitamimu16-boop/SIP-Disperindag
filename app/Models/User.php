@@ -22,6 +22,9 @@ class User extends Authenticatable
         'email',
         'password',
         'peran',
+        'bidang',
+        'no_hp',
+        'foto',
         'status',
     ];
 
@@ -72,5 +75,55 @@ class User extends Authenticatable
     public function isPegawai(): bool
     {
         return $this->peran === 'pegawai';
+    }
+
+    /**
+     * Cek apakah akun adalah Super Administrator utama
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->id === 1 || ($this->peran === 'admin' && empty($this->bidang) && $this->username === 'admin');
+    }
+
+    /**
+     * Cek apakah akun adalah Kepala Bidang (Admin dengan scope bidang tertentu)
+     */
+    public function isKabid(): bool
+    {
+        return $this->peran === 'admin' && !empty($this->bidang);
+    }
+
+    /**
+     * Accessor untuk nama bidang/departemen
+     */
+    public function getDepartmentAttribute(): string
+    {
+        if ($this->isKabid()) {
+            return 'Kepala Bidang ' . $this->bidang;
+        }
+
+        if ($this->isSuperAdmin()) {
+            return 'Super Administrator';
+        }
+
+        if ($this->isAdmin()) {
+            return 'Admin Kepegawaian';
+        }
+
+        return $this->pegawai->bidang ?? 'Pegawai';
+    }
+
+    /**
+     * URL Foto Avatar
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        if (!empty($this->foto) && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->foto)) {
+            return asset('storage/' . $this->foto);
+        }
+        if ($this->pegawai && !empty($this->pegawai->foto) && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->pegawai->foto)) {
+            return asset('storage/' . $this->pegawai->foto);
+        }
+        return '';
     }
 }

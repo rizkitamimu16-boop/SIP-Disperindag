@@ -48,6 +48,7 @@
                 </div>
                 <p class="text-xs text-gray-500 mt-1">Kelola petugas personalia yang memiliki hak akses penuh ke panel administrator sistem.</p>
             </div>
+            @if(!auth()->user()->isKabid())
             <button type="button" onclick="openModal('modalTambahAdmin')"
                 class="h-10 px-4 bg-[#0D2240] hover:bg-[#163660] text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center space-x-2 shrink-0 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -55,6 +56,7 @@
                 </svg>
                 <span>Tambah Admin Baru</span>
             </button>
+            @endif
         </div>
 
         <!-- Tabel Daftar Administrator dari Database -->
@@ -87,17 +89,27 @@
                         <td class="py-3.5 px-3 font-mono font-bold text-gray-800">{{ $adm->username }}</td>
                         <td class="py-3.5 px-3 font-mono text-gray-600">{{ $adm->email }}</td>
                         <td class="py-3.5 px-3 text-center">
-                            <span class="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-800 text-xs font-semibold">Administrator</span>
+                            @if($adm->isKabid())
+                                <span class="px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-800 text-xs font-semibold">Kabid {{ $adm->bidang }}</span>
+                            @elseif($adm->isSuperAdmin())
+                                <span class="px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-xs font-semibold">Super Admin</span>
+                            @else
+                                <span class="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-800 text-xs font-semibold">Admin Kepegawaian</span>
+                            @endif
                         </td>
                         <td class="py-3.5 px-3 text-center">
                             <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">{{ ucfirst($adm->status) }}</span>
                         </td>
                         <td class="py-3.5 px-3 text-center">
-                            <button type="button" onclick="openEditAdminModal({{ $adm->id }}, '{{ addslashes($adm->username) }}', '{{ addslashes($adm->nama) }}', '{{ addslashes($adm->email) }}', '{{ $adm->status }}', {{ auth()->id() === 1 && $adm->id !== 1 ? 'true' : 'false' }})" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 rounded-lg transition cursor-pointer" title="Edit Admin">
+                            @if(!auth()->user()->isKabid())
+                            <button type="button" onclick="openEditAdminModal({{ $adm->id }}, '{{ addslashes($adm->username) }}', '{{ addslashes($adm->nama) }}', '{{ addslashes($adm->email) }}', '{{ $adm->status }}', {{ auth()->user()->isSuperAdmin() && $adm->id !== auth()->id() ? 'true' : 'false' }}, '{{ addslashes($adm->bidang ?? '') }}')" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 rounded-lg transition cursor-pointer" title="Edit Admin">
                                 <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                             </button>
+                            @else
+                            <span class="text-xs text-gray-400 italic">Khusus Admin Global</span>
+                            @endif
                         </td>
                     </tr>
                     @empty
@@ -284,6 +296,7 @@
             </div>
 
             <!-- Tombol Simpan Konfigurasi ke Database -->
+            @if(!auth()->user()->isKabid())
             <div class="flex justify-end pt-2">
                 <button type="submit"
                     class="px-6 py-2.5 bg-[#0D2240] hover:bg-[#163660] text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center space-x-2 cursor-pointer">
@@ -293,6 +306,7 @@
                     <span>Simpan Perubahan</span>
                 </button>
             </div>
+            @endif
         </form>
     </div>
 </div>

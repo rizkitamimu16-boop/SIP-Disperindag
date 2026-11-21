@@ -32,13 +32,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block font-semibold text-gray-700 mb-1">Bidang Resmi <span class="text-red-500">*</span></label>
-                    <select name="bidang" required
-                        class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none">
-                        <option value="Sekretariat">Sekretariat</option>
-                        <option value="Perdagangan">Perdagangan</option>
-                        <option value="Perindustrian">Perindustrian</option>
-                        <option value="Perlindungan Konsumen">Perlindungan Konsumen</option>
-                    </select>
+                    @if(auth()->user()->isKabid())
+                        <input type="hidden" name="bidang" value="{{ auth()->user()->bidang }}">
+                        <input type="text" value="{{ auth()->user()->bidang }}" disabled
+                            class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-gray-100 text-gray-700 outline-none font-semibold cursor-not-allowed">
+                    @else
+                        <select name="bidang" required
+                            class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none">
+                            <option value="Sekretariat">Sekretariat</option>
+                            <option value="Perdagangan">Perdagangan</option>
+                            <option value="Perindustrian">Perindustrian</option>
+                            <option value="Perlindungan Konsumen">Perlindungan Konsumen</option>
+                        </select>
+                    @endif
                 </div>
                 <div>
                     <label class="block font-semibold text-gray-700 mb-1">Jabatan <span class="text-red-500">*</span></label>
@@ -119,13 +125,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                     <label class="block font-semibold text-gray-700 mb-1">Bidang Resmi <span class="text-red-500">*</span></label>
-                    <select name="bidang" id="edit_bidang" required
-                        class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none">
-                        <option value="Sekretariat">Sekretariat</option>
-                        <option value="Perdagangan">Perdagangan</option>
-                        <option value="Perindustrian">Perindustrian</option>
-                        <option value="Perlindungan Konsumen">Perlindungan Konsumen</option>
-                    </select>
+                    @if(auth()->user()->isKabid())
+                        <input type="hidden" name="bidang" value="{{ auth()->user()->bidang }}">
+                        <input type="text" value="{{ auth()->user()->bidang }}" disabled
+                            class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-gray-100 text-gray-700 outline-none font-semibold cursor-not-allowed">
+                    @else
+                        <select name="bidang" id="edit_bidang" required
+                            class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none">
+                            <option value="Sekretariat">Sekretariat</option>
+                            <option value="Perdagangan">Perdagangan</option>
+                            <option value="Perindustrian">Perindustrian</option>
+                            <option value="Perlindungan Konsumen">Perlindungan Konsumen</option>
+                        </select>
+                    @endif
                 </div>
                 <div>
                     <label class="block font-semibold text-gray-700 mb-1">Jabatan <span class="text-red-500">*</span></label>
@@ -386,6 +398,19 @@
             </div>
 
             <div>
+                <label class="block font-semibold text-gray-700 mb-1">Peran Penugasan / Bidang</label>
+                <select name="bidang"
+                    class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none">
+                    <option value="">Semua Bidang (Administrator Global / Kepegawaian)</option>
+                    <option value="Perindustrian">Kepala Bidang Perindustrian</option>
+                    <option value="Perdagangan">Kepala Bidang Perdagangan</option>
+                    <option value="Sekretariat">Kepala Bidang Sekretariat</option>
+                    <option value="Perlindungan Konsumen">Kepala Bidang Perlindungan Konsumen</option>
+                </select>
+                <span class="text-[10px] text-gray-400 mt-0.5 block">Pilih salah satu bidang jika akun ini adalah Kepala Bidang (Kabid).</span>
+            </div>
+
+            <div>
                 <label class="block font-semibold text-gray-700 mb-1">Kata Sandi <span class="text-red-500">*</span></label>
                 <div class="relative">
                     <input type="password" id="tambahAdminPassword" name="password" placeholder="Minimal 6 karakter" required
@@ -594,6 +619,19 @@
             </div>
 
             <div>
+                <label class="block font-semibold text-gray-700 mb-1">Peran Penugasan / Bidang</label>
+                <select id="edit_admin_bidang" name="bidang"
+                    class="w-full h-10 px-3 border border-gray-200 rounded-xl bg-slate-50 focus:bg-white outline-none">
+                    <option value="">Semua Bidang (Administrator Global / Kepegawaian)</option>
+                    <option value="Perindustrian">Kepala Bidang Perindustrian</option>
+                    <option value="Perdagangan">Kepala Bidang Perdagangan</option>
+                    <option value="Sekretariat">Kepala Bidang Sekretariat</option>
+                    <option value="Perlindungan Konsumen">Kepala Bidang Perlindungan Konsumen</option>
+                </select>
+                <span class="text-[10px] text-gray-400 mt-0.5 block">Pilih salah satu bidang jika akun ini adalah Kepala Bidang (Kabid).</span>
+            </div>
+
+            <div>
                 <label class="block font-semibold text-gray-700 mb-1">Kata Sandi Baru (Opsional)</label>
                 <div class="relative">
                     <input type="password" id="editAdminPassword" name="password" placeholder="Kosongkan jika tidak diubah"
@@ -634,13 +672,16 @@
         }
     }
 
-    function openEditAdminModal(id, username, nama, email, status, canDelete) {
+    function openEditAdminModal(id, username, nama, email, status, canDelete, bidang = '') {
         document.getElementById('formEditAdmin').action = '/admin/pengaturan-sistem/admin/' + id;
         document.getElementById('formDeleteAdmin').action = '/admin/pengaturan-sistem/admin/' + id;
         document.getElementById('edit_admin_username').value = username;
         document.getElementById('edit_admin_nama').value = nama;
         document.getElementById('edit_admin_email').value = email;
         document.getElementById('edit_admin_status').value = status.toLowerCase();
+        if (document.getElementById('edit_admin_bidang')) {
+            document.getElementById('edit_admin_bidang').value = bidang || '';
+        }
         
         const deleteBtn = document.getElementById('btnDeleteAdmin');
         if (canDelete) {
